@@ -6,9 +6,9 @@ function _init()
 player_strt_y = 64
 player = {
 	["x"] = 0,
-	["pr_x"] = 0,
+	["px"] = 0,
 	["y"] = player_strt_y,
-	["pr_y"] = 0,
+	["py"] = 0,
 	["mv_speed"] = 1,
 	["on_mission"] = false,
 	["speed_x"] = 0,
@@ -116,6 +116,7 @@ function move_rotor()
 			end
 		else
 			if (player.speed_y <= 2) player.speed_y += 0.05
+		 player.py = player.y
 		 player.y += player.speed_y
 		 player.speed_dir = "down"
 	 end
@@ -131,6 +132,7 @@ function move_rotor()
 			end
 		else
 			if (player.speed_y <= 2) player.speed_y += 0.05
+		 player.py = player.y
 		 player.y -= player.speed_y
 		 player.speed_dir = "up"
 		end
@@ -156,6 +158,14 @@ function upd_rotor_mvmt()
 			player.speed_x -= 0.05
 			if (player.px>player.x) player.x-=player.speed_x
 			if (player.px<player.x) player.x+=player.speed_x
+		end
+	end
+	
+	if mvn_x then
+		if player.speed_y > 0 then
+			player.speed_y -= 0.05
+			if (player.py>player.y) player.y-=player.speed_y
+			if (player.py<player.y) player.y+=player.speed_y
 		end
 	end
 	
