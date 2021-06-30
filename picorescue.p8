@@ -9,7 +9,8 @@ player = {
 	["y"] = player_strt_y,
 	["mv_speed"] = 1,
 	["on_mission"] = false,
-	["speed"] = 0,
+	["speed_x"] = 0,
+	["speed_y"] = 0,
 	["speed_dir"] = null,
 	["mvn_dir"] = null
 }
@@ -38,7 +39,7 @@ function _draw()
 		spr(00,player.x,player.y)
 	end
 	
-	print(player.x.." "..player.y.." "..player.speed,0,0,11)
+	print(player.x.." "..player.y.." "..player.speed_x.." "..player.speed_y,0,0,11)
 		
 	print(player.mvn_dir,0,120,11)	
 	print(btn_pressed,24,120,11)
@@ -71,30 +72,30 @@ end
 function move_rotor()
 	if btn(1)  then
 		if player.speed_dir == "left" then
-			if player.speed > 0 then
-				player.speed-=0.10
-				player.x-=player.speed
+			if player.speed_x > 0 then
+				player.speed_x-=0.10
+				player.x-=player.speed_x
 			else
 				player.speed_dir = "right"
 			end
 		else
-			if (player.speed <= 2) player.speed += 0.05
-			player.x+=player.speed
+			if (player.speed_x <= 2) player.speed_x += 0.05
+			player.x+=player.speed_x
 			player.speed_dir = "right"
 		end
 	end
 	
 	if btn(0) then
 		if player.speed_dir == "right" then
-			if player.speed > 0 then
-				player.speed-=0.10
-				player.x+=player.speed
+			if player.speed_x > 0 then
+				player.speed_x-=0.10
+				player.x+=player.speed_x
 			else
 				player.speed_dir = "left"
 			end
 		else
-			if (player.speed <= 2) player.speed += 0.05
-			player.x-=player.speed
+			if (player.speed_x <= 2) player.speed_x += 0.05
+			player.x-=player.speed_x
 			player.speed_dir = "left"
 		end
 	end
@@ -132,16 +133,18 @@ end
 
 function upd_rotor_mvmt()
 	if btn_pressed == false then
-			if (player.speed > 0) player.speed -= 0.05
-			if (player.speed_dir == "right") player.x+=player.speed
-			if (player.speed_dir == "left") player.x-=player.speed
-			if (player.speed_dir == "up") player.y-=player.speed
-			if (player.speed_dir == "down") player.y+=player.speed
+		if player.speed_x > 0 then
+			if (player.speed_x > 0) player.speed_x -= 0.05
+			if (player.speed_dir == "right") player.x+=player.speed_x
+			if (player.speed_dir == "left") player.x-=player.speed_x
+			-- if (player.speed_dir == "up") player.y-=player.speed
+			-- if (player.speed_dir == "down") player.y+=player.speed
+			end
 	end
 	
-	if (player.speed > 2) player.speed = 2
-	if (player.speed < 0) player.speed = 0
-	if (player.speed == 0) player.speed_dir = null
+	--if (player.speed > 2) player.speed = 2
+	--if (player.speed < 0) player.speed = 0
+	--if (player.speed == 0) player.speed_dir = null
 end
 
 function check_hostage()
