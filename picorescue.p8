@@ -174,11 +174,6 @@ function upd_rotor_mvmt()
 	if (player.speed_x < 0) player.speed_x = 0
 	if (player.speed_y < 0) player.speed_y = 0
 end
-
-function check_hostage()
-	check_celx_px = player.x
-	check_cely_py = player.y+32
-end
 -->8
 -- menu navigation
 
