@@ -6,7 +6,9 @@ function _init()
 player_strt_y = 64
 player = {
 	["x"] = 0,
+	["pr_x"] = 0,
 	["y"] = player_strt_y,
+	["pr_y"] = 0,
 	["mv_speed"] = 1,
 	["on_mission"] = false,
 	["speed_x"] = 0,
@@ -25,6 +27,7 @@ screen = {
 curr_screen = screen[2]
 btn_pressed = false
 mvn_y = false
+mvn_x = false
 
 end
 
@@ -58,6 +61,7 @@ function _update()
  btn_pressed = not (btn() == 0)
 
 	mvn_y = btn(2) or btn(3)
+	mvn_x = btn(0) or btn(1)
 end
 -->8
 -- movement
@@ -80,6 +84,7 @@ function move_rotor()
 			end
 		else
 			if (player.speed_x <= 2) player.speed_x += 0.05
+			player.px=player.x
 			player.x+=player.speed_x
 			player.speed_dir = "right"
 		end
@@ -95,6 +100,7 @@ function move_rotor()
 			end
 		else
 			if (player.speed_x <= 2) player.speed_x += 0.05
+			player.px=player.x
 			player.x-=player.speed_x
 			player.speed_dir = "left"
 		end
@@ -102,30 +108,30 @@ function move_rotor()
 	
 	if btn(3)	then
 		if player.speed_dir == "up" then
-			if player.speed > 0 then
-				player.speed-=0.10
-				player.y-=player.speed
+			if player.speed_y > 0 then
+				player.speed_y-=0.10
+				player.y-=player.speed_y
 			else
 				player.speed_dir = "down"
 			end
 		else
-			if (player.speed <= 2) player.speed += 0.05
-		 player.y += player.speed
+			if (player.speed_y <= 2) player.speed_y += 0.05
+		 player.y += player.speed_y
 		 player.speed_dir = "down"
 	 end
 	end
 	
 	if btn(2)	then
 		if player.speed_dir == "down" then
-			if player.speed > 0 then
-				player.speed-=0.10
-				player.y+=player.speed
+			if player.speed_y > 0 then
+				player.speed_y-=0.10
+				player.y+=player.speed_y
 			else
 				player.speed_dir = "up"
 			end
 		else
-			if (player.speed <= 2) player.speed += 0.05
-		 player.y -= player.speed
+			if (player.speed_y <= 2) player.speed_y += 0.05
+		 player.y -= player.speed_y
 		 player.speed_dir = "up"
 		end
 	end
@@ -134,17 +140,29 @@ end
 function upd_rotor_mvmt()
 	if btn_pressed == false then
 		if player.speed_x > 0 then
-			if (player.speed_x > 0) player.speed_x -= 0.05
+			player.speed_x -= 0.025
 			if (player.speed_dir == "right") player.x+=player.speed_x
 			if (player.speed_dir == "left") player.x-=player.speed_x
-			-- if (player.speed_dir == "up") player.y-=player.speed
-			-- if (player.speed_dir == "down") player.y+=player.speed
-			end
+		end
+		if player.speed_y > 0 then
+			player.speed_y -= 0.025
+			if (player.speed_dir == "down") player.y+=player.speed_y
+			if (player.speed_dir == "up") player.y-=player.speed_y
+		end
 	end
 	
-	--if (player.speed > 2) player.speed = 2
-	--if (player.speed < 0) player.speed = 0
-	--if (player.speed == 0) player.speed_dir = null
+	if mvn_y then
+		if player.speed_x > 0 then
+			player.speed_x -= 0.05
+			if (player.px>player.x) player.x-=player.speed_x
+			if (player.px<player.x) player.x+=player.speed_x
+		end
+	end
+	
+	if (player.speed_x > 2) player.speed_x = 2
+	if (player.speed_y > 2) player.speed_y = 2
+	if (player.speed_x < 0) player.speed_x = 0
+	if (player.speed_y < 0) player.speed_y = 0
 end
 
 function check_hostage()
@@ -152,7 +170,7 @@ function check_hostage()
 	check_cely_py = player.y+32
 end
 -->8
--- navigation
+-- menu navigation
 
 function choose_mission()
 
