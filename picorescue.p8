@@ -16,7 +16,8 @@ player = {
 	["speed_y"] = 0,
 	["speed_dir"] = null,
 	["mvn_dir"] = null,
-	["hst_range"] = false
+	["hst_range"] = false,
+	["hst_pkup"] = false
 }
 
 screen = {
@@ -56,8 +57,12 @@ function _draw()
 	
 	print(player.x.." "..player.y,0,0,11)
 	print(player.hst_range,0,8,11)
+	print(player.hst_pkup,0,16,11)
 	
-	
+	print((hst_x).." "..(hst_y),0,24,11)
+	print((hst_y).." "..(hst_y+7).." "..(player.y+24),0,32,11)
+	--print((hst_x-24).." "..(hst_x+32),0,32,11)
+
 	--print(player.speed_x.." "..player.speed_y,0,8,11)
 	--print(top_speed_x.." "..top_speed_y,0,16,11)
 
@@ -67,7 +72,7 @@ function _draw()
 	--print(mvn_y,72,120,11)
 	--print(mvn_x,96,120,11)
 	
-	rect(hst_x-24,hst_y,hst_x+32,hst_y+7,3)
+	rect(hst_x-16,hst_y,hst_x+32,hst_y+7,3)
 
 end
 
@@ -84,7 +89,9 @@ function _update()
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
 	
+	player.hst_range = hst_range()
 	player.hst_pkup = hst_pkup()
+	move_hst()
 end
 -->8
 -- movement
@@ -210,12 +217,46 @@ function upd_rotor_mvmt()
 	if (player.speed_x < 0) player.speed_x = 0
 	if (player.speed_y < 0) player.speed_y = 0
 
-	if (player.y >= 120) player.speed_y = 0 
-	if (player.x >= 120) player.speed_x = 0 
+	if (player.y >= 100) then
+		player.speed_y = 0
+		player.y = 100
+	end
+end
+
+function move_hst()
+	if player.hst_range then
+		
+		if (player.x <= hst_x) hst_x -= 0.25
+		if (player.x >= hst_x) hst_x += 0.25
+	end
+end
+
+function hst_range()
+	status = false
+	
+	if
+		player.x >= hst_x-24 and
+		player.x <= hst_x+32 and
+		player.y+24 >= hst_y and
+		player.y+24 <= hst_y+7 then
+		status = true
+	end
+	
+	return status
 end
 
 function hst_pkup()
-
+	status = false
+	
+	if
+		player.x >= hst_x-1 and
+		player.x <= hst_x+1 and
+		player.y+24 >= hst_y and
+		player.y+24 <= hst_y+7 then
+		status = true
+	end	
+	
+	return status
 end
 -->8
 -- menu navigation
