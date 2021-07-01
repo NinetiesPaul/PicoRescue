@@ -15,8 +15,8 @@ function _init()
 		["speed_y"] = 0,
 		["speed_dir"] = null,
 		["mvn_dir"] = null,
-		["hst_range"] = false,
-		["hst_pkup"] = false
+		["civ_range"] = false,
+		["civ_pkup"] = false
 	}
 	
 	screen = {
@@ -37,8 +37,8 @@ function _init()
 	top_speed_y = 0
 	wind_speed = 0
 	
-	hst_x = 90
-	hst_y = 120
+	civ_x = 90
+	civ_y = 120
 	
 	ladder=0
 end
@@ -55,15 +55,15 @@ function _draw()
 		spr(00,player.x,player.y)
 	end
 	
-	spr(02,hst_x,hst_y)
+	spr(02,civ_x,civ_y)
 	
 	print(player.x.." "..player.y,0,0,11)
-	print(player.hst_range,0,8,11)
-	print(player.hst_pkup,0,16,11)
+	print(player.civ_range,0,8,11)
+	print(player.civ_pkup,0,16,11)
 	print(ladder,0,24,11)
 	
-	print((hst_x).." "..(hst_y),64,0,11)
-	print((hst_y).." "..(hst_y+7).." "..(player.y+24),64,8,11)
+	print((civ_x).." "..(civ_y),64,0,11)
+	print((civ_y).." "..(civ_y+7).." "..(player.y+24),64,8,11)
 	
 	for i = 1, ladder do
 		spr(1,player.x,player.y+i*8)
@@ -84,9 +84,9 @@ function _update()
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
 	
-	player.hst_range = hst_range()
-	player.hst_pkup = hst_pkup()
-	move_hst()
+	player.civ_range = civ_range()
+	player.civ_pkup = civ_pkup()
+	move_civ()
 	
 	upd_ladder()
 end
@@ -220,43 +220,43 @@ function upd_rotor_mvmt()
 	end
 end
 
-function hst_range()
+function civ_range()
 	status = false
 	
 	if
-		player.x >= hst_x-24 and
-		player.x <= hst_x+24 and
-		player.y+24 >= hst_y and
-		player.y+24 <= hst_y+7 then
+		player.x >= civ_x-24 and
+		player.x <= civ_x+24 and
+		player.y+24 >= civ_y and
+		player.y+24 <= civ_y+7 then
 		status = true
 	end
 	
 	return status
 end
 
-function hst_pkup()
+function civ_pkup()
 	status = false
 	
 	if
-		player.x >= hst_x-1 and
-		player.x <= hst_x+1 and
-		player.y+24 >= hst_y and
-		player.y+24 <= hst_y+7 then
+		player.x >= civ_x-1 and
+		player.x <= civ_x+1 and
+		player.y+24 >= civ_y and
+		player.y+24 <= civ_y+7 then
 		status = true
 	end	
 	
 	return status
 end
 
-function move_hst()
-	if player.hst_range then
-		if (player.x <= hst_x) hst_x -= 0.25
-		if (player.x >= hst_x) hst_x += 0.25
+function move_civ()
+	if player.civ_range then
+		if (player.x <= civ_x) civ_x -= 0.25
+		if (player.x >= civ_x) civ_x += 0.25
 	end
 end
 
 function upd_ladder()
-	if player.hst_pkup then
+	if player.civ_pkup then
 		if counter%30==0 and ladder < 3 then
 			ladder+=1
 		end
