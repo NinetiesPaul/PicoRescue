@@ -2,47 +2,45 @@ pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
 function _init()
-
-player_strt_y = 64
-player_strt_x = 8
-player = {
-	["x"] = player_strt_x,
-	["px"] = 0,
-	["y"] = player_strt_y,
-	["py"] = 0,
-	["mv_speed"] = 1,
-	["on_mission"] = false,
-	["speed_x"] = 0,
-	["speed_y"] = 0,
-	["speed_dir"] = null,
-	["mvn_dir"] = null,
-	["hst_range"] = false,
-	["hst_pkup"] = false
-}
-
-screen = {
-	1, -- start
-	2, -- rotor
-	3, -- human
-	4 -- airplane
-}
-
-curr_screen = screen[2]
-counter = 0
-
-btn_pressed = false
-
-mvn_y = false
-mvn_x = false
-top_speed_x = 0
-top_speed_y = 0
-wind_speed = 0
-
-hst_x = 90
-hst_y = 120
-
-ladder=0
-
+	player_strt_y = 64
+	player_strt_x = 8
+	player = {
+		["x"] = player_strt_x,
+		["px"] = 0,
+		["y"] = player_strt_y,
+		["py"] = 0,
+		["mv_speed"] = 1,
+		["on_mission"] = false,
+		["speed_x"] = 0,
+		["speed_y"] = 0,
+		["speed_dir"] = null,
+		["mvn_dir"] = null,
+		["hst_range"] = false,
+		["hst_pkup"] = false
+	}
+	
+	screen = {
+		1, -- start
+		2, -- rotor
+		3, -- human
+		4 -- airplane
+	}
+	
+	curr_screen = screen[2]
+	counter = 0
+	
+	btn_pressed = false
+	
+	mvn_y = false
+	mvn_x = false
+	top_speed_x = 0
+	top_speed_y = 0
+	wind_speed = 0
+	
+	hst_x = 90
+	hst_y = 120
+	
+	ladder=0
 end
 
 function _draw()
@@ -66,23 +64,10 @@ function _draw()
 	
 	print((hst_x).." "..(hst_y),64,0,11)
 	print((hst_y).." "..(hst_y+7).." "..(player.y+24),64,8,11)
-	--print((hst_x-24).." "..(hst_x+32),0,32,11)
-
-	--print(player.speed_x.." "..player.speed_y,0,8,11)
-	--print(top_speed_x.." "..top_speed_y,0,16,11)
-
-	--print(player.mvn_dir,0,120,11)	
-	--print(btn_pressed,24,120,11)
-	--print(player.speed_dir,48,120,11)
-	--print(mvn_y,72,120,11)
-	--print(mvn_x,96,120,11)
 	
 	for i = 1, ladder do
 		spr(1,player.x,player.y+i*8)
 	end
-	
-	--rect(hst_x-16,hst_y,hst_x+24,hst_y+7,3)
-
 end
 
 function _update()
@@ -104,7 +89,6 @@ function _update()
 	move_hst()
 	
 	upd_ladder()
-	
 end
 -->8
 -- movement
@@ -266,19 +250,12 @@ end
 
 function move_hst()
 	if player.hst_range then
-		
 		if (player.x <= hst_x) hst_x -= 0.25
 		if (player.x >= hst_x) hst_x += 0.25
 	end
 end
 
-function draw_ladder()
-
-
-end
-
 function upd_ladder()
-
 	if player.hst_pkup then
 		if counter%30==0 and ladder < 3 then
 			ladder+=1
@@ -293,9 +270,6 @@ end
 -- menu navigation
 
 function choose_mission()
-
-	
-
 end
 __gfx__
 0000000000d00d0000ffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
