@@ -2,62 +2,76 @@ pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
 function _init()
-
-player_strt_y = 64
-player = {
-	["x"] = 0,
-	["px"] = 0,
-	["y"] = player_strt_y,
-	["py"] = 0,
-	["mv_speed"] = 1,
-	["on_mission"] = false,
-	["speed_x"] = 0,
-	["speed_y"] = 0,
-	["speed_dir"] = null,
-	["mvn_dir"] = null
-}
-
-screen = {
-	1, -- start
-	2, -- rotor
-	3, -- human
-	4 -- airplane
-}
-
-curr_screen = screen[2]
-btn_pressed = false
-
-mvn_y = false
-mvn_x = false
-top_speed_x = 0
-top_speed_y = 0
-
+	player_strt_y = 64
+	player_strt_x = 8
+	player = {
+		["x"] = player_strt_x,
+		["px"] = 0,
+		["y"] = player_strt_y,
+		["py"] = 0,
+		["mv_speed"] = 1,
+		["on_mission"] = false,
+		["speed_x"] = 0,
+		["speed_y"] = 0,
+		["speed_dir"] = null,
+		["mvn_dir"] = null,
+		["civ_range"] = false,
+		["civ_pkup"] = false
+	}
+	
+	screen = {
+		1, -- start
+		2, -- rotor
+		3, -- human
+		4 -- airplane
+	}
+	
+	curr_screen = screen[2]
+	counter = 0
+	
+	btn_pressed = false
+	
+	mvn_y = false
+	mvn_x = false
+	top_speed_x = 0
+	top_speed_y = 0
+	wind_speed = 0
+	
+	civ_x = 90
+	civ_y = 120
+	
+	ladder=0
 end
 
 function _draw()
 	cls()
 		
 	if (curr_screen == 2) then
-		spr(00,player.x,player.y)
+		spr(04,player.x,player.y)
+		spr(03,player.x-8,player.y)
 	end
 	
 	if (curr_screen == 3) then
 		spr(00,player.x,player.y)
 	end
 	
+	spr(02,civ_x,civ_y)
+	
 	print(player.x.." "..player.y,0,0,11)
-	print(player.speed_x.." "..player.speed_y,0,8,11)
-	print(top_speed_x.." "..top_speed_y,0,16,11)
-
-
-	print(player.mvn_dir,0,120,11)	
-	print(btn_pressed,24,120,11)
-	print(player.speed_dir,48,120,11)
-	print(mvn_y,72,120,11)
-	print(mvn_x,96,120,11)
+	print(player.civ_range,0,8,11)
+	print(player.civ_pkup,0,16,11)
+	print(ladder,0,24,11)
+	
+	print((civ_x).." "..(civ_y),64,0,11)
+	print((civ_y).." "..(civ_y+7).." "..(player.y+24),64,8,11)
+	
+	for i = 1, ladder do
+		spr(1,player.x,player.y+i*8)
+	end
 end
 
 function _update()
+	counter+=1
 	
 	if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
@@ -69,6 +83,12 @@ function _update()
 
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
+	
+	player.civ_range = civ_range()
+	player.civ_pkup = civ_pkup()
+	move_civ()
+	
+	upd_ladder()
 end
 -->8
 -- movement
@@ -91,6 +111,7 @@ function move_rotor()
 			end
 		else
 			final_speed = (player.speed_y > 0) and 0.025 or 0.05
+			final_speed = final_speed - wind_speed
 			top_speed_x = (mvn_y) and 1 or 2
 			
 			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
@@ -119,7 +140,7 @@ function move_rotor()
 		end
 	end
 	
-	if btn(3)	then
+	if btn(3)	and player.y < 120 then
 		if player.speed_dir == "up" then
 			if player.speed_y > 0 then
 				player.speed_y-=0.10
@@ -192,24 +213,73 @@ function upd_rotor_mvmt()
 	if (player.speed_y > 2) player.speed_y = 2
 	if (player.speed_x < 0) player.speed_x = 0
 	if (player.speed_y < 0) player.speed_y = 0
+
+	if (player.y >= 100) then
+		player.speed_y = 0
+		player.y = 100
+	end
+end
+
+function civ_range()
+	status = false
+	
+	if
+		player.x >= civ_x-24 and
+		player.x <= civ_x+24 and
+		player.y+24 >= civ_y and
+		player.y+24 <= civ_y+7 then
+		status = true
+	end
+	
+	return status
+end
+
+function civ_pkup()
+	status = false
+	
+	if
+		player.x >= civ_x-1 and
+		player.x <= civ_x+1 and
+		player.y+24 >= civ_y and
+		player.y+24 <= civ_y+7 then
+		status = true
+	end	
+	
+	return status
+end
+
+function move_civ()
+	if player.civ_range then
+		if (player.x <= civ_x) civ_x -= 0.25
+		if (player.x >= civ_x) civ_x += 0.25
+	end
+end
+
+function upd_ladder()
+	if player.civ_pkup then
+		if counter%30==0 and ladder < 3 then
+			ladder+=1
+		end
+	else	
+		if counter%30==0 and ladder > 0 then
+			ladder-=1
+		end
+	end
 end
 -->8
 -- menu navigation
 
 function choose_mission()
-
-	
-
 end
 __gfx__
-0000000000d000d000ffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000ddddd000fcec0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0070070000d000d000feef0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000ddddd0055dd55000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000d000d05055550500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0070070000ddddd0f0f55f0f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000d000d000f00f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000ddddd000f00f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000d00d0000ffff0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000dddd0000fcec000bbb0000bbbbbb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0070070000d00d0000feef000b33b00b3331ccb00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0007700000dddd00055dd55000533bb33331ccb00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0007700000d00d00505555050005333333331ccb0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0070070000dddd00f0f55f0f00005555533331100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000d00d0000f00f0000000000056666500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000dddd0000f00f0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00800800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
