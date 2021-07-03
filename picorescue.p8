@@ -93,8 +93,7 @@ function _draw()
 	foreach(water_drops,draw_water)
 
 	rect(smoke_x1,smoke_y1,smoke_x2,smoke_y2)
-
-	print(smoke_x1.." "..smoke_y1.." "..smoke_x2.." "..smoke_y2,64,0,11)
+	--print(smoke_x1.." "..smoke_y1.." "..smoke_x2.." "..smoke_y2,64,0,11)
 end
 
 function _update()
@@ -312,7 +311,7 @@ function upd_fire()
 			smoke_w+=1
 			
 			smoke_x1 = fire_x-smoke_w*8
-			smoke_y1 = fire_y-26
+			smoke_y1 = fire_y-smoke_h*8-2
 			smoke_x2 = fire_x+smoke_w*8+8
 			smoke_y2 = fire_y-16
 		end
