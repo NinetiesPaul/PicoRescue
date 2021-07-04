@@ -17,7 +17,8 @@ function _init()
 		["mvn_dir"] = null,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
-		["water_cpct"] = 2
+		["water_cpct"] = 2,
+		["rotor_health"] = 10
 	}
 	
 	water_drops={}
@@ -49,30 +50,32 @@ function _init()
 	smoke_h = 0
 	smoke_max_w = 3
 	smoke_w = 0
-	
+	smoke_x1 = -5
+	smoke_y1 = -5
+	smoke_x2 = -5
+	smoke_y2 = -5
 	ladder=0
 end
 
 function _draw()
 	cls()
-		
+
 	if (curr_screen == 2) then
 		spr(04,player.x,player.y)
 		spr(03,player.x-8,player.y)
 	end
-	
+
 	if (curr_screen == 3) then
 		spr(00,player.x,player.y)
 	end
-	
+
 	spr(02,civ_x,civ_y)
 	spr(17,fire_x,fire_y)
-	
 
 	for i = 1, ladder do
 		spr(1,player.x,player.y+i*8)
 	end
-	
+  
 	for i = 1, smoke_h do
 		spr(18,fire_x,fire_y-i*8)
 	end
@@ -82,9 +85,13 @@ function _draw()
 		spr(18,fire_x+i*8,fire_y-24)
 	end
 	
-	print(btn_pressed,0,0,11)
+  for i = 0, player.rotor_health do
+		rectfill(0,0,player.rotor_health,4, 11)
+	end
 	
 	foreach(water_drops,draw_water)
+
+	--rect(smoke_x1,smoke_y1,smoke_x2,smoke_y2)
 end
 
 function _update()
@@ -108,6 +115,7 @@ function _update()
 	upd_ladder()
 	
 	upd_fire()
+  on_smoke()
 	
 	foreach(water_drops,move_water)
 end
@@ -298,6 +306,11 @@ function upd_fire()
 	if smoke_h == smoke_max_h then
 		if counter%30==0 and smoke_w < smoke_max_w then
 			smoke_w+=1
+
+			smoke_x1 = fire_x-smoke_w*8
+			smoke_y1 = fire_y-smoke_h*8-2
+			smoke_x2 = fire_x+smoke_w*8+8
+			smoke_y2 = fire_y-16
 		end
 	end
 end
@@ -306,6 +319,7 @@ function drop_water()
 	local water = {}
 	water.x = player.x
 	water.y = player.y + 8
+	water.speed = 0
 	add(water_drops,water)
 end
 
@@ -314,14 +328,44 @@ function draw_water(water)
 end
 
 function move_water(water)
- water.y += 1 
+ if (water.speed < 2) water.speed += 0.15
+ water.y += water.speed
+ 
+ if
+ 	water.x >= fire_x-2 and
+ 	water.x <= fire_x+10 and
+ 	water.y >= fire_y and
+ 	water.y <= fire_y+8
+	then
+		fire_x = -5
+		fire_y = -5
+	end
+ 
  if (water .y >= 128) del(water_drops,water)
+end
+
+function on_smoke()
+	if
+		player.x >= smoke_x1 and
+		player.x <= smoke_x2 and
+		player.y >= smoke_y1 and
+		player.y <= smoke_y2
+	then
+		if (counter%30==0) player.rotor_health -= 1
+	end
 end
 -->8
 -- menu navigation
 
 function choose_mission()
 end
+-->8
+--[[
+
+map(0,0,fire_x-i*8,fire_y-24,1,1)
+map(0,0,fire_x+i*8,fire_y-24,1,1)
+	
+]]--
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd0000fcec000b3b0000bbbbbb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -470,5 +514,5 @@ bb00b0b0bbb0bbb00bb000000b00b0b00bb0bbb0000000000bb0b00000000000000000000b00b0b0
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 
 __gff__
-0000010000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000010000000000000000000000000000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
