@@ -54,7 +54,6 @@ function _init()
 	smoke_y1 = -5
 	smoke_x2 = -5
 	smoke_y2 = -5
-		
 	ladder=0
 end
 
@@ -76,7 +75,7 @@ function _draw()
 	for i = 1, ladder do
 		spr(1,player.x,player.y+i*8)
 	end
-
+  
 	for i = 1, smoke_h do
 		spr(18,fire_x,fire_y-i*8)
 	end
@@ -86,14 +85,13 @@ function _draw()
 		spr(18,fire_x+i*8,fire_y-24)
 	end
 	
-	for i = 0, player.rotor_health do
+  for i = 0, player.rotor_health do
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
 	
 	foreach(water_drops,draw_water)
 
-	rect(smoke_x1,smoke_y1,smoke_x2,smoke_y2)
-	--print(smoke_x1.." "..smoke_y1.." "..smoke_x2.." "..smoke_y2,64,0,11)
+	--rect(smoke_x1,smoke_y1,smoke_x2,smoke_y2)
 end
 
 function _update()
@@ -117,8 +115,7 @@ function _update()
 	upd_ladder()
 	
 	upd_fire()
-
-	on_smoke()
+  on_smoke()
 	
 	foreach(water_drops,move_water)
 end
@@ -309,7 +306,7 @@ function upd_fire()
 	if smoke_h == smoke_max_h then
 		if counter%30==0 and smoke_w < smoke_max_w then
 			smoke_w+=1
-			
+
 			smoke_x1 = fire_x-smoke_w*8
 			smoke_y1 = fire_y-smoke_h*8-2
 			smoke_x2 = fire_x+smoke_w*8+8
