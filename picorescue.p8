@@ -85,13 +85,11 @@ function _draw()
 		spr(18,fire_x+i*8,fire_y-24)
 	end
 	
-  for i = 0, player.rotor_health do
+ for i = 0, player.rotor_health do
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
 	
 	foreach(water_drops,draw_water)
-
-	--rect(smoke_x1,smoke_y1,smoke_x2,smoke_y2)
 end
 
 function _update()
