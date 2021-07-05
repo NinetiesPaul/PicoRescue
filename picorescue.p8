@@ -2,13 +2,13 @@ pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
 function _init()
-	player_strt_y = 64
-	player_strt_x = 8
+	player_strt_y = 0
+	player_strt_x = 64
 	player = {
 		["x"] = player_strt_x,
-		["px"] = 0,
+		["px"] = player_strt_x,
 		["y"] = player_strt_y,
-		["py"] = 0,
+		["py"] = player_strt_y,
 		["mv_speed"] = 1,
 		["on_mission"] = false,
 		["speed_x"] = 0,
@@ -33,11 +33,14 @@ function _init()
 	counter = 0
 	
 	btn_pressed = false
-	
 	mvn_y = false
 	mvn_x = false
-	top_speed_x = 0
-	top_speed_y = 0
+	left_btn = false
+	right_btn = false
+	
+	
+	top_speed_x = 2
+	top_speed_y = 2
 	wind_speed = 0
 	
 	civ_x = 90
@@ -89,12 +92,17 @@ function _draw()
 	end
 	
 	print(player.mvn_dir,0,8,11)
+	
 	print(player.speed_x,0,16,11)
 	print(player.speed_y,0,24,11)
-	print(mvn_x,0,32,11)
-	print(mvn_y,0,40,11)
-	print(top_speed_x,24,32,11)
-	print(top_speed_y,24,40,11)
+	print(top_speed_x,0,32,11)
+	print(top_speed_y,0,40,11)
+	
+	print(left_btn,38,16,11)
+	print(right_btn,38,24,11)
+	print(player.px,38,32,11)
+	print(player.x,38,40,11)
+	print(btn_pressed,38,48,11)
 	
 	foreach(water_drops,draw_water)
 end
@@ -112,6 +120,11 @@ function _update()
 
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
+	
+	left_btn = btn(0)
+	right_btn = btn(1)
+	up_btn = btn(2)
+	down_btn = btn(3)
 	
 	player.civ_range = civ_range()
 	player.civ_pkup = civ_pkup()
@@ -135,85 +148,73 @@ function move_human()
 end
 
 function move_rotor()
-	if btn(1)  then
-		if player.mvn_dir == "left" then
+	if btn(1) then
+		if player.px > player.x then
 			if player.speed_x > 0 then
-				player.speed_x-=0.10
-				player.x-=player.speed_x
-			else
-				player.mvn_dir = "right"
+				player.speed_x -= 0.035
+				player.x -= player.speed_x
 			end
 		else
-			final_speed = (player.speed_y > 0) and 0.025 or 0.05
-			top_speed_x = (mvn_y) and 1 or 2
-			
-			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
-			player.px=player.x
-			player.x+=player.speed_x
 			player.mvn_dir = "right"
+			if (player.speed_x <= top_speed_x) player.speed_x += 0.025
+			player.px = player.x
+			player.x += player.speed_x
 		end
 	end
 	
 	if btn(0) then
-		if player.mvn_dir == "right" then
+		if player.px < player.x then
 			if player.speed_x > 0 then
-				player.speed_x-=0.10
-				player.x+=player.speed_x
-			else
-				player.mvn_dir = "left"
+				player.speed_x -= 0.035
+				player.x += player.speed_x
 			end
-		else
-			final_speed = (player.speed_y > 0) and 0.025 or 0.05
-			top_speed_x = (mvn_y) and 1 or 2		
-		
-			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
-			player.px=player.x
-			player.x-=player.speed_x
+		else	
 			player.mvn_dir = "left"
+			if (player.speed_x <= top_speed_x) player.speed_x += 0.025
+			player.px = player.x
+			player.x -= player.speed_x
 		end
 	end
 	
 	if btn(3)	and player.y < 120 then
-		if player.mvn_dir == "up" then
-			if player.speed_y > 0 then
-				player.speed_y-=0.10
-				player.y-=player.speed_y
-			else
-				player.mvn_dir = "down"
-			end
-		else
-			final_speed = (player.speed_x > 0) and 0.025 or 0.05
-			top_speed_y = (mvn_x) and 1 or 2
-					
-			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
-		 player.py = player.y
-		 player.y += player.speed_y
-		 player.mvn_dir = "down"
-	 end
+		player.mvn_dir = "down"
+		if (player.speed_y <= top_speed_y) player.speed_y += 0.025
 	end
 	
 	if btn(2)	then
-		if player.mvn_dir == "down" then
-			if player.speed_y > 0 then
-				player.speed_y-=0.10
-				player.y+=player.speed_y
-			else
-				player.mvn_dir = "up"
-			end
-		else
-			final_speed = (player.speed_x > 0) and 0.025 or 0.05
-			top_speed_y = (mvn_x) and 1 or 2		
-		
-			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
-		 player.py = player.y
-		 player.y -= player.speed_y
-		 player.mvn_dir = "up"
-		end
+		player.mvn_dir = "up"
+		if (player.speed_y <= top_speed_y) player.speed_y += 0.025
 	end
 	
 	if (btnp(4)) drop_water()
 end
 
+function upd_rotor_mvmt()
+	if right_btn == false and btn_pressed == false then
+		if player.px < player.x then
+			player.px = player.x
+			player.speed_x -= 0.015
+			player.x += player.speed_x
+		end
+	end
+	
+	if left_btn == false and btn_pressed == false then
+		if player.px > player.x then
+			player.px = player.x
+			player.speed_x -= 0.015
+			player.x -= player.speed_x
+		end
+	end
+	
+	if (btn_pressed == false) player.mvn_dir = false
+
+	if player.speed_x < 0 then
+		player.speed_x = 0
+		player.px = player.x
+	end
+end
+
+--[[
 function upd_rotor_mvmt()
 
 	if btn_pressed == false then
@@ -255,7 +256,7 @@ function upd_rotor_mvmt()
 		player.y = 100
 	end
 end
-
+]]--
 -->8
 -- menu navigation
 
