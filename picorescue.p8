@@ -17,7 +17,9 @@ function _init()
 		["civ_range"] = false,
 		["civ_pkup"] = false,
 		["water_cpct"] = 2,
-		["rotor_health"] = 10
+		["rotor_health"] = 10,
+		["top_speed_x"] = 2,
+		["top_speed_y"] = 2,
 	}
 	
 	water_drops={}
@@ -37,11 +39,8 @@ function _init()
 	mvn_x = false
 	left_btn = false
 	right_btn = false
-	
-	
-	top_speed_x = 2
-	top_speed_y = 2
-	wind_speed = 0
+	down_btn = false
+	up_btn = false
 	
 	civ_x = 90
 	civ_y = 120
@@ -91,19 +90,6 @@ function _draw()
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
 	
-	print(player.mvn_dir,0,8,11)
-	
-	print(player.speed_x,0,16,11)
-	print(player.speed_y,0,24,11)
-	print(top_speed_x,0,32,11)
-	print(top_speed_y,0,40,11)
-	
-	print(left_btn,38,16,11)
-	print(right_btn,38,24,11)
-	print(player.px,38,32,11)
-	print(player.x,38,40,11)
-	print(btn_pressed,38,48,11)
-	
 	foreach(water_drops,draw_water)
 end
 
@@ -114,6 +100,7 @@ function _update()
 	if (curr_screen == 2) move_rotor()
 	if (curr_screen == 3) move_human()
 
+	-- rotor movement
 	upd_rotor_mvmt()
 	
  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
@@ -126,14 +113,15 @@ function _update()
 	up_btn = btn(2)
 	down_btn = btn(3)
 	
+	-- civilian 
 	player.civ_range = civ_range()
 	player.civ_pkup = civ_pkup()
 	move_civ()
 	
+	-- water smoke and fire
 	upd_ladder()
-	
 	upd_fire()
-  on_smoke()
+ on_smoke()
 	
 	foreach(water_drops,move_water)
 end
@@ -148,7 +136,7 @@ function move_human()
 end
 
 function move_rotor()
-	if btn(1) then
+	if right_btn then
 		if player.px > player.x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
@@ -156,13 +144,13 @@ function move_rotor()
 			end
 		else
 			player.mvn_dir = "right"
-			if (player.speed_x <= top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
 			player.px = player.x
 			player.x += player.speed_x
 		end
 	end
 	
-	if btn(0) then
+	if left_btn then
 		if player.px < player.x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
@@ -170,41 +158,67 @@ function move_rotor()
 			end
 		else	
 			player.mvn_dir = "left"
-			if (player.speed_x <= top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
 			player.px = player.x
 			player.x -= player.speed_x
 		end
 	end
 	
-	if btn(3)	and player.y < 120 then
-		player.mvn_dir = "down"
-		if (player.speed_y <= top_speed_y) player.speed_y += 0.025
+	if up_btn	then
+		if player.py < player.y then
+			if player.speed_y > 0 then
+				player.speed_y -= 0.035
+				player.y += player.speed_y
+			end
+		else	
+			player.mvn_dir = "up"
+			if (player.speed_y <= player.top_speed_y) player.speed_y += 0.025
+			player.py = player.y
+			player.y -= player.speed_y
+		end
 	end
 	
-	if btn(2)	then
-		player.mvn_dir = "up"
-		if (player.speed_y <= top_speed_y) player.speed_y += 0.025
+	if down_btn	and player.y < 120 then
+		if player.py > player.y then
+			if player.speed_y > 0 then
+				player.speed_y -= 0.035
+				player.y -= player.speed_y
+			end
+		else	
+			player.mvn_dir = "down"
+			if (player.speed_y <= player.top_speed_y) player.speed_y += 0.025
+			player.py = player.y
+			player.y += player.speed_y
+		end
 	end
 	
 	if (btnp(4)) drop_water()
 end
 
 function upd_rotor_mvmt()
-	if right_btn == false and btn_pressed == false then
-		if player.px < player.x then
+		if player.px < player.x and mvn_x == false then
 			player.px = player.x
 			player.speed_x -= 0.015
 			player.x += player.speed_x
 		end
-	end
 	
-	if left_btn == false and btn_pressed == false then
-		if player.px > player.x then
+		if player.px > player.x and mvn_x == false then
 			player.px = player.x
 			player.speed_x -= 0.015
 			player.x -= player.speed_x
 		end
-	end
+	
+		if player.py < player.y and mvn_y == false then
+			player.py = player.y
+			player.speed_y -= 0.015
+			player.y += player.speed_y
+		end
+	
+		if player.py > player.y and mvn_y == false then
+			player.py = player.y
+			player.speed_y -= 0.015
+			player.y -= player.speed_y
+		end
 	
 	if (btn_pressed == false) player.mvn_dir = false
 
@@ -212,51 +226,12 @@ function upd_rotor_mvmt()
 		player.speed_x = 0
 		player.px = player.x
 	end
-end
-
---[[
-function upd_rotor_mvmt()
-
-	if btn_pressed == false then
-		if player.speed_x > 0 then
-			player.speed_x -= 0.025
-			if (player.mvn_dir == "right") player.x+=player.speed_x
-			if (player.mvn_dir == "left") player.x-=player.speed_x
-		end
-		if player.speed_y > 0 then
-			player.speed_y -= 0.025
-			if (player.mvn_dir == "down") player.y+=player.speed_y
-			if (player.mvn_dir == "up") player.y-=player.speed_y
-		end
-	end
 	
-	if mvn_y and mvn_x==false then
-		if player.speed_x > 0 then
-			player.speed_x -= 0.05
-			if (player.px>player.x) player.x-=player.speed_x
-			if (player.px<player.x) player.x+=player.speed_x
-		end
-	end
-	
-	if mvn_x and mvn_y==false then
-		if player.speed_y > 0 then
-			player.speed_y -= 0.05
-			if (player.py>player.y) player.y-=player.speed_y
-			if (player.py<player.y) player.y+=player.speed_y
-		end
-	end
-	
-	if (player.speed_x > 2) player.speed_x = 2
-	if (player.speed_y > 2) player.speed_y = 2
-	if (player.speed_x < 0) player.speed_x = 0
-	if (player.speed_y < 0) player.speed_y = 0
-
-	if (player.y >= 100) then
+	if player.speed_y < 0 then
 		player.speed_y = 0
-		player.y = 100
+		player.py = player.y
 	end
 end
-]]--
 -->8
 -- menu navigation
 
