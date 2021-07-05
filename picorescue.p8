@@ -13,7 +13,6 @@ function _init()
 		["on_mission"] = false,
 		["speed_x"] = 0,
 		["speed_y"] = 0,
-		["speed_dir"] = null,
 		["mvn_dir"] = null,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
@@ -89,6 +88,14 @@ function _draw()
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
 	
+	print(player.mvn_dir,0,8,11)
+	print(player.speed_x,0,16,11)
+	print(player.speed_y,0,24,11)
+	print(mvn_x,0,32,11)
+	print(mvn_y,0,40,11)
+	print(top_speed_x,24,32,11)
+	print(top_speed_y,24,40,11)
+	
 	foreach(water_drops,draw_water)
 end
 
@@ -129,32 +136,31 @@ end
 
 function move_rotor()
 	if btn(1)  then
-		if player.speed_dir == "left" then
+		if player.mvn_dir == "left" then
 			if player.speed_x > 0 then
 				player.speed_x-=0.10
 				player.x-=player.speed_x
 			else
-				player.speed_dir = "right"
+				player.mvn_dir = "right"
 			end
 		else
 			final_speed = (player.speed_y > 0) and 0.025 or 0.05
-			final_speed = final_speed - wind_speed
 			top_speed_x = (mvn_y) and 1 or 2
 			
 			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
 			player.px=player.x
 			player.x+=player.speed_x
-			player.speed_dir = "right"
+			player.mvn_dir = "right"
 		end
 	end
 	
 	if btn(0) then
-		if player.speed_dir == "right" then
+		if player.mvn_dir == "right" then
 			if player.speed_x > 0 then
 				player.speed_x-=0.10
 				player.x+=player.speed_x
 			else
-				player.speed_dir = "left"
+				player.mvn_dir = "left"
 			end
 		else
 			final_speed = (player.speed_y > 0) and 0.025 or 0.05
@@ -163,17 +169,17 @@ function move_rotor()
 			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
 			player.px=player.x
 			player.x-=player.speed_x
-			player.speed_dir = "left"
+			player.mvn_dir = "left"
 		end
 	end
 	
 	if btn(3)	and player.y < 120 then
-		if player.speed_dir == "up" then
+		if player.mvn_dir == "up" then
 			if player.speed_y > 0 then
 				player.speed_y-=0.10
 				player.y-=player.speed_y
 			else
-				player.speed_dir = "down"
+				player.mvn_dir = "down"
 			end
 		else
 			final_speed = (player.speed_x > 0) and 0.025 or 0.05
@@ -182,17 +188,17 @@ function move_rotor()
 			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
 		 player.py = player.y
 		 player.y += player.speed_y
-		 player.speed_dir = "down"
+		 player.mvn_dir = "down"
 	 end
 	end
 	
 	if btn(2)	then
-		if player.speed_dir == "down" then
+		if player.mvn_dir == "down" then
 			if player.speed_y > 0 then
 				player.speed_y-=0.10
 				player.y+=player.speed_y
 			else
-				player.speed_dir = "up"
+				player.mvn_dir = "up"
 			end
 		else
 			final_speed = (player.speed_x > 0) and 0.025 or 0.05
@@ -201,7 +207,7 @@ function move_rotor()
 			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
 		 player.py = player.y
 		 player.y -= player.speed_y
-		 player.speed_dir = "up"
+		 player.mvn_dir = "up"
 		end
 	end
 	
@@ -209,16 +215,17 @@ function move_rotor()
 end
 
 function upd_rotor_mvmt()
+
 	if btn_pressed == false then
 		if player.speed_x > 0 then
 			player.speed_x -= 0.025
-			if (player.speed_dir == "right") player.x+=player.speed_x
-			if (player.speed_dir == "left") player.x-=player.speed_x
+			if (player.mvn_dir == "right") player.x+=player.speed_x
+			if (player.mvn_dir == "left") player.x-=player.speed_x
 		end
 		if player.speed_y > 0 then
 			player.speed_y -= 0.025
-			if (player.speed_dir == "down") player.y+=player.speed_y
-			if (player.speed_dir == "up") player.y-=player.speed_y
+			if (player.mvn_dir == "down") player.y+=player.speed_y
+			if (player.mvn_dir == "up") player.y-=player.speed_y
 		end
 	end
 	
@@ -248,6 +255,21 @@ function upd_rotor_mvmt()
 		player.y = 100
 	end
 end
+
+-->8
+-- menu navigation
+
+function choose_mission()
+end
+-->8
+--[[
+
+map(0,0,fire_x-i*8,fire_y-24,1,1)
+map(0,0,fire_x+i*8,fire_y-24,1,1)
+	
+]]--
+-->8
+-- civ fire smoke water
 
 function civ_range()
 	status = false
@@ -352,18 +374,6 @@ function on_smoke()
 		if (counter%30==0) player.rotor_health -= 1
 	end
 end
--->8
--- menu navigation
-
-function choose_mission()
-end
--->8
---[[
-
-map(0,0,fire_x-i*8,fire_y-24,1,1)
-map(0,0,fire_x+i*8,fire_y-24,1,1)
-	
-]]--
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd0000fcec000b3b0000bbbbbb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
