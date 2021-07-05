@@ -11,10 +11,7 @@ function _init()
 		["py"] = 0,
 		["mv_speed"] = 1,
 		["on_mission"] = false,
-		["speed_x"] = 0,
-		["speed_y"] = 0,
-		["speed_dir"] = null,
-		["mvn_dir"] = null,
+		["rotor_speed"] = 2,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
 		["water_cpct"] = 2,
@@ -32,15 +29,7 @@ function _init()
 	
 	curr_screen = screen[2]
 	counter = 0
-	
-	btn_pressed = false
-	
-	mvn_y = false
-	mvn_x = false
-	top_speed_x = 0
-	top_speed_y = 0
-	wind_speed = 0
-	
+			
 	civ_x = 90
 	civ_y = 120
 	
@@ -98,13 +87,6 @@ function _update()
 	if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
 	if (curr_screen == 3) move_human()
-
-	upd_rotor_mvmt()
-	
- btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
-
-	mvn_y = btn(2) or btn(3)
-	mvn_x = btn(0) or btn(1)
 	
 	player.civ_range = civ_range()
 	player.civ_pkup = civ_pkup()
@@ -113,7 +95,7 @@ function _update()
 	upd_ladder()
 	
 	upd_fire()
-  on_smoke()
+ on_smoke()
 	
 	foreach(water_drops,move_water)
 end
@@ -128,125 +110,12 @@ function move_human()
 end
 
 function move_rotor()
-	if btn(1)  then
-		if player.speed_dir == "left" then
-			if player.speed_x > 0 then
-				player.speed_x-=0.10
-				player.x-=player.speed_x
-			else
-				player.speed_dir = "right"
-			end
-		else
-			final_speed = (player.speed_y > 0) and 0.025 or 0.05
-			final_speed = final_speed - wind_speed
-			top_speed_x = (mvn_y) and 1 or 2
-			
-			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
-			player.px=player.x
-			player.x+=player.speed_x
-			player.speed_dir = "right"
-		end
-	end
-	
-	if btn(0) then
-		if player.speed_dir == "right" then
-			if player.speed_x > 0 then
-				player.speed_x-=0.10
-				player.x+=player.speed_x
-			else
-				player.speed_dir = "left"
-			end
-		else
-			final_speed = (player.speed_y > 0) and 0.025 or 0.05
-			top_speed_x = (mvn_y) and 1 or 2		
-		
-			if (player.speed_x <= top_speed_x) player.speed_x += final_speed
-			player.px=player.x
-			player.x-=player.speed_x
-			player.speed_dir = "left"
-		end
-	end
-	
-	if btn(3)	and player.y < 120 then
-		if player.speed_dir == "up" then
-			if player.speed_y > 0 then
-				player.speed_y-=0.10
-				player.y-=player.speed_y
-			else
-				player.speed_dir = "down"
-			end
-		else
-			final_speed = (player.speed_x > 0) and 0.025 or 0.05
-			top_speed_y = (mvn_x) and 1 or 2
-					
-			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
-		 player.py = player.y
-		 player.y += player.speed_y
-		 player.speed_dir = "down"
-	 end
-	end
-	
-	if btn(2)	then
-		if player.speed_dir == "down" then
-			if player.speed_y > 0 then
-				player.speed_y-=0.10
-				player.y+=player.speed_y
-			else
-				player.speed_dir = "up"
-			end
-		else
-			final_speed = (player.speed_x > 0) and 0.025 or 0.05
-			top_speed_y = (mvn_x) and 1 or 2		
-		
-			if (player.speed_y <= top_speed_y) player.speed_y += final_speed
-		 player.py = player.y
-		 player.y -= player.speed_y
-		 player.speed_dir = "up"
-		end
-	end
+	if (btn(1)) player.x += player.rotor_speed
+	if (btn(0)) player.x -= player.rotor_speed
+	if (btn(3)) player.y += player.rotor_speed
+	if (btn(2))	player.y -= player.rotor_speed
 	
 	if (btnp(4)) drop_water()
-end
-
-function upd_rotor_mvmt()
-	if btn_pressed == false then
-		if player.speed_x > 0 then
-			player.speed_x -= 0.025
-			if (player.speed_dir == "right") player.x+=player.speed_x
-			if (player.speed_dir == "left") player.x-=player.speed_x
-		end
-		if player.speed_y > 0 then
-			player.speed_y -= 0.025
-			if (player.speed_dir == "down") player.y+=player.speed_y
-			if (player.speed_dir == "up") player.y-=player.speed_y
-		end
-	end
-	
-	if mvn_y and mvn_x==false then
-		if player.speed_x > 0 then
-			player.speed_x -= 0.05
-			if (player.px>player.x) player.x-=player.speed_x
-			if (player.px<player.x) player.x+=player.speed_x
-		end
-	end
-	
-	if mvn_x and mvn_y==false then
-		if player.speed_y > 0 then
-			player.speed_y -= 0.05
-			if (player.py>player.y) player.y-=player.speed_y
-			if (player.py<player.y) player.y+=player.speed_y
-		end
-	end
-	
-	if (player.speed_x > 2) player.speed_x = 2
-	if (player.speed_y > 2) player.speed_y = 2
-	if (player.speed_x < 0) player.speed_x = 0
-	if (player.speed_y < 0) player.speed_y = 0
-
-	if (player.y >= 100) then
-		player.speed_y = 0
-		player.y = 100
-	end
 end
 
 function civ_range()
