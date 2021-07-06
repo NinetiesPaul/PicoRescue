@@ -109,7 +109,7 @@ function _update()
 	-- rotor movement
 	upd_rotor_mvmt()
         
-  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
+ btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
 	left_btn = btn(0)
@@ -210,27 +210,27 @@ end
 
 function upd_rotor_mvmt()
  if player.px < player.x and mvn_x == false then
-   player.px = player.x
-   player.speed_x -= 0.015
-   player.x += player.speed_x
+  player.px = player.x
+  player.speed_x -= 0.015
+  player.x += player.speed_x
  end
 
  if player.px > player.x and mvn_x == false then
-   player.px = player.x
-   player.speed_x -= 0.015
-   player.x -= player.speed_x
+  player.px = player.x
+  player.speed_x -= 0.015
+  player.x -= player.speed_x
  end
 
  if player.py < player.y and mvn_y == false then
-   player.py = player.y
-   player.speed_y -= 0.015
-   player.y += player.speed_y
+  player.py = player.y
+  player.speed_y -= 0.015
+  player.y += player.speed_y
  end
 
  if player.py > player.y and mvn_y == false then
-   player.py = player.y
-   player.speed_y -= 0.015
-   player.y -= player.speed_y
+  player.py = player.y
+  player.speed_y -= 0.015
+  player.y -= player.speed_y
  end
 	
 	if (btn_pressed == false) player.mvn_dir = false
