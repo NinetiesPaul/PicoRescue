@@ -102,7 +102,7 @@ end
 function _update()
 	counter+=1
 	
-	if (curr_screen == 1) choose_mission()
+	--if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
 	if (curr_screen == 3) move_human()
 
@@ -209,29 +209,29 @@ end
 
 
 function upd_rotor_mvmt()
-  if player.px < player.x and mvn_x == false then
-    player.px = player.x
-    player.speed_x -= 0.015
-    player.x += player.speed_x
-  end
+ if player.px < player.x and mvn_x == false then
+   player.px = player.x
+   player.speed_x -= 0.015
+   player.x += player.speed_x
+ end
 
-  if player.px > player.x and mvn_x == false then
-    player.px = player.x
-    player.speed_x -= 0.015
-    player.x -= player.speed_x
-  end
+ if player.px > player.x and mvn_x == false then
+   player.px = player.x
+   player.speed_x -= 0.015
+   player.x -= player.speed_x
+ end
 
-  if player.py < player.y and mvn_y == false then
-    player.py = player.y
-    player.speed_y -= 0.015
-    player.y += player.speed_y
-  end
+ if player.py < player.y and mvn_y == false then
+   player.py = player.y
+   player.speed_y -= 0.015
+   player.y += player.speed_y
+ end
 
-  if player.py > player.y and mvn_y == false then
-    player.py = player.y
-    player.speed_y -= 0.015
-    player.y -= player.speed_y
-  end
+ if player.py > player.y and mvn_y == false then
+   player.py = player.y
+   player.speed_y -= 0.015
+   player.y -= player.speed_y
+ end
 	
 	if (btn_pressed == false) player.mvn_dir = false
 
@@ -245,18 +245,6 @@ function upd_rotor_mvmt()
 		player.py = player.y
 	end
 end
--->8
--- menu navigation
-
-function choose_mission()
-end
--->8
---[[
-
-map(0,0,fire_x-i*8,fire_y-24,1,1)
-map(0,0,fire_x+i*8,fire_y-24,1,1)
-	
-]]--
 -->8
 -- civ fire smoke water
 
@@ -363,6 +351,13 @@ function on_smoke()
 		if (counter%30==0) player.rotor_health -= 1
 	end
 end
+-->8
+--[[
+
+map(0,0,fire_x-i*8,fire_y-24,1,1)
+map(0,0,fire_x+i*8,fire_y-24,1,1)
+	
+]]--
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd0000fcec000b3b0000bbbbbb0000bbbb0000000000000000000000000000000000000000000000000000000000000000000000000000000000
