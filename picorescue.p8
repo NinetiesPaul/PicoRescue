@@ -63,23 +63,23 @@ function _draw()
 	cls()
 
 	if (curr_screen == 2) then
-		flip_spr = (player.facing == "left") and true or false
-		spr_x = (player.facing == "left") and player.x-8 or player.x
-		tail_pos = (player.facing == "left") and player.x or player.x-8
+		flip_spr = (player.facing == "right") and true or false
+		spr_x = (player.facing == "right") and player.x-8 or player.x
+		tail_pos = (player.facing == "right") and player.x or player.x-8
 		
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 	end
 
 	if (curr_screen == 3) then
-		spr(00,player.x,player.y)
+		spr(00,fire_x,player.y)
 	end
 
 	spr(02,civ_x,civ_y)
 	spr(17,fire_x,fire_y)
 
 	for i = 1, ladder do
-		ladder_pos = (player.facing == "left") and player.x-8 or player.x
+		ladder_pos = (player.facing == "left") and fire_x-8 or fire_x
 		spr(1,ladder_pos,player.y+i*8)
 	end
   
@@ -112,8 +112,8 @@ function _update()
  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
-	left_btn = btn(0)
-	right_btn = btn(1)
+	right_btn = btn(0)
+	left_btn = btn(1)
 	up_btn = btn(2)
 	down_btn = btn(3)
 	
@@ -133,18 +133,18 @@ end
 -- movement
 
 function move_human()
-	if (btn(1)) player.x+=player.mv_speed
-	if (btn(0)) player.x-=player.mv_speed
+	if (btn(1)) fire_x+=player.mv_speed
+	if (btn(0)) fire_x-=player.mv_speed
 	if (btn(3)) player.y+=player.mv_speed
 	if (btn(2)) player.y-=player.mv_speed
 end
 
 function move_rotor()
 	if right_btn then
-		if player.px > player.x then
+		if player.px > fire_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				player.x -= player.speed_x
+				fire_x -= player.speed_x
 				player.facing = false
 				player.rotor_spr = 05
 			end
@@ -153,16 +153,16 @@ function move_rotor()
 			player.mvn_dir = "right"
 			player.facing = "right"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
-			player.px = player.x
-			player.x += player.speed_x
+			player.px = fire_x
+			fire_x += player.speed_x
 		end
 	end
 	
 	if left_btn then
-		if player.px < player.x then
+		if player.px < fire_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				player.x += player.speed_x
+				fire_x += player.speed_x
 				player.facing = false
 				player.rotor_spr = 05
 			end
@@ -171,8 +171,8 @@ function move_rotor()
 			player.mvn_dir = "left"
 			player.facing = "left"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
-			player.px = player.x
-			player.x -= player.speed_x
+			player.px = fire_x
+			fire_x -= player.speed_x
 		end
 	end
 	
@@ -209,16 +209,16 @@ end
 
 
 function upd_rotor_mvmt()
- if player.px < player.x and mvn_x == false then
-  player.px = player.x
+ if player.px < fire_x and mvn_x == false then
+  player.px = fire_x
   player.speed_x -= 0.015
-  player.x += player.speed_x
+  fire_x += player.speed_x
  end
 
- if player.px > player.x and mvn_x == false then
-  player.px = player.x
+ if player.px > fire_x and mvn_x == false then
+  player.px = fire_x
   player.speed_x -= 0.015
-  player.x -= player.speed_x
+  fire_x -= player.speed_x
  end
 
  if player.py < player.y and mvn_y == false then
@@ -237,7 +237,7 @@ function upd_rotor_mvmt()
 
 	if player.speed_x < 0 then
 		player.speed_x = 0
-		player.px = player.x
+		player.px = fire_x
 	end
 	
 	if player.speed_y < 0 then
@@ -252,8 +252,8 @@ function civ_range()
 	status = false
 	
 	if
-		player.x >= civ_x-24 and
-		player.x <= civ_x+24 and
+		fire_x >= civ_x-24 and
+		fire_x <= civ_x+24 and
 		player.y+24 >= civ_y and
 		player.y+24 <= civ_y+7 then
 		status = true
@@ -266,8 +266,8 @@ function civ_pkup()
 	status = false
 	
 	if
-		player.x >= civ_x-1 and
-		player.x <= civ_x+1 and
+		fire_x >= civ_x-1 and
+		fire_x <= civ_x+1 and
 		player.y+24 >= civ_y and
 		player.y+24 <= civ_y+7 then
 		status = true
@@ -278,8 +278,8 @@ end
 
 function move_civ()
 	if player.civ_range then
-		if (player.x <= civ_x) civ_x -= 0.25
-		if (player.x >= civ_x) civ_x += 0.25
+		if (fire_x <= civ_x) civ_x -= 0.25
+		if (fire_x >= civ_x) civ_x += 0.25
 	end
 end
 
@@ -314,7 +314,7 @@ end
 
 function drop_water()
 	local water = {}
-	water.x = player.x
+	water.x = fire_x
 	water.y = player.y + 8
 	water.speed = 0
 	add(water_drops,water)
@@ -343,8 +343,8 @@ end
 
 function on_smoke()
 	if
-		player.x >= smoke_x1 and
-		player.x <= smoke_x2 and
+		fire_x >= smoke_x1 and
+		fire_x <= smoke_x2 and
 		player.y >= smoke_y1 and
 		player.y <= smoke_y2
 	then
