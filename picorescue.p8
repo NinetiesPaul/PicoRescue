@@ -79,7 +79,8 @@ function _draw()
 	spr(17,fire_x,fire_y)
 
 	for i = 1, ladder do
-		spr(1,player.x,player.y+i*8)
+		ladder_pos = (player.facing == "left") and player.x-8 or player.x
+		spr(1,ladder_pos,player.y+i*8)
 	end
   
 	for i = 1, smoke_h do
@@ -307,12 +308,12 @@ function upd_ladder()
 end
 
 function upd_fire()
-	if counter%30==0 and smoke_h < smoke_max_h then
+	if counter%15==0 and smoke_h < smoke_max_h then
 		smoke_h+=1
 	end
 	
 	if smoke_h == smoke_max_h then
-		if counter%30==0 and smoke_w < smoke_max_w then
+		if counter%15==0 and smoke_w < smoke_max_w then
 			smoke_w+=1
 
 			smoke_x1 = fire_x-smoke_w*8
