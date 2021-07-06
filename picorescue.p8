@@ -2,20 +2,24 @@ pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
 function _init()
-	player_strt_y = 64
-	player_strt_x = 8
+	player_strt_y = 0
+	player_strt_x = 64
 	player = {
 		["x"] = player_strt_x,
-		["px"] = 0,
+		["px"] = player_strt_x,
 		["y"] = player_strt_y,
-		["py"] = 0,
+		["py"] = player_strt_y,
 		["mv_speed"] = 1,
 		["on_mission"] = false,
-		["rotor_speed"] = 2,
+		["speed_x"] = 0,
+		["speed_y"] = 0,
+		["mvn_dir"] = null,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
 		["water_cpct"] = 2,
-		["rotor_health"] = 10
+		["rotor_health"] = 10,
+		["top_speed_x"] = 2,
+		["top_speed_y"] = 2,
 	}
 	
 	water_drops={}
@@ -29,7 +33,14 @@ function _init()
 	
 	curr_screen = screen[2]
 	counter = 0
-			
+	
+	btn_pressed = false
+	mvn_y = false
+	mvn_x = false
+	left_btn = false
+	right_btn = false
+	down_btn = false
+	up_btn = false
 	civ_x = 90
 	civ_y = 120
 	
@@ -87,13 +98,25 @@ function _update()
 	if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
 	if (curr_screen == 3) move_human()
+
+	-- rotor movement
+	upd_rotor_mvmt()
+        
+  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
+	mvn_y = btn(2) or btn(3)
+	mvn_x = btn(0) or btn(1)
+	left_btn = btn(0)
+	right_btn = btn(1)
+	up_btn = btn(2)
+	down_btn = btn(3)
 	
+	-- civilian 
 	player.civ_range = civ_range()
 	player.civ_pkup = civ_pkup()
 	move_civ()
 	
+	-- water smoke and fire
 	upd_ladder()
-	
 	upd_fire()
  on_smoke()
 	
@@ -110,13 +133,117 @@ function move_human()
 end
 
 function move_rotor()
-	if (btn(1)) player.x += player.rotor_speed
-	if (btn(0)) player.x -= player.rotor_speed
-	if (btn(3)) player.y += player.rotor_speed
-	if (btn(2))	player.y -= player.rotor_speed
+	if right_btn then
+		if player.px > player.x then
+			if player.speed_x > 0 then
+				player.speed_x -= 0.035
+				player.x -= player.speed_x
+			end
+		else
+			player.mvn_dir = "right"
+			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			player.px = player.x
+			player.x += player.speed_x
+		end
+	end
+	
+	if left_btn then
+		if player.px < player.x then
+			if player.speed_x > 0 then
+				player.speed_x -= 0.035
+				player.x += player.speed_x
+			end
+		else	
+			player.mvn_dir = "left"
+			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			player.px = player.x
+			player.x -= player.speed_x
+		end
+	end
+	
+	if up_btn	then
+		if player.py < player.y then
+			if player.speed_y > 0 then
+				player.speed_y -= 0.035
+				player.y += player.speed_y
+			end
+		else	
+			player.mvn_dir = "up"
+			if (player.speed_y <= player.top_speed_y) player.speed_y += 0.025
+			player.py = player.y
+			player.y -= player.speed_y
+		end
+	end
+	
+	if down_btn	and player.y < 120 then
+		if player.py > player.y then
+			if player.speed_y > 0 then
+				player.speed_y -= 0.035
+				player.y -= player.speed_y
+			end
+		else	
+			player.mvn_dir = "down"
+			if (player.speed_y <= player.top_speed_y) player.speed_y += 0.025
+			player.py = player.y
+			player.y += player.speed_y
+		end
+	end
 	
 	if (btnp(4)) drop_water()
 end
+
+
+function upd_rotor_mvmt()
+  if player.px < player.x and mvn_x == false then
+    player.px = player.x
+    player.speed_x -= 0.015
+    player.x += player.speed_x
+  end
+
+  if player.px > player.x and mvn_x == false then
+    player.px = player.x
+    player.speed_x -= 0.015
+    player.x -= player.speed_x
+  end
+
+  if player.py < player.y and mvn_y == false then
+    player.py = player.y
+    player.speed_y -= 0.015
+    player.y += player.speed_y
+  end
+
+  if player.py > player.y and mvn_y == false then
+    player.py = player.y
+    player.speed_y -= 0.015
+    player.y -= player.speed_y
+  end
+	
+	if (btn_pressed == false) player.mvn_dir = false
+
+	if player.speed_x < 0 then
+		player.speed_x = 0
+		player.px = player.x
+	end
+	
+	if player.speed_y < 0 then
+		player.speed_y = 0
+		player.py = player.y
+	end
+end
+-->8
+-- menu navigation
+
+function choose_mission()
+end
+-->8
+--[[
+
+map(0,0,fire_x-i*8,fire_y-24,1,1)
+map(0,0,fire_x+i*8,fire_y-24,1,1)
+	
+]]--
+-->8
+-- civ fire smoke water
 
 function civ_range()
 	status = false
@@ -221,18 +348,6 @@ function on_smoke()
 		if (counter%30==0) player.rotor_health -= 1
 	end
 end
--->8
--- menu navigation
-
-function choose_mission()
-end
--->8
---[[
-
-map(0,0,fire_x-i*8,fire_y-24,1,1)
-map(0,0,fire_x+i*8,fire_y-24,1,1)
-	
-]]--
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd0000fcec000b3b0000bbbbbb000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
