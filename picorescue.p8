@@ -145,11 +145,12 @@ function move_rotor()
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
 				world_x -= player.speed_x
-				
 				for fire in all(fire_pcs) do
 					fire.x -= player.speed_x
 				end
-				
+				for ground in all(ground_pcs) do
+					ground.x -= player.speed_x
+				end
 				player.facing = false
 				player.rotor_spr = 05
 			end
@@ -170,6 +171,9 @@ function move_rotor()
 				world_x += player.speed_x
 				for fire in all(fire_pcs) do
 					fire.x += player.speed_x
+				end
+				for ground in all(ground_pcs) do
+					ground.x += player.speed_x
 				end
 				player.facing = false
 				player.rotor_spr = 05
@@ -355,6 +359,10 @@ function draw_ground(ground)
 end
 
 function move_ground(ground)
+	if player.speed_x > 0 then
+		if (player.facing == "right") ground.x += player.speed_x
+		if (player.facing == "left") ground.x -= player.speed_x
+	end
 end
 -->8
 -- create fire
