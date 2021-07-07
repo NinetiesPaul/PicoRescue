@@ -47,6 +47,8 @@ function _init()
 	civ_x = -5
 	civ_y = -5
 	
+	world_x = 70
+	
 	fire_x = 70
 	fire_y = 112
 	smoke_max_h = 3
@@ -58,13 +60,18 @@ function _init()
 	smoke_x2 = -5
 	smoke_y2 = -5
 	ladder=0
+	
+	mapx = 0
+	
+	ground_pcs = {}
+	starting_x = 0
 end
 
 function _draw()
 	cls()
 
 	if (curr_screen == 2) then
-		rectfill(0,0,128,120,12)
+		rectfill(0,0,128,119,12)
 		
 		flip_spr = (player.facing == "right") and true or false
 		spr_x = (player.facing == "right") and player.x-8 or player.x
@@ -73,14 +80,17 @@ function _draw()
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 	
-		map(0,0,0,120,16,1)
+		print("strx".." "..starting_x,0,32,11)
+		print("total".." "..count(ground_pcs),0,40,11)
+		
+		foreach(ground_pcs,draw_ground)
 	end
 
 	if (curr_screen == 3) then
 		spr(00,fire_x,player.y)
 	end
 
-	spr(02,civ_x,civ_y)
+	--spr(02,civ_x,civ_y)
 	spr(17,fire_x,fire_y)
 
 	for i = 1, ladder do
@@ -100,12 +110,13 @@ function _draw()
  for i = 0, player.rotor_health do
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
-		
+	
 	foreach(water_drops,draw_water)
 end
 
 function _update()
 	counter+=1
+	create_ground()
 	
 	--if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
@@ -131,7 +142,8 @@ function _update()
 	upd_ladder()
 	upd_fire()
  on_smoke()
-	
+ 
+	foreach(ground_pcs,move_ground)
 	foreach(water_drops,move_water)
 end
 -->8
@@ -308,12 +320,14 @@ function upd_fire()
 	if smoke_h == smoke_max_h then
 		if counter%15==0 and smoke_w < smoke_max_w then
 			smoke_w+=1
-
-			smoke_x1 = fire_x-smoke_w*8
-			smoke_y1 = fire_y-smoke_h*8-2
-			smoke_x2 = fire_x+smoke_w*8+8
-			smoke_y2 = fire_y-16
 		end
+	end
+
+	if smoke_w > 0 then
+		smoke_x1 = fire_x-smoke_w*8
+		smoke_y1 = fire_y-smoke_h*8-2
+		smoke_x2 = fire_x+smoke_w*8+8
+		smoke_y2 = fire_y-16
 	end
 end
 
@@ -348,13 +362,35 @@ end
 
 function on_smoke()
 	if
-		fire_x >= smoke_x1 and
-		fire_x <= smoke_x2 and
+		player.x >= smoke_x1 and
+		player.x <= smoke_x2 and
 		player.y >= smoke_y1 and
 		player.y <= smoke_y2
 	then
 		if (counter%30==0) player.rotor_health -= 1
 	end
+end
+-->8
+-- create ground
+
+function create_ground()
+	
+	for i = count(ground_pcs), 15 do
+		local ground = {}
+		ground.x = starting_x*1
+		ground.y = 120
+		add(ground_pcs, ground)
+		starting_x+=8
+	end
+end
+
+function draw_ground(ground)
+	spr(20,ground.x,ground.y)
+end
+
+function move_ground(ground)
+	--if (player.px>player.x) ground.x-=player.speed_x
+	--if (left_btn) ground.x-=player.speed_x
 end
 -->8
 --[[
@@ -376,7 +412,7 @@ __gfx__
 000000000000000000600060000000003b333b3b0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 008008000a0a00a00606060607070070333333330000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0008800009aaa99060666060077c77c0393939930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-000880000aa9aaa0060606060cccccc0999292990000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+000880000aa9aaa0060606060cccccc0999292930000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0080080009989990600060000cc1ccc0222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000009889890060606000c11c1c0222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000088888800060606001111110222222220000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
