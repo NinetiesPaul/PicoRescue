@@ -55,6 +55,7 @@ function _init()
 	
 	fire_pcs = {}
 	ground_pcs = {}
+	tree_pcs = {}
 end
 
 function _draw()
@@ -70,7 +71,10 @@ function _draw()
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 
+		print(count(tree_pcs),player.x,player.y+8,5)
+
 		foreach(ground_pcs,draw_ground)
+		foreach(tree_pcs,draw_trees)
 		foreach(fire_pcs,draw_fire)
 		foreach(fire_pcs,draw_smoke)
 		foreach(fire_pcs,on_smoke)
@@ -99,6 +103,7 @@ function _update()
 	
 	--pcs
 	create_ground()
+	create_trees()
 	if (not fire_pcs_created) create_fire()
 	foreach(fire_pcs,update_fire)
 	foreach(fire_pcs,move_fire)
@@ -127,6 +132,7 @@ function _update()
 	upd_ladder()
  
 	foreach(ground_pcs,move_ground)
+	foreach(tree_pcs,move_tree)
 	foreach(water_drops,move_water)
 end
 -->8
@@ -307,7 +313,21 @@ function upd_ladder()
 	end
 end
 -->8
--- ground logic
+-- scenery logic
+
+function create_trees()
+	if player.speed_x > 1 then
+		if counter%30==0 and flr(rnd(2)) == 1 then
+			if (player.facing == "right") x = -8
+			if (player.facing == "left") x = 128
+			
+			local tree = {}
+			tree.x = x
+			tree.y = 120
+			add(tree_pcs, tree)
+		end
+	end
+end
 
 function create_ground()
 	for i = count(ground_pcs), 16 do
@@ -323,6 +343,10 @@ function draw_ground(ground)
 	spr(20,ground.x,ground.y)
 end
 
+function draw_trees(tree)
+	spr(20,tree.x,tree.y)
+end
+
 function move_ground(ground)
 	if player.speed_x > 0 then
 		if (player.facing == "right") ground.x += player.speed_x
@@ -331,6 +355,15 @@ function move_ground(ground)
 	
 	if (ground.x < -8) ground.x += 136
 	if (ground.x > 128) ground.x -= 136
+end
+
+function move_trees(tree)
+	if player.speed_x > 0 then
+		if (player.facing == "right") tree.x += player.speed_x
+		if (player.facing == "left") tree.x -= player.speed_x
+	end
+	
+	if (tree.x < -8 or tree.x > 128) del(tree_pcs,tree)
 end
 -->8
 -- fire and smoke logic
