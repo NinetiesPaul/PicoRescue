@@ -70,10 +70,12 @@ function _draw()
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 
+		print(count(ground_pcs),player.x-16,player.y,5)
+
 		foreach(ground_pcs,draw_ground)
 		foreach(fire_pcs,draw_fire)
 		foreach(fire_pcs,draw_smoke)
-		foreach(fire_pcs,chk_on_smoke)
+		foreach(fire_pcs,on_smoke)
 	end
 
 	if (curr_screen == 3) then
@@ -130,7 +132,7 @@ function _update()
 	foreach(water_drops,move_water)
 end
 -->8
--- movement
+-- movement logic
 
 function move_human()
 	if (btn(1)) world_x+=player.mv_speed
@@ -258,7 +260,7 @@ function upd_rotor_mvmt()
 	end
 end
 -->8
--- civ water
+-- civilian logic
 
 function civ_range()
 	status = false
@@ -306,46 +308,11 @@ function upd_ladder()
 		end
 	end
 end
-
-function drop_water()
-	local water = {}
-	water.x = player.x
-	water.y = player.y + 8
-	water.speed = 0
-	add(water_drops,water)
-end
-
-function draw_water(water)
-	spr(19,water.x,water.y,1,1,false,true)
-end
-
-function move_water(water)
- if (water.speed < 2) water.speed += 0.15
- water.y += water.speed
-	if player.speed_x > 0 then
-		if (player.facing == "right") water.x += player.speed_x
-		if (player.facing == "left") water.x -= player.speed_x
-	end
- 
- for fire in all(fire_pcs) do
-	 if
-	 	water.x >= fire.x-2 and
-	 	water.x <= fire.x+10 and
-	 	water.y >= fire.y and
-	 	water.y <= fire.y+8
-		then
-			del(fire_pcs,fire)
-		end
- end
-  
- if (water .y >= 128) del(water_drops,water)
-end
-
 -->8
--- create ground
+-- ground logic
 
 function create_ground()
-	for i = count(ground_pcs), 15 do
+	for i = count(ground_pcs), 16 do
 		local ground = {}
 		ground.x = starting_x*1
 		ground.y = 120
@@ -363,9 +330,12 @@ function move_ground(ground)
 		if (player.facing == "right") ground.x += player.speed_x
 		if (player.facing == "left") ground.x -= player.speed_x
 	end
+	
+	if (ground.x < -8) ground.x += 136
+	if (ground.x > 128) ground.x -= 136
 end
 -->8
--- create fire
+-- fire and smoke logic
 
 function create_fire()
 	for i = count(fire_pcs), 0 do
@@ -420,7 +390,7 @@ function draw_smoke(fire)
 	end
 end
 
-function chk_on_smoke(fire)
+function on_smoke(fire)
 	if
 		player.x >= fire.smk_x1 and
 		player.x <= fire.smk_x2 and
@@ -436,6 +406,42 @@ function move_fire(fire)
 		if (player.facing == "right") fire.x += player.speed_x
 		if (player.facing == "left") fire.x -= player.speed_x
 	end
+end
+-->8
+-- water logic
+
+function drop_water()
+	local water = {}
+	water.x = player.x
+	water.y = player.y + 8
+	water.speed = 0
+	add(water_drops,water)
+end
+
+function draw_water(water)
+	spr(19,water.x,water.y,1,1,false,true)
+end
+
+function move_water(water)
+ if (water.speed < 2) water.speed += 0.15
+ water.y += water.speed
+	if player.speed_x > 0 then
+		if (player.facing == "right") water.x += player.speed_x
+		if (player.facing == "left") water.x -= player.speed_x
+	end
+ 
+ for fire in all(fire_pcs) do
+	 if
+	 	water.x >= fire.x-2 and
+	 	water.x <= fire.x+10 and
+	 	water.y >= fire.y and
+	 	water.y <= fire.y+8
+		then
+			del(fire_pcs,fire)
+		end
+ end
+  
+ if (water .y >= 128) del(water_drops,water)
 end
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
