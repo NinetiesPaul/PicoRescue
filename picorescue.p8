@@ -35,6 +35,7 @@ function _init()
 	
 	curr_screen = screen[2]
 	counter = 0
+	fire_pcs_created = false
 	
 	btn_pressed = false
 	mvn_y = false
@@ -44,27 +45,16 @@ function _init()
 	down_btn = false
 	up_btn = false
 	
+	world_x = 70
+	starting_x = 0
+	
 	civ_x = -5
 	civ_y = -5
-	
-	world_x = 70
-	
-	fire_x = 70
-	fire_y = 112
-	smoke_max_h = 3
-	smoke_h = 0
-	smoke_max_w = 3
-	smoke_w = 0
-	smoke_x1 = -5
-	smoke_y1 = -5
-	smoke_x2 = -5
-	smoke_y2 = -5
 	ladder=0
+	fire_x = 70
 	
-	mapx = 0
-	
+	fire_pcs = {}
 	ground_pcs = {}
-	starting_x = 0
 end
 
 function _draw()
@@ -79,32 +69,22 @@ function _draw()
 		
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
-	
-		print("strx".." "..starting_x,0,32,11)
-		print("total".." "..count(ground_pcs),0,40,11)
-		
+
 		foreach(ground_pcs,draw_ground)
+		foreach(fire_pcs,draw_fire)
+		foreach(fire_pcs,draw_smoke)
+		foreach(fire_pcs,chk_on_smoke)
 	end
 
 	if (curr_screen == 3) then
 		spr(00,fire_x,player.y)
 	end
-
-	--spr(02,civ_x,civ_y)
-	spr(17,fire_x,fire_y)
+	
+	--spr(00,world_x,112)
 
 	for i = 1, ladder do
-		ladder_pos = (player.facing == "left") and fire_x-8 or fire_x
+		ladder_pos = (player.facing == "left") and world_x-8 or world_x
 		spr(1,ladder_pos,player.y+i*8)
-	end
-  
-	for i = 1, smoke_h do
-		spr(18,fire_x,fire_y-i*8)
-	end
-	
-	for i = 1, smoke_w do
-		spr(18,fire_x-i*8,fire_y-24)
-		spr(18,fire_x+i*8,fire_y-24)
 	end
 	
  for i = 0, player.rotor_health do
@@ -116,8 +96,13 @@ end
 
 function _update()
 	counter+=1
-	create_ground()
 	
+	--pcs
+	create_ground()
+	if (not fire_pcs_created) create_fire()
+	foreach(fire_pcs,update_fire)
+	foreach(fire_pcs,move_fire)
+
 	--if (curr_screen == 1) choose_mission()
 	if (curr_screen == 2) move_rotor()
 	if (curr_screen == 3) move_human()
@@ -138,10 +123,8 @@ function _update()
 	player.civ_pkup = civ_pkup()
 	move_civ()
 	
-	-- water smoke and fire
+
 	upd_ladder()
-	upd_fire()
- on_smoke()
  
 	foreach(ground_pcs,move_ground)
 	foreach(water_drops,move_water)
@@ -150,18 +133,23 @@ end
 -- movement
 
 function move_human()
-	if (btn(1)) fire_x+=player.mv_speed
-	if (btn(0)) fire_x-=player.mv_speed
+	if (btn(1)) world_x+=player.mv_speed
+	if (btn(0)) world_x-=player.mv_speed
 	if (btn(3)) player.y+=player.mv_speed
 	if (btn(2)) player.y-=player.mv_speed
 end
 
 function move_rotor()
 	if right_btn then
-		if player.px > fire_x then
+		if player.px > world_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				fire_x -= player.speed_x
+				world_x -= player.speed_x
+				
+				for fire in all(fire_pcs) do
+					fire.x -= player.speed_x
+				end
+				
 				player.facing = false
 				player.rotor_spr = 05
 			end
@@ -170,16 +158,19 @@ function move_rotor()
 			player.mvn_dir = "right"
 			player.facing = "right"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
-			player.px = fire_x
-			fire_x += player.speed_x
+			player.px = world_x
+			world_x += player.speed_x
 		end
 	end
 	
 	if left_btn then
-		if player.px < fire_x then
+		if player.px < world_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				fire_x += player.speed_x
+				world_x += player.speed_x
+				for fire in all(fire_pcs) do
+					fire.x += player.speed_x
+				end
 				player.facing = false
 				player.rotor_spr = 05
 			end
@@ -188,8 +179,8 @@ function move_rotor()
 			player.mvn_dir = "left"
 			player.facing = "left"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
-			player.px = fire_x
-			fire_x -= player.speed_x
+			player.px = world_x
+			world_x -= player.speed_x
 		end
 	end
 	
@@ -226,16 +217,16 @@ end
 
 
 function upd_rotor_mvmt()
- if player.px < fire_x and mvn_x == false then
-  player.px = fire_x
+ if player.px < world_x and mvn_x == false then
+  player.px = world_x
   player.speed_x -= 0.015
-  fire_x += player.speed_x
+  world_x += player.speed_x
  end
 
- if player.px > fire_x and mvn_x == false then
-  player.px = fire_x
+ if player.px > world_x and mvn_x == false then
+  player.px = world_x
   player.speed_x -= 0.015
-  fire_x -= player.speed_x
+  world_x -= player.speed_x
  end
 
  if player.py < player.y and mvn_y == false then
@@ -254,7 +245,7 @@ function upd_rotor_mvmt()
 
 	if player.speed_x < 0 then
 		player.speed_x = 0
-		player.px = fire_x
+		player.px = world_x
 	end
 	
 	if player.speed_y < 0 then
@@ -263,7 +254,7 @@ function upd_rotor_mvmt()
 	end
 end
 -->8
--- civ fire smoke water
+-- civ water
 
 function civ_range()
 	status = false
@@ -312,25 +303,6 @@ function upd_ladder()
 	end
 end
 
-function upd_fire()
-	if counter%15==0 and smoke_h < smoke_max_h then
-		smoke_h+=1
-	end
-	
-	if smoke_h == smoke_max_h then
-		if counter%15==0 and smoke_w < smoke_max_w then
-			smoke_w+=1
-		end
-	end
-
-	if smoke_w > 0 then
-		smoke_x1 = fire_x-smoke_w*8
-		smoke_y1 = fire_y-smoke_h*8-2
-		smoke_x2 = fire_x+smoke_w*8+8
-		smoke_y2 = fire_y-16
-	end
-end
-
 function drop_water()
 	local water = {}
 	water.x = player.x
@@ -346,35 +318,29 @@ end
 function move_water(water)
  if (water.speed < 2) water.speed += 0.15
  water.y += water.speed
- 
- if
- 	water.x >= fire_x-2 and
- 	water.x <= fire_x+10 and
- 	water.y >= fire_y and
- 	water.y <= fire_y+8
-	then
-		fire_x = -5
-		fire_y = -5
+	if player.speed_x > 0 then
+		if (player.facing == "right") water.x += player.speed_x
+		if (player.facing == "left") water.x -= player.speed_x
 	end
  
+ for fire in all(fire_pcs) do
+	 if
+	 	water.x >= fire.x-2 and
+	 	water.x <= fire.x+10 and
+	 	water.y >= fire.y and
+	 	water.y <= fire.y+8
+		then
+			del(fire_pcs,fire)
+		end
+ end
+  
  if (water .y >= 128) del(water_drops,water)
 end
 
-function on_smoke()
-	if
-		player.x >= smoke_x1 and
-		player.x <= smoke_x2 and
-		player.y >= smoke_y1 and
-		player.y <= smoke_y2
-	then
-		if (counter%30==0) player.rotor_health -= 1
-	end
-end
 -->8
 -- create ground
 
 function create_ground()
-	
 	for i = count(ground_pcs), 15 do
 		local ground = {}
 		ground.x = starting_x*1
@@ -389,16 +355,80 @@ function draw_ground(ground)
 end
 
 function move_ground(ground)
-	--if (player.px>player.x) ground.x-=player.speed_x
-	--if (left_btn) ground.x-=player.speed_x
 end
 -->8
---[[
+-- create fire
 
-map(0,0,fire_x-i*8,fire_y-24,1,1)
-map(0,0,fire_x+i*8,fire_y-24,1,1)
+function create_fire()
+	for i = count(fire_pcs), 0 do
+		local fire = {}
+		fire.x = 32
+		fire.y = 112
+		fire.smk_mh = 3
+		fire.smk_h = 0
+		fire.smk_mw = 3
+		fire.smk_w = 0
+		fire.smk_x1 = 0
+		fire.smk_x2 = 0
+		fire.smk_y1 = 0
+		fire.smk_y2 = 0
+		add(fire_pcs, fire)
+	end
+	fire_pcs_created = true
+end
+
+function draw_fire(fire)
+	spr(17,fire.x,fire.y)
+end
+
+function update_fire(fire)
+	if counter%15==0 
+	and fire.smk_h < fire.smk_mh then
+		fire.smk_h+=1
+	end
 	
-]]--
+	if fire.smk_h == fire.smk_mh then
+		if counter%15==0 
+		and fire.smk_w < fire.smk_mw then
+			fire.smk_w+=1
+		end
+	end
+
+	if fire.smk_w > 0 then
+		fire.smk_x1 = fire.x-fire.smk_w*8
+		fire.smk_y1 = fire.y-fire.smk_h*8-2
+		fire.smk_x2 = fire.x+fire.smk_w*8+8
+		fire.smk_y2 = fire.y-16
+	end
+end
+
+function draw_smoke(fire)
+	for i = 1, fire.smk_h do
+		spr(18,fire.x,fire.y-i*8)
+	end
+	for i = 1, fire.smk_w do	
+		spr(18,fire.x-i*8,fire.y-24)
+		spr(18,fire.x+i*8,fire.y-24)
+	end
+end
+
+function chk_on_smoke(fire)
+	if
+		player.x >= fire.smk_x1 and
+		player.x <= fire.smk_x2 and
+		player.y >= fire.smk_y1 and
+		player.y <= fire.smk_y2
+	then
+		if (counter%30==0) player.rotor_health -= 1
+	end
+end
+
+function move_fire(fire)
+	if player.speed_x > 0 then
+		if (player.facing == "right") fire.x += player.speed_x
+		if (player.facing == "left") fire.x -= player.speed_x
+	end
+end
 __gfx__
 0000000000d00d0000ffff0000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd0000fcec000b3b0000bbbbbb0000bbbb0000000000000000000000000000000000000000000000000000000000000000000000000000000000
