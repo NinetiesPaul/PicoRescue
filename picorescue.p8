@@ -36,6 +36,7 @@ function _init()
 	curr_screen = screen[2]
 	counter = 0
 	fire_pcs_created = false
+	civ_pcs_created = false
 	
 	btn_pressed = false
 	mvn_y = false
@@ -47,15 +48,13 @@ function _init()
 	
 	world_x = 0
 	starting_x = 0
-	
-	civ_x = -5
-	civ_y = -5
+
 	ladder=0
-	fire_x = 70
 	
 	fire_pcs = {}
 	ground_pcs = {}
 	tree_pcs = {}
+	civ_pcs = {}
 end
 
 function _draw()
@@ -71,17 +70,13 @@ function _draw()
 		spr(player.rotor_spr,spr_x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 
-		print(count(tree_pcs),player.x,player.y+8,5)
+		rect(player.x-16,112,player.x+16,112+8,11)
 
 		foreach(ground_pcs,draw_ground)
-		foreach(tree_pcs,draw_trees)
+		foreach(civ_pcs,draw_civ)
 		foreach(fire_pcs,draw_fire)
 		foreach(fire_pcs,draw_smoke)
 		foreach(fire_pcs,on_smoke)
-	end
-
-	if (curr_screen == 3) then
-		spr(00,fire_x,player.y)
 	end
 	
 	--spr(00,world_x,112)
@@ -103,16 +98,11 @@ function _update()
 	
 	--pcs
 	create_ground()
-	create_trees()
+	-- create_trees()
 	if (not fire_pcs_created) create_fire()
-	foreach(fire_pcs,update_fire)
-	foreach(fire_pcs,move_fire)
-
-	--if (curr_screen == 1) choose_mission()
-	if (curr_screen == 2) move_rotor()
-	if (curr_screen == 3) move_human()
-
-	-- rotor movement
+	if (not civ_pcs_created) create_civ()
+	
+	move_rotor()
 	upd_rotor_mvmt()
         
  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
@@ -123,17 +113,21 @@ function _update()
 	up_btn = btn(2)
 	down_btn = btn(3)
 	
-	-- civilian 
+	-- civilian
+	--[[
 	player.civ_range = civ_range()
 	player.civ_pkup = civ_pkup()
-	move_civ()
-	
+	move_civ() 
 
 	upd_ladder()
+	]]--
  
+ foreach(fire_pcs,update_fire)
+	foreach(fire_pcs,move_fire)
 	foreach(ground_pcs,move_ground)
-	foreach(tree_pcs,move_trees)
 	foreach(water_drops,move_water)
+	foreach(civ_pcs,move_civ)
+	foreach(civ_pcs,civ_on_range)
 end
 -->8
 -- movement logic
@@ -156,6 +150,9 @@ function move_rotor()
 				end
 				for ground in all(ground_pcs) do
 					ground.x -= player.speed_x
+				end
+				for civ in all(civ_pcs) do
+					civ.x -= player.speed_x
 				end
 				player.facing = false
 				player.rotor_spr = 05
@@ -180,6 +177,9 @@ function move_rotor()
 				end
 				for ground in all(ground_pcs) do
 					ground.x += player.speed_x
+				end
+				for civ in all(civ_pcs) do
+					civ.x += player.speed_x
 				end
 				player.facing = false
 				player.rotor_spr = 05
@@ -266,40 +266,52 @@ end
 -->8
 -- civilian logic
 
-function civ_range()
-	status = false
-	
-	if
-		fire_x >= civ_x-24 and
-		fire_x <= civ_x+24 and
-		player.y+24 >= civ_y and
-		player.y+24 <= civ_y+7 then
-		status = true
+function create_civ()
+	for i = count(civ_pcs), 0 do
+		local civ = {}
+		civ.x = 92
+		civ.y = 112
+		civ.on_range = false
+		add(civ_pcs, civ)
 	end
-	
-	return status
+	civ_pcs_created = true
 end
 
-function civ_pkup()
-	status = false
-	
-	if
-		fire_x >= civ_x-1 and
-		fire_x <= civ_x+1 and
-		player.y+24 >= civ_y and
-		player.y+24 <= civ_y+7 then
-		status = true
-	end	
-	
-	return status
+function draw_civ(civ)
+	spr(2,civ.x,civ.y)
+	print(civ.on_range,civ.x,civ.y-8,11)
 end
 
-function move_civ()
-	if player.civ_range then
-		if (fire_x <= civ_x) civ_x -= 0.25
-		if (fire_x >= civ_x) civ_x += 0.25
+function move_civ(civ)
+	if player.speed_x > 0 then
+		if (player.facing == "right") civ.x += player.speed_x
+		if (player.facing == "left") civ.x -= player.speed_x
 	end
 end
+
+function civ_on_range(civ)
+	if
+		civ.x >= player.x-16 and
+		civ.x <= player.x+16 and
+		civ.y >= 112 and
+		civ.y <= 120
+	then
+		civ.on_range = true
+	else
+		civ.on_range = false
+	end
+end
+
+--[[
+
+@todo
+
+create logic to civ to ladder
+
+update ladder logic
+
+
+
 
 function upd_ladder()
 	if player.civ_pkup then
@@ -312,6 +324,8 @@ function upd_ladder()
 		end
 	end
 end
+
+]]--
 -->8
 -- scenery logic
 
@@ -343,11 +357,6 @@ function draw_ground(ground)
 	spr(20,ground.x,ground.y)
 end
 
-function draw_trees(tree)
-	spr(21,tree.x,tree.y)
-	spr(22,tree.x,tree.y-8)
-end
-
 function move_ground(ground)
 	if player.speed_x > 0 then
 		if (player.facing == "right") ground.x += player.speed_x
@@ -356,15 +365,6 @@ function move_ground(ground)
 	
 	if (ground.x < -8) ground.x += 136
 	if (ground.x > 128) ground.x -= 136
-end
-
-function move_trees(tree)
-	if player.speed_x > 0 then
-		if (player.facing == "right") tree.x += player.speed_x
-		if (player.facing == "left") tree.x -= player.speed_x
-	end
-	
-	if (tree.x < -8 or tree.x > 128) del(tree_pcs,tree)
 end
 -->8
 -- fire and smoke logic
