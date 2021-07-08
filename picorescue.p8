@@ -25,6 +25,9 @@ function _init()
 		["ladder"] = 0,
 		["deploy_ladder"] = false,
 		["rescuing"] = false,
+		["occ_limit"] = 2,
+		["occ"] = 0,
+		["pass"] = 0,
 		["rx1"] = 0,
 		["ry1"] = 0,
 		["rx2"] = 0,
@@ -55,6 +58,7 @@ function _init()
 	
 	world_x = 0
 	starting_x = 0
+	drop_off_x = -100
 	
 	fire_pcs = {}
 	ground_pcs = {}
@@ -67,6 +71,7 @@ function _draw()
 
 	if (curr_screen == 2) then
 		rectfill(0,0,128,119,12)
+		spr(6,drop_off_x,112)
 		
 		flip_spr = (player.facing == "right") and true or false
 		tail_pos = (player.facing == "right") and player.x+8 or player.x-8
@@ -291,53 +296,62 @@ function create_civ()
 		civ.spr = 33
 		civ.on_range = false
 		civ.rdy_to_climb = false
+		civ.on_board = false
 		add(civ_pcs, civ)
 	end
 	civ_pcs_created = true
 end
 
 function draw_civ(civ)
-	spr(civ.spr,civ.x,civ.y)
+	if civ.on_board == false then
+		spr(civ.spr,civ.x,civ.y)
+	end
 end
 
 function move_civ(civ)
-	if player.speed_x > 0 then
-		if (player.facing == "right") civ.x += player.speed_x
-		if (player.facing == "left") civ.x -= player.speed_x
+	if civ.on_board == false then
+		if player.speed_x > 0 then
+			if (player.facing == "right") civ.x += player.speed_x
+			if (player.facing == "left") civ.x -= player.speed_x
+		end
 	end
 end
 
 function civ_on_range(civ)
-	if
-		civ.x >= player.px1-2 and
-		civ.x <= player.px2 and
-		civ.y >= 112 and
-		civ.y <= 120
-	then
-		civ.on_range = true
-	else
-		civ.on_range = false
+	if civ.on_board == false then
+		if
+			civ.x >= player.px1-2 and
+			civ.x <= player.px2 and
+			civ.y >= 112 and
+			civ.y <= 120
+		then
+			civ.on_range = true
+		else
+			civ.on_range = false
+		end
 	end
 end
 
 function move_civ_on_range(civ)
-	if civ.on_range then
-		civ.spr = 34
-		--if (player.x < civ.x) civ.x -= 0.15
-		--if (player.x > civ.x) civ.x += 0.15
-		
-		if
-			civ.x+4 >= player.x and
-			civ.x+4 <= player.x+8
-		then
-			civ.rdy_to_climb = true
-			if (player.y >= 88) player.deploy_ladder = true
+	if civ.on_board == false then
+		if civ.on_range then
+			civ.spr = 34
+			--if (player.x < civ.x) civ.x -= 0.15
+			--if (player.x > civ.x) civ.x += 0.15
+			
+			if
+				civ.x+4 >= player.x and
+				civ.x+4 <= player.x+8
+			then
+				civ.rdy_to_climb = true
+				if (player.y >= 88) player.deploy_ladder = true
+			else
+				civ.rdy_to_climb = false
+				player.deploy_ladder = false
+			end
 		else
-			civ.rdy_to_climb = false
-			player.deploy_ladder = false
+			civ.spr = 33
 		end
-	else
-		civ.spr = 33
 	end
 end
 
@@ -347,19 +361,22 @@ function upd_ladder()
 	end
 	
 	if not player.deploy_ladder and counter%30 == 0 then
-			if (player.ladder>0) player.ladder -= 1
+		if (player.ladder>0) player.ladder -= 1
 	end
 end
 
 function civ_climb_ladder(civ)
-	if player.ladder == 3 and civ.rdy_to_climb then
-		if (civ.y > player.y) civ.y -= 0.25
-		player.rescuing = true
-	
-		if civ.y == player.y then
-			player.deploy_ladder = false
-			player.rescuing = false
-			del(civ_pcs,civ)
+	if civ.on_board == false then
+		if player.ladder == 3 and civ.rdy_to_climb then
+			if (civ.y > player.y) civ.y -= 0.25
+			player.rescuing = true
+		
+			if civ.y == player.y then
+				player.deploy_ladder = false
+				player.rescuing = false
+				civ.on_board = true
+				player.occ += 1
+			end
 		end
 	end
 end
@@ -515,12 +532,12 @@ end
 __gfx__
 0000000000d00d000000000000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000dddd00000000000b3b0000bbbbbb0000bbbb0000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0070070000d00d00000000000b3b000b3331c7b00b7777b000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000dddd00000000000053bbb33331ccb00bccccb000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0007700000d00d000000000000053333333311cbb311113b00000000000000000000000000000000000000000000000000000000000000000000000000000000
-0070070000dddd000000000000005555555533300333333000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000d00d000000000000000000006006000060060000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000000dddd000000000000000000055555600050050000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0070070000d00d00000000000b3b000b3331c7b00b7777b0006ee000000000000000000000000000000000000000000000000000000000000000000000000000
+0007700000dddd00000000000053bbb33331ccb00bccccb00068ee70000000000000000000000000000000000000000000000000000000000000000000000000
+0007700000d00d000000000000053333333311cbb311113b006888e0000000000000000000000000000000000000000000000000000000000000000000000000
+0070070000dddd000000000000005555555533300333333000688000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000d00d000000000000000000006006000060060000600000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000dddd000000000000000000055555600050050000600000000000000000000000000000000000000000000000000000000000000000000000000000
 00000000000000000600600000000000bbbbbbbb0004200000b3b300000000000000000000000000000000000000000000000000000000000000000000000000
 000000000000000000600060000000003b333b3b0004200003b33b30000000000000000000000000000000000000000000000000000000000000000000000000
 008008000a0a00a0060606060707007033333333000420003b3bb333000000000000000000000000000000000000000000000000000000000000000000000000
