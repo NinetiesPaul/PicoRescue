@@ -23,11 +23,12 @@ function _init()
 		["top_speed_x"] = 2,
 		["top_speed_y"] = 2,
 		["ladder"] = 0,
-		["deploy_ladder"] = false,
+		["dpl_ldd_pkup"] = false,
+		["dpl_ldd_doof"] = false,
 		["rescuing"] = false,
+		["droping_off"] = false,
 		["occ_limit"] = 2,
 		["occ"] = 0,
-		["pass"] = 0,
 		["rx1"] = 0,
 		["ry1"] = 0,
 		["rx2"] = 0,
@@ -71,10 +72,10 @@ function _draw()
 	if (curr_screen == 2) then
 		rectfill(0,0,128,119,12)
 		spr(6,drop_off_x,112)
-		
+
 		flip_spr = (player.facing == "right") and true or false
 		tail_pos = (player.facing == "right") and player.x+8 or player.x-8
-		
+
 		spr(player.rotor_spr,player.x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
 
@@ -85,15 +86,15 @@ function _draw()
 		foreach(fire_pcs,on_smoke)
 		foreach(water_drops,draw_water)
 	end
-		
+
 	for i = 1, player.ladder do
 		spr(1,player.x,player.y+i*8)
 	end
-	
+
  for i = 0, player.rotor_health do
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
-	
+
 end
 
 function _update()
@@ -116,6 +117,7 @@ function _update()
 	upd_pkup_area()
 	upd_ladder()
 	move_dropoff()
+	droping_off()
 
  foreach(fire_pcs,update_fire)
 	foreach(fire_pcs,move_fire)
@@ -259,11 +261,12 @@ end
 function create_civ()
 	for i = count(civ_pcs), 0 do
 		local civ = {}
-		civ.x = 92
+		civ.x = 130
 		civ.y = 112
 		civ.spr = 33
 		civ.on_range = false
-		civ.rdy_to_climb = false
+		civ.rdy_to_climb_up = false
+		civ.rdy_to_climb_down = false
 		civ.on_board = false
 		add(civ_pcs, civ)
 	end
@@ -307,13 +310,14 @@ function move_civ_on_range(civ)
 			
 			if
 				civ.x+4 >= player.x and
-				civ.x+4 <= player.x+8
+				civ.x+4 <= player.x+8 and
+				player.y >= 88
 			then
-				civ.rdy_to_climb = true
-				if (player.y >= 88) player.deploy_ladder = true
+				civ.rdy_to_climb_up = true
+				player.dpl_ldd_pkup = true
 			else
-				civ.rdy_to_climb = false
-				player.deploy_ladder = false
+				civ.rdy_to_climb_up = false
+				player.dpl_ldd_pkup = false
 			end
 		else
 			civ.spr = 33
@@ -322,30 +326,71 @@ function move_civ_on_range(civ)
 end
 
 function upd_ladder()
-	if player.deploy_ladder and counter%30 == 0 then
+	if counter%30 == 0 then
+	
+	if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
 		if (player.ladder<3) player.ladder += 1
 	end
-	
-	if not player.deploy_ladder and counter%30 == 0 then
+	if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
 		if (player.ladder>0) player.ladder -= 1
+	end
+	
 	end
 end
 
 function civ_climb_ladder(civ)
 	if civ.on_board == false then
-		if player.ladder == 3 and civ.rdy_to_climb then
+		if player.ladder == 3 and civ.rdy_to_climb_up then
 			if (civ.y > player.y) civ.y -= 0.25
 			player.rescuing = true
-		
+
 			if civ.y == player.y then
-				player.deploy_ladder = false
-				player.rescuing = false
 				civ.on_board = true
+				civ.rdy_to_climb_up = false
+				player.dpl_ldd_pkup = false
+				player.rescuing = false
 				player.occ += 1
 			end
 		end
 	end
 end
+
+function droping_off()
+	if
+		player.x >= drop_off_x and
+		player.x < drop_off_x+8 and
+		player.y >= 88
+	then
+		player.dpl_ldd_doof = true
+	else
+		player.dpl_ldd_doof = false
+	end
+
+	for civ in all(civ_pcs) do
+		if civ.on_board and player.dpl_ldd_doof then
+			if player.ladder < 3 and counter % 30 == 0 then
+				player.ladder += 1
+			end
+			if player.ladder == 3 and civ.on_board then
+				civ.rdy_to_climb_down = true
+				civ.on_board = false
+				player.rescuing = true
+				player.droping_off = true
+			end
+		end
+		if player.ladder == 3 and civ.rdy_to_climb_down and not civ.on_board then
+			if (civ.y < 112) civ.y += 0.25
+
+			if civ.y >= 112 then
+				del(civ_pcs,civ)
+				player.rescuing = false
+				player.droping_off = false
+			end
+		end
+	end
+end
+
+
 -->8
 -- scenery logic
 
