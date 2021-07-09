@@ -327,14 +327,12 @@ end
 
 function upd_ladder()
 	if counter%30 == 0 then
-	
-	if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
-		if (player.ladder<3) player.ladder += 1
-	end
-	if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
-		if (player.ladder>0) player.ladder -= 1
-	end
-	
+		if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
+			if (player.ladder<3) player.ladder += 1
+		end
+		if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
+			if (player.ladder>0) player.ladder -= 1
+		end
 	end
 end
 
@@ -367,24 +365,19 @@ function droping_off()
 	end
 
 	for civ in all(civ_pcs) do
-		if civ.on_board and player.dpl_ldd_doof then
-			if player.ladder < 3 and counter % 30 == 0 then
-				player.ladder += 1
-			end
-			if player.ladder == 3 and civ.on_board then
+		if civ.on_board  then
+			if player.ladder == 3 and civ.on_board and player.dpl_ldd_doof then
 				civ.rdy_to_climb_down = true
 				civ.on_board = false
 				player.rescuing = true
-				player.droping_off = true
 			end
 		end
-		if player.ladder == 3 and civ.rdy_to_climb_down and not civ.on_board then
+		if civ.rdy_to_climb_down and not civ.on_board then
 			if (civ.y < 112) civ.y += 0.25
 
 			if civ.y >= 112 then
 				del(civ_pcs,civ)
 				player.rescuing = false
-				player.droping_off = false
 			end
 		end
 	end
