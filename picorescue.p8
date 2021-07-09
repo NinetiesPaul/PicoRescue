@@ -13,7 +13,7 @@ function _init()
 		["on_mission"] = false,
 		["speed_x"] = 0,
 		["speed_y"] = 0,
-		["mvn_dir"] = null,
+		["mvn_dir"] = false,
 		["facing"] = "right",
 		["rotor_spr"] = 04,
 		["civ_range"] = false,
@@ -33,21 +33,19 @@ function _init()
 		["rx2"] = 0,
 		["ry2"] = 0,
 	}
-	
-	water_drops={}
-	
+
 	screen = {
 		1, -- start
 		2, -- rotor
 		3, -- human
 		4 -- airplane
 	}
-	
+
 	curr_screen = screen[2]
 	counter = 0
 	fire_pcs_created = false
 	civ_pcs_created = false
-	
+
 	btn_pressed = false
 	mvn_y = false
 	mvn_x = false
@@ -55,11 +53,12 @@ function _init()
 	right_btn = false
 	down_btn = false
 	up_btn = false
-	
+
 	world_x = 0
 	starting_x = 0
 	drop_off_x = -100
-	
+
+	water_drops={}
 	fire_pcs = {}
 	ground_pcs = {}
 	tree_pcs = {}
@@ -84,10 +83,9 @@ function _draw()
 		foreach(fire_pcs,draw_fire)
 		foreach(fire_pcs,draw_smoke)
 		foreach(fire_pcs,on_smoke)
+		foreach(water_drops,draw_water)
 	end
-	
-	--spr(00,world_x,112)
-	
+		
 	for i = 1, player.ladder do
 		spr(1,player.x,player.y+i*8)
 	end
@@ -96,23 +94,11 @@ function _draw()
 		rectfill(0,0,player.rotor_health,4, 11)
 	end
 	
-	foreach(water_drops,draw_water)
 end
 
 function _update()
 	counter+=1
-	
-	--pcs
-	create_ground()
-	-- create_trees()
-	if (not fire_pcs_created) create_fire()
-	if (not civ_pcs_created) create_civ()
-	
-	if (not player.rescuing) move_rotor()
-	upd_rotor_mvmt()
-	upd_pkup_area()
-	upd_ladder()
-        
+
  btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 	mvn_y = btn(2) or btn(3)
 	mvn_x = btn(0) or btn(1)
@@ -120,16 +106,17 @@ function _update()
 	left_btn = btn(1)
 	up_btn = btn(2)
 	down_btn = btn(3)
-	
-	-- civilian
-	--[[
-	player.civ_range = civ_range()
-	player.civ_pkup = civ_pkup()
-	move_civ() 
 
+	create_ground()
+	-- create_trees()
+	if (not fire_pcs_created) create_fire()
+	if (not civ_pcs_created) create_civ()
+	if (not player.rescuing) move_rotor()
+	upd_rotor_mvmt()
+	upd_pkup_area()
 	upd_ladder()
-	]]--
- 
+	move_dropoff()
+
  foreach(fire_pcs,update_fire)
 	foreach(fire_pcs,move_fire)
 	foreach(ground_pcs,move_ground)
@@ -154,22 +141,12 @@ function move_rotor()
 		if player.px > world_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				world_x -= player.speed_x
-				for fire in all(fire_pcs) do
-					fire.x -= player.speed_x
-				end
-				for ground in all(ground_pcs) do
-					ground.x -= player.speed_x
-				end
-				for civ in all(civ_pcs) do
-					civ.x -= player.speed_x
-				end
 				player.facing = false
 				player.rotor_spr = 05
+				world_x -= player.speed_x
 			end
 		else
 			player.rotor_spr = 04
-			player.mvn_dir = "right"
 			player.facing = "right"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
 			player.px = world_x
@@ -181,22 +158,12 @@ function move_rotor()
 		if player.px < world_x then
 			if player.speed_x > 0 then
 				player.speed_x -= 0.035
-				world_x += player.speed_x
-				for fire in all(fire_pcs) do
-					fire.x += player.speed_x
-				end
-				for ground in all(ground_pcs) do
-					ground.x += player.speed_x
-				end
-				for civ in all(civ_pcs) do
-					civ.x += player.speed_x
-				end
 				player.facing = false
 				player.rotor_spr = 05
+				world_x += player.speed_x
 			end
 		else
 			player.rotor_spr = 04
-			player.mvn_dir = "left"
 			player.facing = "left"
 			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
 			player.px = world_x
@@ -235,44 +202,45 @@ function move_rotor()
 	if (btnp(4)) drop_water()
 end
 
-
 function upd_rotor_mvmt()
  if player.px < world_x and mvn_x == false then
   player.px = world_x
-  player.speed_x -= 0.015
+  player.speed_x -= 0.025
   world_x += player.speed_x
  end
 
  if player.px > world_x and mvn_x == false then
   player.px = world_x
-  player.speed_x -= 0.015
+  player.speed_x -= 0.025
   world_x -= player.speed_x
  end
 
  if player.py < player.y and mvn_y == false then
   player.py = player.y
-  player.speed_y -= 0.015
+  player.speed_y -= 0.025
   player.y += player.speed_y
  end
 
  if player.py > player.y and mvn_y == false then
   player.py = player.y
-  player.speed_y -= 0.015
+  player.speed_y -= 0.025
   player.y -= player.speed_y
  end
-	
-	if (btn_pressed == false) player.mvn_dir = false
+
+	if (player.px > world_x) player.mvn_dir = "right"
+	if (player.px < world_x) player.mvn_dir = "left"
+	if (player.px == world_x) player.mvn_dir = false
 
 	if player.speed_x < 0 then
 		player.speed_x = 0
 		player.px = world_x
 	end
-	
+
 	if player.speed_y < 0 then
 		player.speed_y = 0
 		player.py = player.y
 	end
-	
+
 	if (player.y > 88) then
 		player.y = 88
 		player.speed_y = 0
@@ -310,10 +278,8 @@ end
 
 function move_civ(civ)
 	if civ.on_board == false then
-		if player.speed_x > 0 then
-			if (player.facing == "right") civ.x += player.speed_x
-			if (player.facing == "left") civ.x -= player.speed_x
-		end
+		if (player.mvn_dir == "left") civ.x += player.speed_x
+		if (player.mvn_dir == "right") civ.x -= player.speed_x
 	end
 end
 
@@ -412,13 +378,16 @@ function draw_ground(ground)
 end
 
 function move_ground(ground)
-	if player.speed_x > 0 then
-		if (player.facing == "right") ground.x += player.speed_x
-		if (player.facing == "left") ground.x -= player.speed_x
-	end
+	if (player.mvn_dir == "left") ground.x += player.speed_x
+	if (player.mvn_dir == "right") ground.x -= player.speed_x
 	
 	if (ground.x < -8) ground.x += 136
 	if (ground.x > 128) ground.x -= 136
+end
+
+function move_dropoff()
+	if (player.mvn_dir == "left") drop_off_x += player.speed_x
+	if (player.mvn_dir == "right") drop_off_x -= player.speed_x
 end
 -->8
 -- fire and smoke logic
@@ -488,10 +457,8 @@ function on_smoke(fire)
 end
 
 function move_fire(fire)
-	if player.speed_x > 0 then
-		if (player.facing == "right") fire.x += player.speed_x
-		if (player.facing == "left") fire.x -= player.speed_x
-	end
+		if (player.mvn_dir == "left") fire.x += player.speed_x
+		if (player.mvn_dir == "right") fire.x -= player.speed_x
 end
 -->8
 -- water logic
@@ -511,10 +478,8 @@ end
 function move_water(water)
  if (water.speed < 2) water.speed += 0.15
  water.y += water.speed
-	if player.speed_x > 0 then
-		if (player.facing == "right") water.x += player.speed_x
-		if (player.facing == "left") water.x -= player.speed_x
-	end
+	if (player.mvn_dir == "left") water.x += player.speed_x
+	if (player.mvn_dir == "right") water.x -= player.speed_x
  
  for fire in all(fire_pcs) do
 	 if
