@@ -153,7 +153,7 @@ function move_rotor()
 			world_x += player.speed_x
 		end
 	end
-	
+
 	if left_btn then
 		if player.px < world_x then
 			if player.speed_x > 0 then
@@ -170,7 +170,7 @@ function move_rotor()
 			world_x -= player.speed_x
 		end
 	end
-	
+
 	if up_btn	then
 		if player.py < player.y then
 			if player.speed_y > 0 then
@@ -184,7 +184,7 @@ function move_rotor()
 			player.y -= player.speed_y
 		end
 	end
-	
+
 	if down_btn	and player.y < 120 then
 		if player.py > player.y then
 			if player.speed_y > 0 then
@@ -198,7 +198,7 @@ function move_rotor()
 			player.y += player.speed_y
 		end
 	end
-	
+
 	if (btnp(4)) drop_water()
 end
 
@@ -380,7 +380,7 @@ end
 function move_ground(ground)
 	if (player.mvn_dir == "left") ground.x += player.speed_x
 	if (player.mvn_dir == "right") ground.x -= player.speed_x
-	
+
 	if (ground.x < -8) ground.x += 136
 	if (ground.x > 128) ground.x -= 136
 end
@@ -419,7 +419,7 @@ function update_fire(fire)
 	and fire.smk_h < fire.smk_mh then
 		fire.smk_h+=1
 	end
-	
+
 	if fire.smk_h == fire.smk_mh then
 		if counter%15==0 
 		and fire.smk_w < fire.smk_mw then
@@ -457,8 +457,8 @@ function on_smoke(fire)
 end
 
 function move_fire(fire)
-		if (player.mvn_dir == "left") fire.x += player.speed_x
-		if (player.mvn_dir == "right") fire.x -= player.speed_x
+	if (player.mvn_dir == "left") fire.x += player.speed_x
+	if (player.mvn_dir == "right") fire.x -= player.speed_x
 end
 -->8
 -- water logic
@@ -480,7 +480,7 @@ function move_water(water)
  water.y += water.speed
 	if (player.mvn_dir == "left") water.x += player.speed_x
 	if (player.mvn_dir == "right") water.x -= player.speed_x
- 
+
  for fire in all(fire_pcs) do
 	 if
 	 	water.x >= fire.x-2 and
@@ -491,7 +491,7 @@ function move_water(water)
 			del(fire_pcs,fire)
 		end
  end
-  
+
  if (water .y >= 128) del(water_drops,water)
 end
 __gfx__
