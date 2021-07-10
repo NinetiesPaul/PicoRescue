@@ -2,8 +2,13 @@ pico-8 cartridge // http://www.pico-8.com
 version 32
 __lua__
 function _init()
+	counter = 0
+	world_x = 0
+	starting_x = 0
+	drop_off_x = 32
 	player_strt_y = 32
-	player_strt_x = 32
+	player_strt_x = drop_off_x
+	
 	player = {
 		["x"] = player_strt_x,
 		["px"] = player_strt_x,
@@ -43,8 +48,7 @@ function _init()
 	}
 
 	curr_screen = screen[2]
-	counter = 0
-	fire_pcs_created = false
+	fire_pcs_created = true
 	civ_pcs_created = false
 
 	btn_pressed = false
@@ -55,15 +59,18 @@ function _init()
 	down_btn = false
 	up_btn = false
 
-	world_x = 0
-	starting_x = 0
-	drop_off_x = -100
-
 	water_drops={}
 	fire_pcs = {}
 	ground_pcs = {}
 	tree_pcs = {}
 	civ_pcs = {}
+	
+	difficulty = rnd({"easy","normal","hard"})
+	ranges = {
+		["easy"] = {230,330,480},
+		["normal"] = {250,350,500,700},
+		["hard"] = {290,390,540,740,940}
+	}
 end
 
 function _draw()
@@ -78,7 +85,7 @@ function _draw()
 
 		spr(player.rotor_spr,player.x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
-
+		
 		foreach(ground_pcs,draw_ground)
 		foreach(civ_pcs,draw_civ)
 		foreach(fire_pcs,draw_fire)
@@ -93,6 +100,23 @@ function _draw()
 
  for i = 0, player.rotor_health do
 		rectfill(0,0,player.rotor_health,4, 11)
+	end
+	
+	--[[
+	i=0
+	for k,v in pairs(ranges) do
+		if k == difficulty then
+			for value in all(v) do
+				print(value,player.x,player.y+8+i*8,5)
+				i+=1
+			end
+		end
+	end ]]--
+	
+	i=0
+	for civ in all(civ_pcs) do
+		print(civ.x,96,0+i*8,5)
+		i+=1
 	end
 
 end
@@ -243,6 +267,11 @@ function upd_rotor_mvmt()
 		player.py = player.y
 	end
 
+	if (player.y < 0) then
+		player.y = 0
+		player.speed_y = 0
+	end
+
 	if (player.y > 88) then
 		player.y = 88
 		player.speed_y = 0
@@ -260,8 +289,15 @@ end
 
 function create_civ()
 	for i = count(civ_pcs), 0 do
+
+	end
+	
+	i=0
+	for k,v in pairs(ranges) do
+		if k == difficulty then
+			for value in all(v) do
 		local civ = {}
-		civ.x = 130
+		civ.x = value
 		civ.y = 112
 		civ.spr = 33
 		civ.on_range = false
@@ -269,7 +305,10 @@ function create_civ()
 		civ.rdy_to_climb_down = false
 		civ.on_board = false
 		add(civ_pcs, civ)
-	end
+			end
+		end
+	end	
+	
 	civ_pcs_created = true
 end
 
@@ -530,7 +569,7 @@ function move_water(water)
 		end
  end
 
- if (water .y >= 128) del(water_drops,water)
+ if (water .y >= 116) del(water_drops,water)
 end
 __gfx__
 0000000000d00d000000000000b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
