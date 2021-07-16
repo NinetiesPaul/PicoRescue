@@ -8,7 +8,7 @@ function _init()
 	drop_off_x = 32
 	player_strt_y = 32
 	player_strt_x = drop_off_x
-	
+
 	player = {
 		["x"] = player_strt_x,
 		["px"] = player_strt_x,
@@ -47,7 +47,8 @@ function _init()
 		2, -- rotor
 		3, -- human
 		4, -- airplane
-		5 -- game over
+		5, -- game over
+		6 -- main menu
 	}
 
 	curr_screen = screen[1]
@@ -67,67 +68,99 @@ function _init()
 	ground_pcs = {}
 	tree_pcs = {}
 	civ_pcs = {}
-	
+
 	difficulty = rnd({"easy","normal","hard"})
 	ranges = {
 		["easy"] = {230,330,480},
 		["normal"] = {250,350,500,700},
 		["hard"] = {290,390,540,740,940}
 	}
-	
+
 	mission_type = rnd({"sea","fire"})
 	mission_ground = 20
 	mission_p_front = 4
 	mission_p_back = 3
-	
+
 	block_btns = false
-	counter = 0	
+	counter = 0
+	mm_option = 1
 end
 
 function _draw()
 	cls()
-	
+
 	if curr_screen == 1 then
 		rectfill(0,0,127,127,8)
-				
+
 		for i=0, 15 do
 			spr(25,0+i*8,0)
 			spr(25,0+i*8,8)
 			spr(24,0+i*8,16,1,1,false,true)
 		end		
-	
+
 		print("pico rescue",42,50,0)
 		print("pico rescue",41,49,7)
-		
+
 		print("press any key",37,80,7)
-		
+
 		for i=0, 15 do
 			spr(24,0+i*8,104)
 			spr(25,0+i*8,112)
 			spr(25,0+i*8,120)
 		end
-		
+
 	end
-	
+
+	if curr_screen == 6 then
+
+		--[[
+		
+		@todo
+		improve btn detection
+		
+		]]--
+
+		print(mm_option,0,0,15)
+
+		mm_opt1_c = (mm_option == 1) and 7 or 9
+		mm_opt2_c = (mm_option == 2) and 7 or 9
+		mm_opt3_c = (mm_option == 3) and 7 or 9
+		mm_opt4_c = (mm_option == 4) and 7 or 9
+		mm_opt5_c = (mm_option == 5) and 7 or 9
+
+		print("play mission",6,29,5)
+		print("play mission",5,28,mm_opt1_c)
+
+		print("my heli",6,49,5)
+		print("my heli",5,48,mm_opt2_c)
+		print("upgrade shop",6,59,5)
+		print("upgrade shop",5,58,mm_opt3_c)
+		print("carrer stats",6,69,5)
+		print("carrer stats",5,68,mm_opt4_c)
+		print("budget",6,79,5)
+		print("budget",5,78,mm_opt5_c)
+
+	end
+
 	if curr_screen == 5 then
 		rectfill(0,0,127,127,0)
-				
+
 		for i=0, 15 do
 			spr(41,0+i*8,0)
 			spr(41,0+i*8,8)
 			spr(40,0+i*8,16,1,1,false,true)
 		end		
-	
+
 		print("game over",42,50,7)
-				
+
 		if (not block_btns) print("press any key",37,80,7)
-		
+
 		for i=0, 15 do
 			spr(40,0+i*8,104)
 			spr(41,0+i*8,112)
 			spr(41,0+i*8,120)
 		end
-		
+
 	end
 
 	if curr_screen == 2 then
@@ -139,7 +172,7 @@ function _draw()
 
 		spr(player.vhc_front,player.x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(03,tail_pos,player.y,1,1,flip_spr)
-		
+
 		foreach(ground_pcs,draw_ground)
 		foreach(civ_pcs,draw_civ)
 		foreach(fire_pcs,draw_fire)
@@ -150,18 +183,18 @@ function _draw()
 		for i = 1, player.ladder do
 			spr(1,player.x,player.y+i*8)
 		end
-	
+
 	 for i = 0, player.rotor_health do
 			rectfill(0,2,player.rotor_health,5,8)
 		end
-		
+
 		for i = 0, player.fuel do
 			rectfill(0,10,player.fuel,13, 11)
 		end
-		
+
 		spr(32,0,15)
 		print(player.occ,8,16,0)
-		
+
 		i=0
 		for civ in all(civ_pcs) do
 			spr(32,100,0+i*8)
@@ -176,16 +209,18 @@ end
 
 function _update()
 	counter+=1
-	
+
 	if curr_screen == 1 then
-		curr_screen = (btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5)) and 2 or 1
+		if btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5) then
+			curr_screen = 6
+		end
 	end
-	
+
 	if curr_screen == 5 then
 		if counter % 150 == 0 then
 			block_btns = false
 		end
-	
+
 		if not block_btns then
 			if
 				btnp(1) or btnp(2) or
@@ -196,11 +231,25 @@ function _update()
 			end
 		end
 	end
-	
+
+	if curr_screen == 6 then
+
+		if (btnp(2)) mm_option -= 1
+		if (btnp(3)) mm_option += 1
+
+		if (mm_option > 5) mm_option = 1
+		if (mm_option < 1) mm_option = 5
+
+		if btnp(4) or btnp (5) then
+			if (mm_option == 1) curr_screen = 2
+		end
+
+	end
+
 	if curr_screen == 2 then
-	
+
 		if (counter % 15 == 0) player.fuel -= 0.02
-	
+
 	 btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 		mvn_y = btn(2) or btn(3)
 		mvn_x = btn(0) or btn(1)
@@ -208,7 +257,7 @@ function _update()
 		left_btn = btn(1)
 		up_btn = btn(2)
 		down_btn = btn(3)
-	
+
 		create_ground()
 		-- create_trees()
 		if (not fire_pcs_created) create_fire()
@@ -219,7 +268,7 @@ function _update()
 		upd_ladder()
 		move_dropoff()
 		droping_off()
-	
+
 	 foreach(fire_pcs,update_fire)
 		foreach(fire_pcs,move_fire)
 		foreach(ground_pcs,move_ground)
@@ -228,7 +277,7 @@ function _update()
 		foreach(civ_pcs,civ_on_range)
 		foreach(civ_pcs,move_civ_on_range)
 		foreach(civ_pcs,civ_climb_ladder)
-	
+
 		if
 			player.fuel <= 0 or
 			player.rotor_health <= 0
@@ -312,7 +361,7 @@ function move_rotor()
 		end
 	end
 
-	if (btnp(4)) drop_water()
+	if (btnp(5)) drop_water()
 end
 
 function upd_rotor_mvmt()
