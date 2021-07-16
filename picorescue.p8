@@ -19,7 +19,7 @@ function _init()
 		["speed_x"] = 0,
 		["speed_y"] = 0,
 		["mvn_dir"] = false,
-		["facing"] = "right",
+		["facing"] = "left",
 		["vhc_front"] = 04,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
@@ -35,11 +35,16 @@ function _init()
 		["droping_off"] = false,
 		["occ_limit"] = 2,
 		["occ"] = 0,
-		["fuel"] = 0.5,
+		["fuel"] = 10,
 		["rx1"] = 0,
 		["ry1"] = 0,
 		["rx2"] = 0,
 		["ry2"] = 0,
+		["civ_rescued"] = 0,
+		["civ_lost"] = 0,
+		["fire_out"] = 0,
+		["fire_left"] = 0,
+		["missions"] = 0,
 	}
 
 	screen = {
@@ -48,7 +53,8 @@ function _init()
 		3, -- human
 		4, -- airplane
 		5, -- game over
-		6 -- main menu
+		6, -- main screen
+		7, -- stats screen
 	}
 
 	curr_screen = screen[1]
@@ -80,6 +86,8 @@ function _init()
 	mission_ground = 20
 	mission_p_front = 4
 	mission_p_back = 3
+	mission_fire_n = 0
+	mission_civ_n = 0
 
 	block_btns = false
 	counter = 0
@@ -96,7 +104,7 @@ function _draw()
 			spr(25,0+i*8,0)
 			spr(25,0+i*8,8)
 			spr(24,0+i*8,16,1,1,false,true)
-		end		
+		end
 
 		print("pico rescue",42,50,0)
 		print("pico rescue",41,49,7)
@@ -112,16 +120,6 @@ function _draw()
 	end
 
 	if curr_screen == 6 then
-
-		--[[
-		
-		@todo
-		improve btn detection
-		
-		]]--
-
-		print(mm_option,0,0,15)
-
 		mm_opt1_c = (mm_option == 1) and 7 or 9
 		mm_opt2_c = (mm_option == 2) and 7 or 9
 		mm_opt3_c = (mm_option == 3) and 7 or 9
@@ -139,7 +137,20 @@ function _draw()
 		print("carrer stats",5,68,mm_opt4_c)
 		print("budget",6,79,5)
 		print("budget",5,78,mm_opt5_c)
-
+	end
+	
+	if curr_screen == 7 then
+		print("civilians rescued",6,16,7)
+		print("civilians lost",6,24,7)
+		print("fires put out",6,32,7)
+		print("fires left",6,40,7)
+		print("missions",6,48,7)
+		
+		print(player.civ_rescued,100,16,7)
+		print(player.civ_lost,100,24,7)
+		print(player.fire_out,100,32,7)
+		print(player.fire_left,100,40,7)
+		print(player.missions,100,48,7)
 	end
 
 	if curr_screen == 5 then
@@ -212,6 +223,7 @@ function _update()
 
 	if curr_screen == 1 then
 		if btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5) then
+			block_btns = true
 			curr_screen = 6
 		end
 	end
@@ -233,17 +245,26 @@ function _update()
 	end
 
 	if curr_screen == 6 then
-
 		if (btnp(2)) mm_option -= 1
 		if (btnp(3)) mm_option += 1
 
 		if (mm_option > 5) mm_option = 1
 		if (mm_option < 1) mm_option = 5
 
-		if btnp(4) or btnp (5) then
+		if btnp(4) and not block_btns then
 			if (mm_option == 1) curr_screen = 2
+			if (mm_option == 4) curr_screen = 7
 		end
 
+		block_btns = false
+	end
+	
+	if curr_screen == 7 then
+		if btnp(5) then
+			block_btns = true
+			curr_screen = 6
+			mm_option = 4
+		end
 	end
 
 	if curr_screen == 2 then
