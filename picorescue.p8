@@ -23,7 +23,7 @@ function _init()
 		["vhc_front"] = 04,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
-		["water_cpct"] = 2,
+		["water_cpct"] = 4,
 		["rotor_health"] = 10,
 		["top_speed_x"] = 4,
 		["top_speed_y"] = 2,
@@ -40,11 +40,6 @@ function _init()
 		["ry1"] = 0,
 		["rx2"] = 0,
 		["ry2"] = 0,
-		["civ_rescued"] = 0,
-		["civ_lost"] = 0,
-		["fire_out"] = 0,
-		["fire_left"] = 0,
-		["missions"] = 0,
 	}
 
 	screen = {
@@ -55,6 +50,8 @@ function _init()
 		5, -- game over
 		6, -- main screen
 		7, -- stats screen
+		8, -- my heli screen
+		9, -- mission ended
 	}
 
 	curr_screen = screen[1]
@@ -75,6 +72,12 @@ function _init()
 	tree_pcs = {}
 	civ_pcs = {}
 
+	stats = {
+		["fire_put_out"] = 0,
+		["civs_saved"] = 0,
+		["missions_finished"] = 0,
+	}
+
 	difficulty = rnd({"easy","normal","hard"})
 	ranges = {
 		["easy"] = {230,330,480},
@@ -86,8 +89,8 @@ function _init()
 	mission_ground = 20
 	mission_p_front = 4
 	mission_p_back = 3
-	mission_fire_n = 0
-	mission_civ_n = 0
+	mission_civ_saved = 0
+	mission_fire_put_out = 0
 
 	block_btns = false
 	counter = 0
@@ -116,7 +119,6 @@ function _draw()
 			spr(25,0+i*8,112)
 			spr(25,0+i*8,120)
 		end
-
 	end
 
 	if curr_screen == 6 then
@@ -138,19 +140,40 @@ function _draw()
 		print("budget",6,79,5)
 		print("budget",5,78,mm_opt5_c)
 	end
-	
+
 	if curr_screen == 7 then
-		print("civilians rescued",6,16,7)
-		print("civilians lost",6,24,7)
-		print("fires put out",6,32,7)
-		print("fires left",6,40,7)
-		print("missions",6,48,7)
-		
-		print(player.civ_rescued,100,16,7)
-		print(player.civ_lost,100,24,7)
-		print(player.fire_out,100,32,7)
-		print(player.fire_left,100,40,7)
-		print(player.missions,100,48,7)
+		print("carrer stats",6,29,5)
+		print("carrer stats",5,28,7)
+
+		print("civilians rescued",6,49,7)
+		print("fires put out",6,59,7)
+		print("missions",6,69,7)
+
+		print(stats.civs_saved,100,49,7)
+		print(stats.fire_put_out,100,59,7)
+		print(stats.missions_finished,100,69,7)
+	end
+
+	if curr_screen == 8 then
+		print("my heli",6,29,5)
+		print("my heli",5,28,7)
+
+		print("heli health",6,49,7)
+		print("heli fuel",6,59,7)
+
+		print(player.rotor_health,100,49,7)
+		print(player.fuel,100,59,7)
+
+		print("my upgrades",6,79,7)
+	end
+	
+	if curr_screen == 9 then
+		print("mission ended!",32,21,11)
+
+		print("civilians saved",5,60,7)
+		print(mission_civ_saved,95,60,7)
+		print("fires put out",5,70,7)
+		print(mission_fire_put_out,95,70,7)
 	end
 
 	if curr_screen == 5 then
@@ -171,7 +194,6 @@ function _draw()
 			spr(41,0+i*8,112)
 			spr(41,0+i*8,120)
 		end
-
 	end
 
 	if curr_screen == 2 then
@@ -195,16 +217,23 @@ function _draw()
 			spr(1,player.x,player.y+i*8)
 		end
 
-	 for i = 0, player.rotor_health do
-			rectfill(0,2,player.rotor_health,5,8)
+	 for i = 0, player.rotor_health-1 do
+			spr(49,4+i*4,0)
 		end
+		spr(16,0,0)
 
-		for i = 0, player.fuel do
-			rectfill(0,10,player.fuel,13, 11)
+		for i = 0, player.fuel-1 do
+			spr(50,4+i*4,9)
 		end
+		spr(0,0,9)
 
-		spr(32,0,15)
-		print(player.occ,8,16,0)
+		for i = 0, player.water_cpct-1 do
+			spr(51,4+i*4,18)
+		end
+		spr(48,0,18)
+
+		spr(32,0,26)
+		print(player.occ,8,27,0)
 
 		i=0
 		for civ in all(civ_pcs) do
@@ -245,15 +274,16 @@ function _update()
 	end
 
 	if curr_screen == 6 then
-		if (btnp(2)) mm_option -= 1
-		if (btnp(3)) mm_option += 1
+		if (btnp(2)) mm_option -= 1 sfx(2)
+		if (btnp(3)) mm_option += 1 sfx(2)
 
 		if (mm_option > 5) mm_option = 1
 		if (mm_option < 1) mm_option = 5
 
 		if btnp(4) and not block_btns then
-			if (mm_option == 1) curr_screen = 2
-			if (mm_option == 4) curr_screen = 7
+			if (mm_option == 1) curr_screen = 2 sfx(1) mission_civ_saved = 0 mission_fire_put_out = 0
+			if (mm_option == 4) curr_screen = 7 sfx(1)
+			if (mm_option == 2) curr_screen = 8 sfx(1)
 		end
 
 		block_btns = false
@@ -261,9 +291,28 @@ function _update()
 	
 	if curr_screen == 7 then
 		if btnp(5) then
+			sfx(0)
 			block_btns = true
 			curr_screen = 6
 			mm_option = 4
+		end
+	end
+	
+	if curr_screen == 8 then
+		if btnp(5) then
+			sfx(0)
+			block_btns = true
+			curr_screen = 6
+			mm_option = 2
+		end
+	end
+	
+	if curr_screen == 9 then
+		if btnp(5) or btnp(4) then
+			sfx(0)
+			block_btns = true
+			curr_screen = 6
+			mm_option = 1
 		end
 	end
 
@@ -303,8 +352,17 @@ function _update()
 			player.fuel <= 0 or
 			player.rotor_health <= 0
 		then
-			counter = 0
 			curr_screen = 5
+			block_btns = true
+		end
+
+		if count(civ_pcs) == 0 and count(fire_pcs) == 0 then
+			stats.missions_finished += 1
+			stats.fire_put_out += mission_fire_put_out
+			stats.civs_saved += mission_civ_saved
+			civ_pcs_created = false
+
+			curr_screen = 9
 			block_btns = true
 		end
 	end
@@ -382,7 +440,9 @@ function move_rotor()
 		end
 	end
 
-	if (btnp(5)) drop_water()
+	if btnp(5) and player.water_cpct > 0 then
+		drop_water()
+	end
 end
 
 function upd_rotor_mvmt()
@@ -585,6 +645,7 @@ function droping_off()
 				player.rescuing = false
 				player.occ -= 1
 				player.ladder_empty = true
+				mission_civ_saved += 1
 			end
 		end
 	end
@@ -714,6 +775,7 @@ function drop_water()
 	water.y = player.y + 8
 	water.speed = 0
 	add(water_drops,water)
+	player.water_cpct -= 1
 end
 
 function draw_water(water)
@@ -733,6 +795,7 @@ function move_water(water)
 	 	water.y >= fire.y and
 	 	water.y <= fire.y+8
 		then
+			mission_fire_put_out += 1
 			del(fire_pcs,fire)
 		end
  end
@@ -764,6 +827,14 @@ b000333000d00d000000300000b00000000000000000000000000000000000000004f000ff44f4ff
 00ffff00f0f55f0f00f55f0000f55ffffff55f000099aa90d666d1533336d1310566766066777776000000000000000000000000000000000000000000000000
 0000000000f00f0000f00f0000f000f00f000f0000009990055dd151155dd1505667776666777776000000000000000000000000000000000000000000000000
 0000000000f00f0000f00f0000f0000000000f000000000000011100000111006677777666777776000000000000000000000000000000000000000000000000
+000010000000000000000000000000000000000000000000006d5076766635500000000000000000000000000000000000000000000000000000000000000000
+0001c1000008880000033300000111000000000000000000067cc5ccccccc1150000000000000000000000000000000000000000000000000000000000000000
+0001c10000077780000777300007771000000000000000000dccc5cccccc11150000000000000000000000000000000000000000000000000000000000000000
+001ccc10000eee80000bbb30000ccc10000000000000000066ddd6ddccc111150000000000000000000000000000000000000000000000000000000000000000
+001cc71000eee80000bbb30000ccc100000000000000000066666651111111150000000000000000000000000000000000000000000000000000000000000000
+01cc77c10088800000333000001110000000000000000000d666d1511116d1150000000000000000000000000000000000000000000000000000000000000000
+001ccc100000000000000000000000000000000000000000055dd155555dd1500000000000000000000000000000000000000000000000000000000000000000
+00011100000000000000000000000000000000000000000000011100000111000000000000000000000000000000000000000000000000000000000000000000
 __label__
 bb00bbb0bbb00000b000b000bb00bbb00000b000bb000000bbb0bbb0bbb0bbb00000bbb00000bbb0000000000000000000000000000000000000000000000000
 0b00b000b0b00000b000b0000b0000b00000b0000b000000b0b0b000b0b000b0000000b00000b0b0000000000000000000000000000000000000000000000000
@@ -897,3 +968,7 @@ bb00b0b0bbb0bbb00bb000000b00b0b00bb0bbb0000000000bb0b00000000000000000000b00b0b0
 __gff__
 0000000000000000000000000000000000000100000000000000000000000000010101010100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+0001000000000000000000000000000003c2003f2001e2001e2001e2003b2003c300000001e20000000000000000020200000000000035250312502c25028250232501c250182501625013250122500d2500c250
+0001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002000127003270062700c27012270172701c270232702a2702f2703c2703f270
+000100003e2703e2703e2703e27000000000000000000000000003e2003e2003e2003e2003e200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
