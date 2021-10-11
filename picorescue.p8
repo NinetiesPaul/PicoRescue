@@ -36,6 +36,7 @@ function _init()
 		["occ_limit"] = 2,
 		["occ"] = 0,
 		["fuel"] = 10,
+		["fuel_consumption"] = 0.03,
 		["rx1"] = 0,
 		["ry1"] = 0,
 		["rx2"] = 0,
@@ -217,7 +218,7 @@ function _draw()
 			spr(1,player.x,player.y+i*8)
 		end
 
-	 for i = 0, player.rotor_health-1 do
+		for i = 0, player.rotor_health-1 do
 			spr(49,4+i*4,0)
 		end
 		spr(16,0,0)
@@ -226,6 +227,7 @@ function _draw()
 			spr(50,4+i*4,9)
 		end
 		spr(0,0,9)
+		-- print(player.fuel,72,9, 5)
 
 		for i = 0, player.water_cpct-1 do
 			spr(51,4+i*4,18)
@@ -248,7 +250,7 @@ function _draw()
 end
 
 function _update()
-	counter+=1
+	counter += 1
 
 	if curr_screen == 1 then
 		if btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5) then
@@ -318,9 +320,9 @@ function _update()
 
 	if curr_screen == 2 then
 
-		if (counter % 15 == 0) player.fuel -= 0.02
+		if (counter % 15 == 0) player.fuel -= player.fuel_consumption
 
-	 btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
+		btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 		mvn_y = btn(2) or btn(3)
 		mvn_x = btn(0) or btn(1)
 		right_btn = btn(0)
@@ -339,7 +341,7 @@ function _update()
 		move_dropoff()
 		droping_off()
 
-	 foreach(fire_pcs,update_fire)
+		foreach(fire_pcs,update_fire)
 		foreach(fire_pcs,move_fire)
 		foreach(ground_pcs,move_ground)
 		foreach(water_drops,move_water)
@@ -446,29 +448,29 @@ function move_rotor()
 end
 
 function upd_rotor_mvmt()
- if player.px < world_x and mvn_x == false then
-  player.px = world_x
-  player.speed_x -= 0.025
-  world_x += player.speed_x
- end
+	if player.px < world_x and mvn_x == false then
+		player.px = world_x
+		player.speed_x -= 0.025
+		world_x += player.speed_x
+	end
 
- if player.px > world_x and mvn_x == false then
-  player.px = world_x
-  player.speed_x -= 0.025
-  world_x -= player.speed_x
- end
+	if player.px > world_x and mvn_x == false then
+		player.px = world_x
+		player.speed_x -= 0.025
+		world_x -= player.speed_x
+	end
 
- if player.py < player.y and mvn_y == false then
-  player.py = player.y
-  player.speed_y -= 0.025
-  player.y += player.speed_y
- end
+	if player.py < player.y and mvn_y == false then
+		player.py = player.y
+		player.speed_y -= 0.025
+		player.y += player.speed_y
+	end
 
- if player.py > player.y and mvn_y == false then
-  player.py = player.y
-  player.speed_y -= 0.025
-  player.y -= player.speed_y
- end
+	if player.py > player.y and mvn_y == false then
+		player.py = player.y
+		player.speed_y -= 0.025
+		player.y -= player.speed_y
+	end
 
 	if (player.px > world_x) player.mvn_dir = "right"
 	if (player.px < world_x) player.mvn_dir = "left"
