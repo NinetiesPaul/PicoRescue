@@ -8,6 +8,7 @@ function _init()
 	drop_off_x = 32
 	player_strt_y = 32
 	player_strt_x = drop_off_x
+	max_world_x = 0
 
 	player = {
 		["x"] = player_strt_x,
@@ -242,6 +243,11 @@ function _draw()
 		spr(32,0,26)
 		print(player.occ,8,27,0)
 
+		spr(006,0,32)
+		arrow_flip = (drop_off_x > player.x) and true or false
+		spr(37, 8 , 32, 1, 1, arrow_flip, false)
+		print(abs(flr(drop_off_x - player.x)), 16, 35)
+
 		i=0
 		for civ in all(civ_pcs) do
 			spr(32,100,0+i*8)
@@ -397,13 +403,6 @@ end
 -->8
 -- movement logic
 
-function move_human()
-	if (btn(1)) world_x+=player.mv_speed
-	if (btn(0)) world_x-=player.mv_speed
-	if (btn(3)) player.y+=player.mv_speed
-	if (btn(2)) player.y-=player.mv_speed
-end
-
 function move_rotor()
 	if right_btn then
 		if player.px > world_x then
@@ -439,13 +438,13 @@ function move_rotor()
 		end
 	end
 
-	if up_btn	then
+	if up_btn then
 		if player.py < player.y then
 			if player.speed_y > 0 then
 				player.speed_y -= 0.035
 				player.y += player.speed_y
 			end
-		else	
+		else
 			player.mvn_dir = "up"
 			if (player.speed_y <= player.top_speed_y) player.speed_y += 0.025
 			player.py = player.y
@@ -511,14 +510,24 @@ function upd_rotor_mvmt()
 		player.py = player.y
 	end
 
-	if (player.y < 0) then
+	if player.y < 0 then
 		player.y = 0
 		player.speed_y = 0
 	end
 
-	if (player.y > 88) then
+	if player.y > 88 then
 		player.y = 88
 		player.speed_y = 0
+	end
+
+	if world_x > 84 then
+		world_x = 84 
+		player.speed_x = 0
+	end
+
+	if world_x < max_world_x then
+		world_x = max_world_x
+		player.speed_x = 0
 	end
 end
 
@@ -545,10 +554,11 @@ function create_civ()
 				civ.rdy_to_climb_down = false
 				civ.on_board = false
 				add(civ_pcs, civ)
+				max_world_x = 0 - (value + 40)
 			end
 		end
 	end	
-	
+
 	civ_pcs_created = true
 end
 
