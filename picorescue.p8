@@ -264,6 +264,8 @@ function _update()
 		else
 			if (stat(56) >= 430) main_music = false
 		end
+	else
+		main_music = false
 	end
 
 	if curr_screen == 1 then
