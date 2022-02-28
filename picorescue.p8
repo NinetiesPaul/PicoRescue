@@ -24,7 +24,10 @@ function _init()
 		["vhc_front"] = 04,
 		["civ_range"] = false,
 		["civ_pkup"] = false,
-		["water_cpct"] = 10,
+		["occup"] = 0,
+		["max_occup"] = 2,
+		["water_cap"] = 5,
+		["max_water_cap"] = 5,
 		["rotor_health"] = 10,
 		["max_rotor_health"] = 10,
 		["rotor_fuel"] = 10,
@@ -38,8 +41,6 @@ function _init()
 		["dpl_ldd_doof"] = false,
 		["rescuing"] = false,
 		["droping_off"] = false,
-		["occ_limit"] = 2,
-		["occ"] = 0,
 		["rx1"] = 0,
 		["ry1"] = 0,
 		["rx2"] = 0,
@@ -93,9 +94,9 @@ function _init()
 		["hard"] = {290,390,540,650,740}
 	}
 	fire_spawn = {
-		["easy"] = {200,230,330,350,410,420,440},
-		["normal"] = {170,200,230,330,370,420,510,520,530,560},
-		["hard"] = {200,230,330,370,410,460,510,530,560,610,630,660,700,730}
+		["easy"] = {200,220,330,360,410,420,440},
+		["normal"] = {170,200,220,330,370,420,510,520,530,560},
+		["hard"] = {200,220,330,370,410,460,510,530,560,610,630,660,700,730}
 	}
 
 	mission_type = rnd({"sea","fire"})
@@ -139,7 +140,7 @@ function _draw()
 		end
 	end
 
-	if curr_screen == 6 then
+	if curr_screen == 6 then -- main
 		mm_opt1_c = (mm_option == 1) and 7 or 9
 		mm_opt2_c = (mm_option == 2) and 7 or 9
 		mm_opt3_c = (mm_option == 3) and 7 or 9
@@ -158,7 +159,7 @@ function _draw()
 		print("budget",52,78,mm_opt5_c)
 	end
 
-	if curr_screen == 7 then
+	if curr_screen == 7 then -- stats
 		print("carrer stats",6,29,5)
 		print("carrer stats",5,28,7)
 
@@ -171,7 +172,7 @@ function _draw()
 		print(stats.missions_finished,100,68,7)
 	end
 
-	if curr_screen == 8 then
+	if curr_screen == 8 then -- my heli
 		print("my heli",6,29,5)
 		print("my heli",5,28,7)
 
@@ -182,13 +183,13 @@ function _draw()
 
 		print(player.rotor_health,100,48,7)
 		print(player.rotor_fuel,100,56,7)
-		print(player.occ_limit,100,64,7)
-		print(player.water_cpct,100,72,7)
+		print(player.max_occup,100,64,7)
+		print(player.water_cap,100,72,7)
 
 		-- print("my upgrades",5,79,7)
 	end
 	
-	if curr_screen == 9 then
+	if curr_screen == 9 then -- mission ended
 		print("mission ended!",32,21,11)
 
 		print("civilians saved",5,60,7)
@@ -197,7 +198,7 @@ function _draw()
 		print(mission_fire_put_out,95,70,7)
 	end
 
-	if curr_screen == 5 then
+	if curr_screen == 5 then -- game over
 		rectfill(0,0,127,127,0)
 
 		for i=0, 15 do
@@ -217,7 +218,7 @@ function _draw()
 		end
 	end
 
-	if curr_screen == 2 then
+	if curr_screen == 2 then -- rotor mission
 		rectfill(0,0,128,119,12)
 		spr(6,drop_off_x,112)
 
@@ -251,13 +252,13 @@ function _draw()
 		end
 		spr(0,0,9)
 
-		for i = 0, player.water_cpct-1 do
+		for i = 0, player.water_cap-1 do
 			spr(51,4+i*4,18)
 		end
 		spr(48,0,18)
 
 		spr(32,0,26)
-		print(player.occ,8,27,0)
+		print(player.occup,8,27,0)
 
 		spr(006,0,32)
 		arrow_flip = (drop_off_x > player.x) and true or false
@@ -275,7 +276,7 @@ function _draw()
 		end
 	end
 
-	if curr_screen == 10 then
+	if curr_screen == 10 then -- shop
 		print("shop",6,29,5)
 		print("shop",5,28,7)
 
@@ -316,7 +317,7 @@ function _update()
 		end
 	end
 
-	if curr_screen == 5 then
+	if curr_screen == 5 then -- game over
 		if counter % 150 == 0 then
 			block_btns = false
 		end
@@ -332,7 +333,7 @@ function _update()
 		end
 	end
 
-	if curr_screen == 6 then
+	if curr_screen == 6 then -- main
 		if (btnp(2)) mm_option -= 1 sfx(2)
 		if (btnp(3)) mm_option += 1 sfx(2)
 
@@ -350,7 +351,7 @@ function _update()
 		block_btns = false
 	end
 	
-	if curr_screen == 7 then
+	if curr_screen == 7 then -- stats
 		if btnp(5) then
 			sfx(0)
 			block_btns = true
@@ -359,7 +360,7 @@ function _update()
 		end
 	end
 	
-	if curr_screen == 8 then
+	if curr_screen == 8 then -- my heli
 		if btnp(5) then
 			sfx(0)
 			block_btns = true
@@ -368,7 +369,7 @@ function _update()
 		end
 	end
 	
-	if curr_screen == 10 then
+	if curr_screen == 10 then -- shop
 		if (btnp(2)) shop_option -= 1 sfx(2)
 		if (btnp(3)) shop_option += 1 sfx(2)
 
@@ -397,7 +398,7 @@ function _update()
 		end
 	end
 	
-	if curr_screen == 9 then
+	if curr_screen == 9 then -- mission ended
 		if btnp(5) or btnp(4) then
 			sfx(0)
 			block_btns = true
@@ -406,7 +407,7 @@ function _update()
 		end
 	end
 
-	if curr_screen == 2 then
+	if curr_screen == 2 then -- rotor mission
 
 		if prop_sound == false then
 			prop_sound = true
@@ -449,9 +450,8 @@ function _update()
 			player.rotor_fuel <= 0 or
 			player.rotor_health <= 0
 		then
-			music(-1)
-			reset_lists()
 			curr_screen = 5
+			music(-1)
 			prop_sound = false
 			block_btns = true
 		end
@@ -462,12 +462,15 @@ function _update()
 			stats.civs_saved += mission_civ_saved
 			civ_pcs_created = false
 			fire_pcs_created = false
+			fire_pcs = {}
+			smoke_pcs = {}
+			civ_pcs = {}
+			player.water_cap = player.max_water_cap
 
 			music(-1)
 			curr_screen = 9
 			prop_sound = false
 			block_btns = true
-			reset_lists()
 		end
 	end
 end
@@ -537,7 +540,7 @@ function move_rotor()
 		end
 	end
 
-	if btnp(5) and player.water_cpct > 0 then
+	if btnp(5) and player.water_cap > 0 then
 		drop_water()
 	end
 end
@@ -701,7 +704,7 @@ function civ_climb_ladder(civ)
 		if
 			player.ladder == 3 and
 			civ.rdy_to_climb_up and
-			player.occ < player.occ_limit
+			player.occup < player.max_occup
 		then
 			if (civ.y > player.y) civ.y -= 0.25
 			player.rescuing = true
@@ -711,7 +714,7 @@ function civ_climb_ladder(civ)
 				civ.rdy_to_climb_up = false
 				player.dpl_ldd_pkup = false
 				player.rescuing = false
-				player.occ += 1
+				player.occup += 1
 			end
 		end
 	end
@@ -751,7 +754,7 @@ function droping_off()
 			if civ.y >= 112 then
 				del(civ_pcs,civ)
 				player.rescuing = false
-				player.occ -= 1
+				player.occup -= 1
 				player.ladder_empty = true
 				mission_civ_saved += 1
 			end
@@ -843,6 +846,7 @@ function update_fire(fire)
 		smoke.x = fire.x
 		smoke.y = fire.y - fire.smk_h * 8
 		smoke.spr = 064
+		smoke.damage = 0.075
 		add(smoke_pcs, smoke)
 	end
 
@@ -863,11 +867,19 @@ end
 
 function move_smoke(smoke)
 	smoke.y -= 0.95
-	if (smoke.y < 68) smoke.spr = 065
-	if (smoke.y < 56) smoke.spr = 066
+	if (smoke.y < 68) smoke.spr = 065 smoke.damage = 0.050
+	if (smoke.y < 56) smoke.spr = 066 smoke.damage = 0.025
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
 	if (player.mvn_dir == "right") smoke.x -= player.speed_x
+	if
+		player.x >= smoke.x - 2 and
+		player.x <= smoke.x + 6 and
+		player.y >= smoke.y and
+		player.y <= smoke.y + 8 then
+		player.rotor_health -= smoke.damage
+	end
+
 	if (smoke.y < 40) del(smoke_pcs, smoke)
 end
 
@@ -879,12 +891,6 @@ function move_fire(fire)
 	if (player.mvn_dir == "left") fire.x += player.speed_x
 	if (player.mvn_dir == "right") fire.x -= player.speed_x
 end
-
-function reset_lists()
-	fire_pcs = {}
-	smoke_pcs = {}
-	civ_pcs = {}
-end
 -->8
 -- water logic
 
@@ -894,7 +900,7 @@ function drop_water()
 	water.y = player.y + 8
 	water.speed = 0
 	add(water_drops,water)
-	player.water_cpct -= 1
+	player.water_cap -= 1
 end
 
 function draw_water(water)
