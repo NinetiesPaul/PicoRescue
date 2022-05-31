@@ -9,6 +9,7 @@ function _init()
 	player_strt_y = 32
 	player_strt_x = drop_off_x
 	max_world_x = 0
+	distances = {}
 
 	player = {
 		["x"] = player_strt_x,
@@ -261,12 +262,14 @@ function _draw()
 		i=0
 		for civ in all(civ_pcs) do
 			spr(032,100,0+i*8)
-			distance = (civ.on_board) and "ok!" or abs(flr(civ.x - player.x))
+			
 			arrow_flip = (civ.x > player.x) and true or false
 			spr(037,107,0+i*8,1,1,arrow_flip,false)
-			print(distance,116,1+i*8,5)
+			print(civ.distance,116,1+i*8,5)
 			i+=1
 		end
+
+		print(player.x, 64, 64, 11)
 		foreach(civ_pcs,draw_civ)
 		foreach(fire_pcs,draw_fire)
 		foreach(smoke_pcs,draw_smoke)
@@ -626,6 +629,8 @@ function create_civ()
 				civ.rdy_to_climb_up = false
 				civ.rdy_to_climb_down = false
 				civ.on_board = false
+				civ.distance = 0
+				civ.closer_to_player = false
 				add(civ_pcs, civ)
 				max_world_x = 0 - (value + 40)
 			end
@@ -638,6 +643,8 @@ end
 function draw_civ(civ)
 	if civ.on_board == false then
 		spr(civ.spr,civ.x,civ.y)
+		print(civ.distance,civ.x - 8, civ.y, 11)
+		print(civ.closer_to_player,civ.x + 8, civ.y, 11)
 	end
 end
 
@@ -645,6 +652,8 @@ function move_civ(civ)
 	if civ.on_board == false then
 		if (player.mvn_dir == "left") civ.x += player.speed_x
 		if (player.mvn_dir == "right") civ.x -= player.speed_x
+		civ.distance = abs(flr(civ.x - player.x))
+		civ.closer_to_player = (player.x <= civ.distance and player.x >= civ.distance ) and true or false
 	end
 end
 
