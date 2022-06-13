@@ -247,9 +247,22 @@ function _draw()
 		
 		pal(8,3)
 		pal(14,11)
-		rotor_fuel_bar_length = 22 -- player.rotor_fuel
-		rotor_fuel_bar_x1 = 60 -- player.rotor_fuel
-		rectfill(rotor_fuel_bar_x1,4,rotor_fuel_bar_x1 + rotor_fuel_bar_length,8, 14)
+		-- player.rotor_fuel/player.max_rotor_fuel
+		fuel_usage = player.rotor_fuel/player.max_rotor_fuel
+
+		rotor_fuel_bar_length = (fuel_usage == 1) and 22 or
+		(fuel_usage > 0.87 and fuel_usage < 1) and 19 or
+		(fuel_usage > 0.75 and fuel_usage < 0.87) and 16 or
+		(fuel_usage > 0.62 and fuel_usage < 0.75) and 13 or
+		(fuel_usage > 0.5 and fuel_usage < 0.62) and 10 or
+		(fuel_usage > 0.37 and fuel_usage < 0.5) and 7 or
+		(fuel_usage > 0.25 and fuel_usage < 0.37) and 4 or
+		(fuel_usage > 0.12 and fuel_usage < 0.25) and 1
+		or 0
+
+		print(fuel_usage, 64, 64, 3)
+
+		rectfill(60,4,60 + rotor_fuel_bar_length,8, 14)
 		spr(028, 59, 2, 4, 4)
 		pal()
 
