@@ -492,9 +492,7 @@ function _update()
 		foreach(ground_pcs,move_ground)
 		foreach(water_drops,move_water)
 		foreach(civ_pcs,move_civ)
-		foreach(civ_pcs,civ_on_range)
-		foreach(civ_pcs,move_civ_on_range)
-		foreach(civ_pcs,civ_climb_ladder)
+		foreach(civ_pcs,pickup_civ)
 
 		if
 			player.rotor_fuel <= 0 or
@@ -671,7 +669,7 @@ function create_civ()
 				local civ = {}
 				civ.x = value
 				civ.y = 112
-				civ.spr = 33
+				civ.spr = 033
 				civ.health = 10
 				civ.on_range = false
 				civ.rdy_to_climb_up = false
@@ -679,6 +677,7 @@ function create_civ()
 				civ.on_board = false
 				civ.distance = 0
 				civ.closer_to_player = false
+				civ.clock = 0
 				add(civ_pcs, civ)
 				max_world_x = 0 - (value + 40)
 			end
@@ -708,7 +707,7 @@ function move_civ(civ)
 	end
 end
 
-function civ_on_range(civ)
+function pickup_civ(civ)
 	if civ.on_board == false then
 		if
 			civ.x >= player.px1-2 and
@@ -717,16 +716,14 @@ function civ_on_range(civ)
 			civ.y <= 120
 		then
 			civ.on_range = true
+			civ.spr = 034
 		else
 			civ.on_range = false
 		end
 	end
-end
 
-function move_civ_on_range(civ)
 	if civ.on_board == false then
 		if civ.on_range then
-			civ.spr = 34
 			--if (player.x < civ.x) civ.x -= 0.15
 			--if (player.x > civ.x) civ.x += 0.15
 			
@@ -742,29 +739,19 @@ function move_civ_on_range(civ)
 				player.dpl_ldd_pkup = false
 			end
 		else
-			civ.spr = 033
+			if (civ.rdy_to_climb_up == false) civ.spr = 033
 		end
 	end
-end
 
-function upd_ladder()
-	if counter%30 == 0 then
-		if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
-			if (player.ladder<3) player.ladder += 1
-		end
-		if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
-			if (player.ladder>0) player.ladder -= 1
-		end
-	end
-end
-
-function civ_climb_ladder(civ)
 	if civ.on_board == false then
 		if
 			player.ladder == 3 and
 			civ.rdy_to_climb_up and
 			player.occup < player.max_occup
 		then
+			civ.clock += 1
+			if (civ.clock % 10 == 0) civ.spr += 1
+			if (civ.spr > 036) civ.spr = 035
 			if (civ.y > player.y) civ.y -= 0.25
 			player.rescuing = true
 
@@ -804,6 +791,7 @@ function droping_off()
 				player.ladder_empty = false
 			end
 		end
+
 		if
 			civ.rdy_to_climb_down and
 			not civ.on_board 			
@@ -821,6 +809,16 @@ function droping_off()
 	end
 end
 
+function upd_ladder()
+	if counter%30 == 0 then
+		if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
+			if (player.ladder<3) player.ladder += 1
+		end
+		if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
+			if (player.ladder>0) player.ladder -= 1
+		end
+	end
+end
 
 -->8
 -- scenery logic
