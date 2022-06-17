@@ -506,6 +506,7 @@ function _update()
 			smoke_pcs = {}
 			civ_pcs = {}
 			player.water_cap = player.max_water_cap
+			player.ladder = 0
 
 			music(-1)
 			curr_screen = 9
@@ -793,7 +794,7 @@ function droping_off()
 end
 
 function upd_ladder()
-	if counter%30 == 0 then
+	if counter%15 == 0 then
 		if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
 			if (player.ladder<3) player.ladder += 1
 		end
