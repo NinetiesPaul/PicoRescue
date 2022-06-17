@@ -663,7 +663,6 @@ function create_civ()
 				civ.y = 112
 				civ.spr = 033
 				civ.health = 10
-				civ.on_range = false
 				civ.rdy_to_climb_up = false
 				civ.rdy_to_climb_down = false
 				civ.on_board = false
@@ -707,18 +706,8 @@ function pickup_civ(civ)
 			civ.y >= 112 and
 			civ.y <= 120
 		then
-			civ.on_range = true
 			civ.spr = 034
-		else
-			civ.on_range = false
-		end
-	end
 
-	if civ.on_board == false then
-		if civ.on_range then
-			--if (player.x < civ.x) civ.x -= 0.15
-			--if (player.x > civ.x) civ.x += 0.15
-			
 			if
 				civ.x+4 >= player.x and
 				civ.x+4 <= player.x+8 and
@@ -731,29 +720,28 @@ function pickup_civ(civ)
 				player.dpl_ldd_pkup = false
 			end
 		else
-			if (civ.rdy_to_climb_up == false) civ.spr = 033
+			if (not player.rescuing) civ.spr = 033
 		end
 	end
 
-	if civ.on_board == false then
-		if
-			player.ladder == 3 and
-			civ.rdy_to_climb_up and
-			player.occup < player.max_occup
-		then
-			civ.clock += 1
-			if (civ.clock % 10 == 0) civ.spr += 1
-			if (civ.spr > 036) civ.spr = 035
-			if (civ.y > player.y) civ.y -= 0.25
-			player.rescuing = true
 
-			if civ.y == player.y then
-				civ.on_board = true
-				civ.rdy_to_climb_up = false
-				player.dpl_ldd_pkup = false
-				player.rescuing = false
-				player.occup += 1
-			end
+	if
+		player.ladder == 3 and
+		civ.rdy_to_climb_up and
+		player.occup < player.max_occup
+	then
+		civ.clock += 1
+		if (civ.clock % 5 == 0) civ.spr += 1
+		if (civ.spr > 036) civ.spr = 035
+		if (civ.y > player.y) civ.y -= 0.25
+		player.rescuing = true
+
+		if civ.y == player.y then
+			civ.on_board = true
+			civ.rdy_to_climb_up = false
+			player.dpl_ldd_pkup = false
+			player.rescuing = false
+			player.occup += 1
 		end
 	end
 end
@@ -788,6 +776,9 @@ function droping_off()
 			civ.rdy_to_climb_down and
 			not civ.on_board 			
 		then
+			civ.clock += 1
+			if (civ.clock % 10 == 0) civ.spr += 1
+			if (civ.spr > 036) civ.spr = 035
 			if (civ.y < 112) civ.y += 0.25
 
 			if civ.y >= 112 then
@@ -895,7 +886,7 @@ function update_fire(fire)
 		smoke.x = fire.x
 		smoke.y = fire.y - fire.smk_h * 8
 		smoke.spr = 064
-		smoke.damage = 0.075
+		smoke.damage = 0.175
 		add(smoke_pcs, smoke)
 	end
 
