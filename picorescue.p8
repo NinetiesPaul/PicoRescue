@@ -7,7 +7,7 @@ function _init()
 	starting_x = 0
 	drop_off_x = 32
 	player_strt_y = 32
-	player_strt_x = drop_off_x
+	player_strt_x = drop_off_x + 16
 	max_world_x = 0
 
 	player = {
@@ -45,7 +45,7 @@ function _init()
 		["ry1"] = 0,
 		["rx2"] = 0,
 		["ry2"] = 0,
-		["budget"] = 15,
+		["finance"] = 15,
 	}
 
 	--[[
@@ -107,6 +107,8 @@ function _init()
 	mission_fire_put_out = 0
 
 	block_btns = false
+	block_btns_counter = 0
+
 	counter = 0
 	mm_option = 1
 	shop_option = 1
@@ -155,8 +157,8 @@ function _draw()
 		print("shop",56,58,mm_opt3_c)
 		print("carrer stats",39,69,5)
 		print("carrer stats",39,68,mm_opt4_c)
-		print("budget",52,79,5)
-		print("budget",52,78,mm_opt5_c)
+		print("finances",48,79,5)
+		print("finances",48,78,mm_opt5_c)
 	end
 
 	if curr_screen == 7 then -- stats
@@ -322,6 +324,11 @@ function _draw()
 		print("shop",6,29,5)
 		print("shop",5,28,7)
 
+		print("cash:$",84,29,5)
+		print("cash:$",83,28,7)
+		print(player.finance,113,29,5)
+		print(player.finance,112,28,7)
+
 		print("health",15,48,7)
 		print("fuel",15,58,7)
 
@@ -360,10 +367,6 @@ function _update()
 	end
 
 	if curr_screen == 5 then -- game over
-		if counter % 150 == 0 then
-			block_btns = false
-		end
-
 		if not block_btns then
 			if
 				btnp(1) or btnp(2) or
@@ -387,10 +390,8 @@ function _update()
 			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 difficulty = rnd({"easy","normal","hard"})
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
-			if (mm_option == 3) curr_screen = 10
+			if (mm_option == 3) curr_screen = 10 block_btns = true
 		end
-
-		block_btns = false
 	end
 	
 	if curr_screen == 7 then -- stats
@@ -418,16 +419,16 @@ function _update()
 		if (shop_option > 2) shop_option = 1
 		if (shop_option < 1) shop_option = 2
 
-		if btnp(4) then
-			if shop_option == 1 then
-				player.rotor_health += 1
-				player.budget -= 1
+		if btnp(4) and not block_btns then
+
+			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
+				player.rotor_health = flr(player.rotor_health) + 1
+				player.finance -= 1
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
-			if shop_option == 2 then
-				player.rotor_fuel = flr(player.rotor_fuel)
-				player.rotor_fuel += 1
-				player.budget -= 1
+			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
+				player.rotor_fuel = flr(player.rotor_fuel) + 1
+				player.finance -= 1
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -509,10 +510,16 @@ function _update()
 			player.ladder = 0
 
 			music(-1)
-			curr_screen = 9
 			prop_sound = false
 			block_btns = true
+			curr_screen = 9
 		end
+	end
+
+	if block_btns then
+		block_btns_counter += 1
+		unblock_after = (curr_screen == 5) and 150 or 5
+		if (block_btns_counter % unblock_after == 0) block_btns = false
 	end
 end
 -->8
