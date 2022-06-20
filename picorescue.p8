@@ -45,7 +45,7 @@ function _init()
 		["ry1"] = 0,
 		["rx2"] = 0,
 		["ry2"] = 0,
-		["finance"] = 15,
+		["finance"] = 1500,
 	}
 
 	--[[
@@ -422,12 +422,12 @@ function _update()
 		if btnp(4) and not block_btns then
 
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
-				player.rotor_health = flr(player.rotor_health) + 1
+				player.rotor_health = flr(player.rotor_health) + 200
 				player.finance -= 1
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
-				player.rotor_fuel = flr(player.rotor_fuel) + 1
+				player.rotor_fuel = flr(player.rotor_fuel) + 300
 				player.finance -= 1
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
@@ -508,6 +508,9 @@ function _update()
 			civ_pcs = {}
 			player.water_cap = player.max_water_cap
 			player.ladder = 0
+			player.x = player_strt_x
+			player.y = player_strt_y
+			player.finance += mission_civ_saved * 25
 
 			music(-1)
 			prop_sound = false
