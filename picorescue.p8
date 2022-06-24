@@ -84,6 +84,7 @@ function _init()
 		["fire_put_out"] = 0,
 		["civs_saved"] = 0,
 		["missions_finished"] = 0,
+		["missions_earnings"] = 0,
 	}
 
 	difficulty = "";
@@ -101,10 +102,9 @@ function _init()
 
 	mission_type = rnd({"sea","fire"})
 	mission_ground = 20
-	mission_p_front = 4
-	mission_p_back = 3
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
+	mission_earnings = 0
 
 	block_btns = false
 	block_btns_counter = 0
@@ -162,42 +162,47 @@ function _draw()
 	end
 
 	if curr_screen == 7 then -- stats
-		print("carrer stats",6,29,5)
-		print("carrer stats",5,28,7)
+		print("carrer stats",40,29,5)
+		print("carrer stats",40,28,7)
 
-		print("civilians rescued",5,48,7)
-		print("fires put out",5,58,7)
-		print("missions",5,68,7)
+		print("civilians rescued",10,48,7)
+		print("fires put out",10,58,7)
+		print("missions finished",10,68,7)
+		print("missions earnings",10,78,7)
 
-		print(stats.civs_saved,100,48,7)
-		print(stats.fire_put_out,100,58,7)
-		print(stats.missions_finished,100,68,7)
+		print(stats.civs_saved,110,48,7)
+		print(stats.fire_put_out,110,58,7)
+		print(stats.missions_finished,110,68,7)
+		print("$ " .. stats.missions_earnings,102,78,7)
 	end
 
 	if curr_screen == 8 then -- my heli
-		print("my heli",6,29,5)
-		print("my heli",5,28,7)
+		print("my heli",50,29,5)
+		print("my heli",50,28,7)
 
-		print("health",5,48,7)
-		print("fuel",5,56,7)
-		print("max occupancy",5,64,7)
-		print("water capacity",5,72,7)
+		print("health",10,48,7)
+		print("fuel",10,56,7)
+		print("max occupancy",10,64,7)
+		print("water capacity",10,72,7)
 
-		print(player.rotor_health,100,48,7)
-		print(player.rotor_fuel,100,56,7)
-		print(player.max_occup,100,64,7)
-		print(player.water_cap,100,72,7)
+		print(player.rotor_health,110,48,7)
+		print(player.rotor_fuel,110,56,7)
+		print(player.max_occup,110,64,7)
+		print(player.water_cap,110,72,7)
 
 		-- print("my upgrades",5,79,7)
 	end
 	
 	if curr_screen == 9 then -- mission ended
-		print("mission ended!",32,21,11)
+		print("mission ended",40,21,11)
 
-		print("civilians saved",5,60,7)
-		print(mission_civ_saved,95,60,7)
-		print("fires put out",5,70,7)
-		print(mission_fire_put_out,95,70,7)
+		print("civilians saved",10,60,7)
+		print("fires put out",10,70,7)
+		print("mission earnings",10,80,7)
+
+		print(mission_civ_saved,110,60,7)
+		print(mission_fire_put_out,110,70,7)
+		print("$ " .. mission_earnings,102,80,7)
 	end
 
 	if curr_screen == 5 then -- game over
@@ -329,8 +334,8 @@ function _draw()
 		print(player.finance,113,29,5)
 		print(player.finance,112,28,7)
 
-		print("health",15,48,7)
-		print("fuel",15,58,7)
+		print("health $300",15,48,7)
+		print("fuel $225",15,58,7)
 
 		selector_pos = (shop_option == 1) and 47 or 57
 		spr(018, 5, selector_pos, 1, 1, true)
@@ -387,7 +392,7 @@ function _update()
 
 		if btnp(4) and not block_btns then
 			sfx(1)
-			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 difficulty = rnd({"easy","normal","hard"})
+			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd({"easy","normal","hard"}) 
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
@@ -422,13 +427,13 @@ function _update()
 		if btnp(4) and not block_btns then
 
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
-				player.rotor_health = flr(player.rotor_health) + 200
-				player.finance -= 1
+				player.rotor_health = flr(player.rotor_health) + 1
+				player.finance -= 300
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
-				player.rotor_fuel = flr(player.rotor_fuel) + 300
-				player.finance -= 1
+				player.rotor_fuel = flr(player.rotor_fuel) + 1
+				player.finance -= 225
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -498,9 +503,11 @@ function _update()
 		end
 
 		if count(civ_pcs) == 0 then
+			mission_earnings = mission_civ_saved * 25
 			stats.missions_finished += 1
 			stats.fire_put_out += mission_fire_put_out
 			stats.civs_saved += mission_civ_saved
+			stats.missions_earnings += mission_earnings
 			civ_pcs_created = false
 			fire_pcs_created = false
 			fire_pcs = {}
@@ -510,7 +517,7 @@ function _update()
 			player.ladder = 0
 			player.x = player_strt_x
 			player.y = player_strt_y
-			player.finance += mission_civ_saved * 25
+			player.finance += mission_earnings
 
 			music(-1)
 			prop_sound = false
