@@ -162,8 +162,8 @@ function _draw()
 	end
 
 	if curr_screen == 7 then -- stats
-		print("carrer stats",40,29,5)
-		print("carrer stats",40,28,7)
+		print("carrer stats",40,19,5)
+		print("carrer stats",40,18,7)
 
 		print("civilians rescued",10,48,7)
 		print("fires put out",10,58,7)
@@ -177,8 +177,8 @@ function _draw()
 	end
 
 	if curr_screen == 8 then -- my heli
-		print("my heli",50,29,5)
-		print("my heli",50,28,7)
+		print("my heli",50,19,5)
+		print("my heli",50,18,7)
 
 		print("health",10,48,7)
 		print("fuel",10,56,7)
@@ -191,6 +191,25 @@ function _draw()
 		print(player.water_cap,110,72,7)
 
 		-- print("my upgrades",5,79,7)
+	end
+
+	if curr_screen == 10 then -- shop
+		print("shop",56,19,5)
+		print("shop",56,18,7)
+
+		print("cash",44,29,5)
+		print("cash",44,28,7)
+		print("$" .. player.finance,64,29,3)
+		print("$" .. player.finance,64,28,11)
+
+		print("health $300",15,48,7)
+		print("fuel $225",15,58,7)
+
+		selector_pos = (shop_option == 1) and 47 or 57
+		spr(018, 5, selector_pos, 1, 1, true)
+
+		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
+		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
 	end
 	
 	if curr_screen == 9 then -- mission ended
@@ -323,25 +342,6 @@ function _draw()
 		foreach(fire_pcs,on_smoke)
 		foreach(water_drops,draw_water)
 		foreach(ground_pcs,draw_ground)
-	end
-
-	if curr_screen == 10 then -- shop
-		print("shop",6,29,5)
-		print("shop",5,28,7)
-
-		print("cash:$",84,29,5)
-		print("cash:$",83,28,7)
-		print(player.finance,113,29,5)
-		print(player.finance,112,28,7)
-
-		print("health $300",15,48,7)
-		print("fuel $225",15,58,7)
-
-		selector_pos = (shop_option == 1) and 47 or 57
-		spr(018, 5, selector_pos, 1, 1, true)
-
-		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
-		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
 	end
 
 	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
