@@ -59,6 +59,7 @@ function _init()
 	8 -- my heli screen
 	9 -- mission ended
 	10 -- shop
+	11 -- triage
 	]]--
 
 	curr_screen = 1
@@ -88,6 +89,11 @@ function _init()
 	}
 
 	difficulty = "";
+	difficulties = {
+	"easy",
+	-- "normal",
+	-- "hard"
+	}
 
 	civ_spawn = {
 		["easy"] = {230,320,430},
@@ -105,6 +111,7 @@ function _init()
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
+	mission_has_wounded = 0
 
 	block_btns = false
 	block_btns_counter = 0
@@ -333,6 +340,7 @@ function _draw()
 				i+=1
 			end
 		end ]]--
+		print(mission_has_wounded, 64, 0)
 
 		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, 0)
 
@@ -392,7 +400,7 @@ function _update()
 
 		if btnp(4) and not block_btns then
 			sfx(1)
-			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd({"easy","normal","hard"}) 
+			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) 
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
@@ -503,7 +511,7 @@ function _update()
 		end
 
 		if count(civ_pcs) == 0 then
-			mission_earnings = mission_civ_saved * 25
+			mission_earnings = mission_civ_saved * 75
 			stats.missions_finished += 1
 			stats.fire_put_out += mission_fire_put_out
 			stats.civs_saved += mission_civ_saved
@@ -522,8 +530,14 @@ function _update()
 			music(-1)
 			prop_sound = false
 			block_btns = true
-			curr_screen = 9
+			curr_screen = (mission_has_wounded) and 11 or 9
 		end
+	end
+
+	if curr_screen == 11 then
+		cls()
+
+		print("cunete", 64, 64, 1)
 	end
 
 	if block_btns then
@@ -687,18 +701,24 @@ function create_civ()
 				civ.distance = 0
 				civ.closer_to_player = false
 				civ.clock = 0
+
+				civ_is_wounded = rnd({true, false})
+				if (civ_is_wounded == true) mission_has_wounded += 1
+				civ.wounded = civ_is_wounded
 				add(civ_pcs, civ)
 				max_world_x = 0 - (value + 40)
 			end
 		end
 	end
 
+	mission_has_wounded = (mission_has_wounded > 0) and true or false
 	civ_pcs_created = true
 end
 
 function draw_civ(civ)
 	if civ.on_board == false then
 		spr(civ.spr,civ.x,civ.y)
+		print(civ.wounded, civ.x+8, civ.y - 8)
 	end
 end
 
