@@ -134,8 +134,8 @@ function _init()
 	wounds_created = false
 	all_wounds = {
 		{
-			["x"] = 24,
-			["y"] = 24,
+			["x"] = 32,
+			["y"] = 52,
 			["cleaned"] = false,
 			["bleeding"] = true,
 			["dressed"] = false,
@@ -143,13 +143,22 @@ function _init()
 			["spr"] = 132
 		},
 		{
-			["x"] = 32,
-			["y"] = 32,
+			["x"] = 36,
+			["y"] = 62,
 			["cleaned"] = false,
 			["bleeding"] = true,
 			["dressed"] = false,
 			["taped"] = false,
 			["spr"] = 133
+		},
+		{
+			["x"] = 36,
+			["y"] = 84,
+			["cleaned"] = false,
+			["bleeding"] = true,
+			["dressed"] = false,
+			["taped"] = false,
+			["spr"] = 134
 		},
 	}
 	wounds = {}
@@ -384,14 +393,27 @@ function _draw()
 		foreach(ground_pcs,draw_ground)
 	end
 
-
 	if curr_screen == 11 then -- triage
 		cls()
 
 		-- spr(112, 32, 32, 2, 5)
-
-
 		sspr(16, 56, 14, 94, 24, 24, 28, 188)
+
+		i = 0
+		for wound in all(wounds) do 
+			-- print(wound.x .. " " .. wound.y .. " " .. wound.spr, 70, 0 + i * 8 ,7)
+			-- print(wound.cleaned, 0, 80 + i * 8 ,7)
+			-- print(wound.bleeding, 20, 80 + i * 8 ,7)
+			-- print(wound.dressed, 40, 80 + i * 8 ,7)
+			-- print(wound.taped, 60, 80 + i * 8 ,7)
+			i += 1
+
+			if (wound.cleaned) palt(4, true)
+			if (not wound.bleeding) pal(8,14)
+			spr(wound.spr, wound.x, wound.y)
+			pal()
+			palt()
+		end
 
 		spr(075, 100, 24, 2, 2)
 		spr(077, 100, 48, 2, 2)
@@ -408,10 +430,6 @@ function _draw()
 			if (tool_selected == "scissor") tool_spr = 107
 			if (tool_selected == "tape") tool_spr = 109
 			spr(tool_spr, triage_cursor_x, triage_cursor_y, 2, 2)
-		end
-
-		for wound in all(wounds) do
-			print(wound.x .. " " .. wound.y, 70,0,7)
 		end
 
 		spr(067, triage_cursor_x, triage_cursor_y)
@@ -602,7 +620,7 @@ function _update()
 	if curr_screen == 11 then
 		if not wounds_created then
 			n_wound_created = 0
-			n_wounds = 1 -- rnd({1,2,3})
+			n_wounds = 3 -- rnd({1,2,3})
 
 			for wound in all(all_wounds) do
 				if (n_wound_created == n_wounds) goto skip_to_next
@@ -614,10 +632,10 @@ function _update()
 			wounds_created = true
 		end
 
-		triage_cursor_x -= (btn(0) and triage_cursor_x > 0) and 2 or 0
-		triage_cursor_x += (btn(1) and triage_cursor_x < 120) and 2 or 0
-		triage_cursor_y -= (btn(2) and triage_cursor_y > 0) and 2 or 0
-		triage_cursor_y += (btn(3) and triage_cursor_y < 120) and 2 or 0
+		if (btn(0)) triage_cursor_x -= 2
+		if (btn(1)) triage_cursor_x += 2
+		if (btn(2)) triage_cursor_y -= 2
+		if (btn(3)) triage_cursor_y += 2
 		if (triage_cursor_x > 120) triage_cursor_x = 120
 		if (triage_cursor_y > 120) triage_cursor_y = 120
 		if (triage_cursor_x < 0) triage_cursor_x = 0
@@ -629,6 +647,22 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 96 and triage_cursor_y <= 112 and btnp(4)) tool_selected = "tape"
 
 		if (btnp(5) and tool_selected != "none") tool_selected = "none"
+
+		for wound in all(wounds) do
+			if
+				triage_cursor_x >= wound.x and
+				triage_cursor_x <= wound.x + 8 and
+				triage_cursor_y >= wound.y and
+				triage_cursor_y <= wound.y + 8 then
+
+				if btnp(4) then
+					if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+					if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+					if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+					if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+				end
+			end
+		end
 	end
 
 	if block_btns then
@@ -906,7 +940,7 @@ function droping_off()
 			not civ.on_board 			
 		then
 			civ.clock += 1
-			if (civ.clock % 10 == 0) civ.spr += 1
+			if (civ.clock % 5 == 0) civ.spr += 1
 			if (civ.spr > 036) civ.spr = 035
 			if (civ.y < 112) civ.y += 0.25
 
@@ -1161,13 +1195,13 @@ __gfx__
 0000007f7700000000000007f77000000000000000000000000000000000000000000000666777766600000000080080800800000111667771110d0000000000
 0000077f7f70000000000077f7f70000000000000000000000000000000000000000000066666666660000000008008080080000000011111000000000000000
 00007f7f7f700000000007f7f7f70000000000000000000000000000000000000000000006666666600000000000880008800000000000000000000000000000
-00007f7f7f700000000007f7f7f70000480000000008000000800000000000000000000000000000000000000000000000000000000000000000000000000000
-00077f7f7f700000000077f7f7f70000848400000048000008048000000000000000000000000000000000000000000000000000000000000000000000000000
-007f7fffff7000000007f7fffff70000084800004480000084080000000000000000000000000000000000000000000000000000000000000000000000000000
+00007f7f7f700000000007f7f7f70000480004000008000000800000000000000000000000000000000000000000000000000000000000000000000000000000
+00077f7f7f700000000077f7f7f70000848440000048000008048000000000000000000000000000000000000000000000000000000000000000000000000000
+007f7fffff7000000007f7fffff70000084800004488440084080000000000000000000000000000000000000000000000000000000000000000000000000000
 007f7fffff7700000007f7fffff77000084000000884000004404000000000000000000000000000000000000000000000000000000000000000000000000000
-007f7fffff7f70000007f7fffff7f700044000000840000088800000000000000000000000000000000000000000000000000000000000000000000000000000
-007fffffff7f70000007fffffff7f700000000004400000004044000000000000000000000000000000000000000000000000000000000000000000000000000
-007fffffffff70000007fffffffff700000000000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+007f7fffff7f70000007f7fffff7f700048400000848000088800000000000000000000000000000000000000000000000000000000000000000000000000000
+007fffffff7f70000007fffffff7f700008040004404000004044000000000000000000000000000000000000000000000000000000000000000000000000000
+007fffffffff70000007fffffffff700000800000800000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 00748fffffff70000007fffffffff700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 007848fffff700000007ffffffff7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0074848ffff700000007ffffffff7000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
