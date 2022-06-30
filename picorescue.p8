@@ -80,6 +80,7 @@ function _init()
 	ground_pcs = {}
 	tree_pcs = {}
 	civ_pcs = {}
+	wounded_civs_pcs = {}
 
 	stats = {
 		["fire_put_out"] = 0,
@@ -97,7 +98,8 @@ function _init()
 
 	civ_spawn = {
 		["easy"] = {
-		120
+		120,
+		-- 140,
 		-- 230,
 		-- 320,
 		-- 430
@@ -116,7 +118,7 @@ function _init()
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_has_wounded = 0
+	mission_has_wounded = false
 
 	block_btns = false
 	block_btns_counter = 0
@@ -132,36 +134,40 @@ function _init()
 	tool_selected = "none"
 
 	wounds_created = false
-	all_wounds = {
+	all_wounds =
+	{
+		["arms"] =
 		{
-			["x"] = 32,
-			["y"] = 52,
-			["cleaned"] = false,
-			["bleeding"] = true,
-			["dressed"] = false,
-			["taped"] = false,
-			["under_clothing"] = false,
-			["spr"] = 132
-		},
-		{
-			["x"] = 36,
-			["y"] = 62,
-			["cleaned"] = false,
-			["bleeding"] = true,
-			["dressed"] = false,
-			["taped"] = false,
-			["under_clothing"] = true,
-			["spr"] = 133
-		},
-		{
-			["x"] = 36,
-			["y"] = 84,
-			["cleaned"] = false,
-			["bleeding"] = true,
-			["dressed"] = false,
-			["taped"] = false,
-			["under_clothing"] = true,
-			["spr"] = 134
+			{
+				["x"] = 32,
+				["y"] = 52,
+				["cleaned"] = false,
+				["bleeding"] = true,
+				["dressed"] = false,
+				["taped"] = false,
+				["under_clothing"] = false,
+				["spr"] = 132
+			},
+			{
+				["x"] = 36,
+				["y"] = 62,
+				["cleaned"] = false,
+				["bleeding"] = true,
+				["dressed"] = false,
+				["taped"] = false,
+				["under_clothing"] = true,
+				["spr"] = 133
+			},
+			{
+				["x"] = 36,
+				["y"] = 84,
+				["cleaned"] = false,
+				["bleeding"] = true,
+				["dressed"] = false,
+				["taped"] = false,
+				["under_clothing"] = true,
+				["spr"] = 134
+			}
 		}
 	}
 	wounds = {}
@@ -401,30 +407,24 @@ function _draw()
 
 		rect(0,0,127,127, 7)
 
-		-- spr(112, 32, 32, 2, 5)
-		sspr(16, 56, 14, 94, 24, 24, 28, 188)
+		for wounded in all(wounded_civs_pcs) do
 
-		i = 0
-		wearing_clothing = 0
-		for wound in all(wounds) do 
-			-- print(wound.x .. " " .. wound.y .. " " .. wound.spr, 70, 0 + i * 8 ,7)
-			-- print(wound.cleaned, 0, 80 + i * 8 ,7)
-			-- print(wound.bleeding, 20, 80 + i * 8 ,7)
-			-- print(wound.dressed, 40, 80 + i * 8 ,7)
-			-- print(wound.taped, 60, 80 + i * 8 ,7)
-			i += 1
+			sspr(16, 56, 14, 94, 24, 24, 28, 188)
 
-			if (wound.cleaned) palt(4, true)
-			if (not wound.bleeding) pal(8,14)
-			spr(wound.spr, wound.x, wound.y)
-			pal()
-			palt()
-			if (wound.dressed) spr(080, wound.x, wound.y)
-			if (wound.taped) spr(081, wound.x, wound.y)
-			if (wound.under_clothing) wearing_clothing += 1
+			wearing_clothing = 0
+			for wound in all(wounded.wounds) do
+				if (wound.cleaned) palt(4, true)
+				if (not wound.bleeding) pal(8,14)
+				spr(wound.spr, wound.x, wound.y)
+				pal()
+				palt()
+				if (wound.dressed) spr(080, wound.x, wound.y)
+				if (wound.taped) spr(081, wound.x, wound.y)
+				if (wound.under_clothing) wearing_clothing += 1
+			end
+
+			if (wearing_clothing > 0) sspr(0, 56, 14, 94, 24, 24, 28, 188)
 		end
-
-		if (wearing_clothing > 0) sspr(0, 56, 14, 94, 24, 24, 28, 188)
 
 		spr(075, 110, 24, 2, 2)
 		spr(077, 110, 37, 2, 2)
@@ -631,20 +631,6 @@ function _update()
 	end
 
 	if curr_screen == 11 then
-		if not wounds_created then
-			n_wound_created = 0
-			n_wounds = 3 -- rnd({1,2,3})
-
-			for wound in all(all_wounds) do
-				if (n_wound_created == n_wounds) goto skip_to_next
-				add(wounds, wound)
-				n_wound_created += 1
-				::skip_to_next::
-			end
-
-			wounds_created = true
-		end
-
 		if (btn(0)) triage_cursor_x -= 2
 		if (btn(1)) triage_cursor_x += 2
 		if (btn(2)) triage_cursor_y -= 2
@@ -663,42 +649,49 @@ function _update()
 		if (btnp(5) and tool_selected != "none") tool_selected = "none"
 
 		wounds_under_clothing = 0
-		for wound in all(wounds) do
-			if
+
+		for wounded in all(wounded_civs_pcs) do
+
+			for wound in all(wounded.wounds) do
+
+				if
 				triage_cursor_x >= wound.x and
 				triage_cursor_x <= wound.x + 8 and
 				triage_cursor_y >= wound.y and
 				triage_cursor_y <= wound.y + 8
 				then
-
-				if btnp(4) then
-					if not wound.under_clothing then
-						if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
-						if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
-						if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
-						if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-					else
-						wounds_under_clothing += 1
+					if btnp(4) then
+						if not wound.under_clothing then
+							if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+						else
+							wounds_under_clothing += 1
+						end
 					end
 				end
-			end
-		end
 
-		if wounds_under_clothing > 0 then
-			if
+				if
 				triage_cursor_x >= 30 and
 				triage_cursor_x <= 50 and
 				triage_cursor_y >= 68 and
 				triage_cursor_y <= 101
 				then
-
-				if btnp(4) and tool_selected == "scissor" then
-					for wound in all(wounds) do
-						if (wound.under_clothing) wound.under_clothing = false
+					if btnp(4) and tool_selected == "scissor" then
+						for wound in all(wounds) do
+							if (wound.under_clothing) wound.under_clothing = false
+						end
 					end
 				end
+
+				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) del(wounded.wounds, wound)
 			end
+
+			if (#wounded.wounds == 0) del(wounded_civs_pcs, wounded)
 		end
+
+		if (#wounded_civs_pcs == 0) curr_screen = 9
 	end
 
 	if block_btns then
@@ -862,24 +855,35 @@ function create_civ()
 				civ.distance = 0
 				civ.closer_to_player = false
 				civ.clock = 0
+				local wounds = {}
 
-				civ_is_wounded = rnd({true, false})
-				if (civ_is_wounded == true) mission_has_wounded += 1
-				civ.wounded = civ_is_wounded
+				civ_is_wounded = flr(rnd(4)) -- wip: use rng to flag civ as wounded
+				if civ_is_wounded > 0 then
+					wound_type = rnd({"arms"}) -- wip: add legs
+
+					for i = 1, civ_is_wounded do 
+						add(wounds, all_wounds[wound_type][i])
+					end
+
+					mission_has_wounded = true
+					civ.wound_type = wound_type
+				end
+
+				civ.wounds = wounds
+
 				add(civ_pcs, civ)
 				max_world_x = 0 - (value + 40)
 			end
 		end
 	end
 
-	mission_has_wounded = (mission_has_wounded > 0) and true or false
 	civ_pcs_created = true
 end
 
 function draw_civ(civ)
 	if civ.on_board == false then
 		spr(civ.spr,civ.x,civ.y)
-		print(civ.wounded, civ.x+8, civ.y - 8)
+		print(#civ.wounds, civ.x+8, civ.y-8)
 	end
 end
 
@@ -981,6 +985,8 @@ function droping_off()
 			if (civ.y < 112) civ.y += 0.25
 
 			if civ.y >= 112 then
+				add(wounded_civs_pcs, civ)
+
 				del(civ_pcs,civ)
 				player.rescuing = false
 				player.occup -= 1
