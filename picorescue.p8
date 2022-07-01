@@ -99,7 +99,7 @@ function _init()
 	civ_spawn = {
 		["easy"] = {
 		120,
-		-- 140,
+		-- 140, -- debug
 		-- 230,
 		-- 320,
 		-- 430
@@ -132,6 +132,7 @@ function _init()
 	triage_cursor_x = 64
 	triage_cursor_y = 64
 	tool_selected = "none"
+	show_clipboard = false
 
 	wounds_created = false
 	all_wounds =
@@ -146,6 +147,7 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = false,
+				["details"] = false,
 				["spr"] = 132
 			},
 			{
@@ -156,6 +158,7 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = true,
+				["details"] = false,
 				["spr"] = 133
 			},
 			{
@@ -166,11 +169,11 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = true,
+				["details"] = false,
 				["spr"] = 134
 			}
 		}
 	}
-	wounds = {}
 end
 
 function _draw()
@@ -390,7 +393,7 @@ function _draw()
 				i+=1
 			end
 		end ]]--
-		print(mission_has_wounded, 64, 0)
+		print(mission_has_wounded, 64, 0) -- debug
 
 		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, 0)
 
@@ -402,17 +405,36 @@ function _draw()
 		foreach(ground_pcs,draw_ground)
 	end
 
-	if curr_screen == 11 then -- triage
+	if curr_screen == 11 then -- triage mode
 		cls()
 
 		rect(0,0,127,127, 7)
+
+		if not show_clipboard then
+			spr(075, 110, 24, 2, 2)
+			spr(077, 110, 37, 2, 2)
+			spr(107, 109, 52, 2, 2)
+			pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
+			spr(105, 111, 80, 2, 2)
+		else
+			rectfill(60, 26, 112, 108, 4)
+			palt(0, false) palt(7, true) spr(074, 60, 26, 1, 1) palt()
+			palt(0, false) palt(7, true) spr(074, 105, 26, 1, 1, true, false) palt()
+			palt(0, false) palt(7, true) spr(074, 105, 101, 1, 1, true, true) palt()
+			palt(0, false) palt(7, true) spr(074, 60, 101, 1, 1, false, true) palt()
+			rectfill(63, 29, 109, 105, 7)
+			sspr(72, 32, 8, 8, 78, 20, 16, 16)
+		end
 
 		for wounded in all(wounded_civs_pcs) do
 
 			sspr(16, 56, 14, 94, 24, 24, 28, 188)
 
 			wearing_clothing = 0
-			for wound in all(wounded.wounds) do
+
+			for i=1, #wounded.wounds do
+				local wound = wounded.wounds[i]
+
 				if (wound.cleaned) palt(4, true)
 				if (not wound.bleeding) pal(8,14)
 				spr(wound.spr, wound.x, wound.y)
@@ -421,20 +443,36 @@ function _draw()
 				if (wound.dressed) spr(080, wound.x, wound.y)
 				if (wound.taped) spr(081, wound.x, wound.y)
 				if (wound.under_clothing) wearing_clothing += 1
+
+				if wound.details and show_clipboard then
+					print("cleaned?", 64, 40, 0) -- (wound.cleaned) and 11 or 8
+					-- palt(0, false) circ(94, 49, 3, 0) palt()
+					-- palt(0, false) circ(104, 49, 3, 0) palt()
+					-- cleaned_marker_x = (wound.cleaned) and 94 or 104
+					spr((wound.cleaned) and 089 or 090, 100, 40)
+
+					print("bleeding?", 64, 54, 0)
+					-- palt(0, false) circ(94, 63, 3, 0) palt()
+					-- palt(0, false) circ(104, 63, 3, 0) palt()
+					-- bleeding_marker_x = (wound.bleeding) and 94 or 104
+					spr((wound.bleeding) and 089 or 090, 100, 54)
+
+					print("dressed?", 64, 68, 0)
+					-- palt(0, false) circ(94, 77, 3, 0) palt()
+					-- palt(0, false) circ(104, 77, 3, 0) palt()
+					-- dressed_marker_x = (wound.dressed) and 94 or 104
+					spr((wound.dressed) and 089 or 090, 100, 68)
+
+					print("taped?", 64, 82, 0)
+					-- palt(0, false) circ(94, 91, 3, 0) palt()
+					-- palt(0, false) circ(104, 91, 3, 0) palt()
+					-- taped_marker_x = (wound.taped) and 94 or 104
+					spr((wound.taped) and 089 or 090, 100, 82)
+				end
 			end
 
 			if (wearing_clothing > 0) sspr(0, 56, 14, 94, 24, 24, 28, 188)
 		end
-
-		spr(075, 110, 24, 2, 2)
-		spr(077, 110, 37, 2, 2)
-		spr(107, 109, 52, 2, 2)
-		pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
-		spr(105, 111, 80, 2, 2)
-
-		print(tool_selected, 0, 0, 5)
-
-		print(triage_cursor_x .. " " .. triage_cursor_y, 0, 8, 7)
 
 		if tool_selected != "none" then
 			if (tool_selected == "soap") tool_spr = 075
@@ -446,6 +484,10 @@ function _draw()
 		end
 
 		spr(067, triage_cursor_x, triage_cursor_y)
+
+		print(tool_selected, 2, 2, 5) -- debug
+		print(triage_cursor_x .. " " .. triage_cursor_y, 2, 8, 7) -- debug
+		print(show_clipboard, 2, 16, 5) -- debug
 	end
 
 	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
@@ -630,7 +672,7 @@ function _update()
 		end
 	end
 
-	if curr_screen == 11 then
+	if curr_screen == 11 then -- triage mode
 		if (btn(0)) triage_cursor_x -= 2
 		if (btn(1)) triage_cursor_x += 2
 		if (btn(2)) triage_cursor_y -= 2
@@ -646,7 +688,7 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 66 and triage_cursor_y <= 80 and btnp(4)) tool_selected = "tape"
 		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 94 and btnp(4)) tool_selected = "lens"
 
-		if (btnp(5) and tool_selected != "none") tool_selected = "none"
+		if (btnp(5) and tool_selected != "none") tool_selected = "none" show_clipboard = false
 
 		wounds_under_clothing = 0
 
@@ -666,6 +708,10 @@ function _update()
 							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
 							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
 							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+							if tool_selected == "lens" then
+								show_clipboard = (not show_clipboard) and true or false
+								wound.details = (not wound.details) and true or false
+							end
 						else
 							wounds_under_clothing += 1
 						end
@@ -679,13 +725,13 @@ function _update()
 				triage_cursor_y <= 101
 				then
 					if btnp(4) and tool_selected == "scissor" then
-						for wound in all(wounds) do
-							if (wound.under_clothing) wound.under_clothing = false
-						end
+						if (wound.under_clothing) wound.under_clothing = false
 					end
 				end
 
-				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) del(wounded.wounds, wound)
+				if (not show_clipboard and wound.details) wound.details = false
+
+				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) del(wounded.wounds, wound) -- wip: improve remove of object
 			end
 
 			if (#wounded.wounds == 0) del(wounded_civs_pcs, wounded)
@@ -883,7 +929,7 @@ end
 function draw_civ(civ)
 	if civ.on_board == false then
 		spr(civ.spr,civ.x,civ.y)
-		print(#civ.wounds, civ.x+8, civ.y-8)
+		print(#civ.wounds, civ.x+8, civ.y-8) -- debug
 	end
 end
 
@@ -1205,20 +1251,20 @@ __gfx__
 0cccc77c0000000000000000000000000000000000000000d666d1511116d115099899900989a8900a99aaa0d0d55d0ddddddddd777777770000000000000000
 00cc77c00000000000000000000000000000000000000000055dd155555dd15009889890088a9890098999a000d00d00dddddddd777777770000000000000000
 000ccc000000000000000000000000000000005555555555000111000001110008888880098898800888989000d00d00dddddddd777777770000000000000000
-06006000060060000600000000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-00600060006000600060006001710000000000000000000000000000000000000000000000000000000000000000000000000000000777770000000000000000
-0606060606000006000000060177100000000000000000000000000000000000000000000000000000000000000eeeeeeeeee000007666667000000000000000
-606660606000006060000000017771000000000000000000000000000000000000000000000000000000000000ee22222222ee000766ddd66700000000000000
-06060606000000060000000601777710000000000000000000000000000000000000000000000000000000000ee7eeeeeeee2ee0077666667777770000000000
-60006000600060006000600001771100000000000000000000000000000000000000000000000000000000000ee7eeeeeeee2ee007d77777d7dddd7000000000
-06060600060606000000000000117100000000000000000000000000000000000000000000000000000000000ee7eeeeeeee2ee007ddddddd7dddd7000000000
-00606060606060606000606000000000000000000000000000000000000000000000000000000000000000000ee7eeeeeeee2ee007ddddddd7dddd7000000000
-06666660000dfd000000000000000000000000000000000000000000000000000000000000000000000000000ee7eeeeeeee2ee007ddddddd7dddd7000000000
-677777660000dfd000000000000000000000000000000000000000000000000000000000000000000000000002ee77777777ee2007ddddddd7dddd7000000000
-6777767600000dfd000000000000000000000000000000000000000000000000000000000000000000000000022eeeeeeeeee22007dddd6d67dddd7000000000
-67776766d00000df000000000000000000000000000000000000000000000000000000000000000000000000002222222222220007ddd6d6d7dddd7000000000
-67767676fd00000d000000000000000000000000000000000000000000000000000000000000000000000000000222222222200007dd6d6d6777770000000000
-67676766dfd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000076d6d67000000000000000
+060060000600600006000000001000000000000000000000000000000000000000000000000dd000000777770000000000000000000000000000000000000000
+00600060006000600060006001710000000000000000000000000000000000000000000000d00d00007777770000000000000000000777770000000000000000
+06060606060000060000000601771000000000000000000000000000000000000000000000d00d0007777777000eeeeeeeeee000007666667000000000000000
+606660606000006060000000017771000000000000000000000000000000000000000000000dd0007777777700ee22222222ee000766ddd66700000000000000
+06060606000000060000000601777710000000000000000000000000000000000000000000dddd00777777770ee7eeeeeeee2ee0077666667777770000000000
+600060006000600060006000017711000000000000000000000000000000000000000000dddddddd777777770ee7eeeeeeee2ee007d77777d7dddd7000000000
+060606000606060000000000001171000000000000000000000000000000000000000000dddddddd777777770ee7eeeeeeee2ee007ddddddd7dddd7000000000
+006060606060606060006060000000000000000000000000000000000000000000000000dddddddd777777770ee7eeeeeeee2ee007ddddddd7dddd7000000000
+06666660000dfd00000000000000000000000000000000000000000000000000000000000000000b800080000ee7eeeeeeee2ee007ddddddd7dddd7000000000
+677777660000dfd000000000000000000000000000000000000000000000000000000000000000b00808000002ee77777777ee2007ddddddd7dddd7000000000
+6777767600000dfd0000000000000000000000000000000000000000000000000000000000000b0000800000022eeeeeeeeee22007dddd6d67dddd7000000000
+67776766d00000df00000000000000000000000000000000000000000000000000000000b000b00008080000002222222222220007ddd6d6d7dddd7000000000
+67767676fd00000d000000000000000000000000000000000000000000000000000000000b0b000080008000000222222222200007dd6d6d6777770000000000
+67676766dfd000000000000000000000000000000000000000000000000000000000000000b000000000000000000000000000000076d6d67000000000000000
 667676760dfd00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000777770000000000000000
 0666666000dfd0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 0000000000000000000000000000000000000000000000000000000000000000000000000006dddd000000000000000000000000000000000000000000000000
