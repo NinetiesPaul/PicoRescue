@@ -81,6 +81,9 @@ function _init()
 	tree_pcs = {}
 	civ_pcs = {}
 	wounded_civs_pcs = {}
+	wounded_civs = 0
+	current_civ_detailed_wound = 0
+	current_civ_wounds_number = 0
 
 	stats = {
 		["fire_put_out"] = 0,
@@ -146,7 +149,6 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = false,
-				["details"] = false,
 				["spr"] = 132
 			},
 			{
@@ -157,7 +159,6 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = true,
-				["details"] = false,
 				["spr"] = 133
 			},
 			{
@@ -168,7 +169,6 @@ function _init()
 				["dressed"] = false,
 				["taped"] = false,
 				["under_clothing"] = true,
-				["details"] = false,
 				["spr"] = 134
 			}
 		}
@@ -409,67 +409,70 @@ function _draw()
 
 		rect(0,0,127,127, 7)
 
-		for wounded in all(wounded_civs_pcs) do
+		sspr(16, 56, 14, 94, 24, 24, 28, 188)
 
-			sspr(16, 56, 14, 94, 24, 24, 28, 188)
+		wearing_clothing = 0
 
-			wearing_clothing = 0
+		for i=1, #wounded_civs_pcs[wounded_civs].wounds do
 
-			for i=1, #wounded.wounds do
-				local wound = wounded.wounds[i]
+			local wound = wounded_civs_pcs[wounded_civs].wounds[i]
 
-				if (wound.cleaned) palt(4, true)
-				if (not wound.bleeding) pal(8,14)
-				spr(wound.spr, wound.x, wound.y)
-				pal()
-				palt()
-				if (wound.dressed) spr(080, wound.x, wound.y)
-				if (wound.taped) spr(081, wound.x, wound.y)
-				if (wound.under_clothing) wearing_clothing += 1
+			print(current_civ_detailed_wound, 10, 42, 7)
+			print(current_civ_wounds_number, 10, 50, 7)
 
-				if not wound.details then
-					spr(075, 110, 24, 2, 2)
-					spr(077, 110, 37, 2, 2)
-					spr(107, 109, 52, 2, 2)
-					pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
-					spr(105, 111, 80, 2, 2)
-				else
-					rectfill(60, 26, 112, 108, 4)
-					palt(0, false) palt(7, true) spr(074, 60, 26, 1, 1) palt()
-					palt(0, false) palt(7, true) spr(074, 105, 26, 1, 1, true, false) palt()
-					palt(0, false) palt(7, true) spr(074, 105, 101, 1, 1, true, true) palt()
-					palt(0, false) palt(7, true) spr(074, 60, 101, 1, 1, false, true) palt()
-					rectfill(63, 29, 109, 105, 7)
-					sspr(72, 32, 8, 8, 78, 20, 16, 16)
+			if (wound.cleaned) palt(4, true)
+			if (not wound.bleeding) pal(8,14)
+			spr(wound.spr, wound.x, wound.y)
+			pal()
+			palt()
+			if (wound.dressed) spr(080, wound.x, wound.y)
+			if (wound.taped) spr(081, wound.x, wound.y)
+			if (wound.under_clothing) wearing_clothing += 1
 
-					print("cleaned?", 64, 40, 0) -- (wound.cleaned) and 11 or 8
-					-- palt(0, false) circ(94, 49, 3, 0) palt()
-					-- palt(0, false) circ(104, 49, 3, 0) palt()
-					-- cleaned_marker_x = (wound.cleaned) and 94 or 104
-					spr((wound.cleaned) and 089 or 090, 100, 40)
-
-					print("bleeding?", 64, 54, 0)
-					-- palt(0, false) circ(94, 63, 3, 0) palt()
-					-- palt(0, false) circ(104, 63, 3, 0) palt()
-					-- bleeding_marker_x = (wound.bleeding) and 94 or 104
-					spr((wound.bleeding) and 089 or 090, 100, 54)
-
-					print("dressed?", 64, 68, 0)
-					-- palt(0, false) circ(94, 77, 3, 0) palt()
-					-- palt(0, false) circ(104, 77, 3, 0) palt()
-					-- dressed_marker_x = (wound.dressed) and 94 or 104
-					spr((wound.dressed) and 089 or 090, 100, 68)
-
-					print("taped?", 64, 82, 0)
-					-- palt(0, false) circ(94, 91, 3, 0) palt()
-					-- palt(0, false) circ(104, 91, 3, 0) palt()
-					-- taped_marker_x = (wound.taped) and 94 or 104
-					spr((wound.taped) and 089 or 090, 100, 82)
-				end
+			if current_civ_detailed_wound == 0 then
+				spr(075, 110, 24, 2, 2)
+				spr(077, 110, 37, 2, 2)
+				spr(107, 109, 52, 2, 2)
+				pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
+				spr(105, 111, 80, 2, 2)
 			end
 
-			if (wearing_clothing > 0) sspr(0, 56, 14, 94, 24, 24, 28, 188)
+			if i == current_civ_detailed_wound then
+				rectfill(60, 26, 112, 108, 4)
+				palt(0, false) palt(7, true) spr(074, 60, 26, 1, 1) palt()
+				palt(0, false) palt(7, true) spr(074, 105, 26, 1, 1, true, false) palt()
+				palt(0, false) palt(7, true) spr(074, 105, 101, 1, 1, true, true) palt()
+				palt(0, false) palt(7, true) spr(074, 60, 101, 1, 1, false, true) palt()
+				rectfill(63, 29, 109, 105, 7)
+				sspr(72, 32, 8, 8, 78, 20, 16, 16)
+
+				print("cleaned?", 64, 40, 0) -- (wound.cleaned) and 11 or 8
+				-- palt(0, false) circ(94, 49, 3, 0) palt()
+				-- palt(0, false) circ(104, 49, 3, 0) palt()
+				-- cleaned_marker_x = (wound.cleaned) and 94 or 104
+				spr((wound.cleaned) and 089 or 090, 100, 40)
+
+				print("bleeding?", 64, 54, 0)
+				-- palt(0, false) circ(94, 63, 3, 0) palt()
+				-- palt(0, false) circ(104, 63, 3, 0) palt()
+				-- bleeding_marker_x = (wound.bleeding) and 94 or 104
+				spr((wound.bleeding) and 089 or 090, 100, 54)
+
+				print("dressed?", 64, 68, 0)
+				-- palt(0, false) circ(94, 77, 3, 0) palt()
+				-- palt(0, false) circ(104, 77, 3, 0) palt()
+				-- dressed_marker_x = (wound.dressed) and 94 or 104
+				spr((wound.dressed) and 089 or 090, 100, 68)
+
+				print("taped?", 64, 82, 0)
+				-- palt(0, false) circ(94, 91, 3, 0) palt()
+				-- palt(0, false) circ(104, 91, 3, 0) palt()
+				-- taped_marker_x = (wound.taped) and 94 or 104
+				spr((wound.taped) and 089 or 090, 100, 82)
+			end
 		end
+
+		if (wearing_clothing > 0) sspr(0, 56, 14, 94, 24, 24, 28, 188)
 
 		if tool_selected != "none" then
 			if (tool_selected == "soap") tool_spr = 075
@@ -684,54 +687,55 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 66 and triage_cursor_y <= 80 and btnp(4)) tool_selected = "tape"
 		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 94 and btnp(4)) tool_selected = "lens"
 
-		if (btnp(5)) tool_selected = "none"
+		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
 
 		wounds_under_clothing = 0
 
-		for wounded in all(wounded_civs_pcs) do
+		current_civ_wounds_number = #wounded_civs_pcs[wounded_civs].wounds
+		local i = 1
+		for wound in all(wounded_civs_pcs[wounded_civs].wounds) do
 
-			for wound in all(wounded.wounds) do
-
-				if
-				triage_cursor_x >= wound.x and
-				triage_cursor_x <= wound.x + 8 and
-				triage_cursor_y >= wound.y and
-				triage_cursor_y <= wound.y + 8
-				then
-					if btnp(4) then
-						if not wound.under_clothing then
-							if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
-							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
-							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
-							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-							if (tool_selected == "lens") wound.details = (not wound.details) and true or false
-							
-						else
-							wounds_under_clothing += 1
-						end
+			if
+			triage_cursor_x >= wound.x and
+			triage_cursor_x <= wound.x + 8 and
+			triage_cursor_y >= wound.y and
+			triage_cursor_y <= wound.y + 8
+			then
+				if btnp(4) then
+					if not wound.under_clothing then
+						if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+						if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+						if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+						if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+						if (tool_selected == "lens") current_civ_detailed_wound = i
+						
+					else
+						wounds_under_clothing += 1
 					end
 				end
-
-				if
-				triage_cursor_x >= 30 and
-				triage_cursor_x <= 50 and
-				triage_cursor_y >= 68 and
-				triage_cursor_y <= 101
-				then
-					if btnp(4) and tool_selected == "scissor" then
-						if (wound.under_clothing) wound.under_clothing = false
-					end
-				end
-
-				if (tool_selected != "lens") wound.details = false
-
-				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) del(wounded.wounds, wound) -- wip: improve remove of object
 			end
 
-			if (#wounded.wounds == 0) del(wounded_civs_pcs, wounded)
+			if
+			triage_cursor_x >= 30 and
+			triage_cursor_x <= 50 and
+			triage_cursor_y >= 68 and
+			triage_cursor_y <= 101
+			then
+				if btnp(4) and tool_selected == "scissor" then
+					if (wound.under_clothing) wound.under_clothing = false
+				end
+			end
+
+			if (tool_selected != "lens") current_civ_detailed_wound = 0
+
+			if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) current_civ_wounds_number -= 1 -- wip: improve remove of object
+
+			i += 1
 		end
 
-		if (#wounded_civs_pcs == 0) curr_screen = 9
+		if (current_civ_wounds_number == 0) wounded_civs -= 1
+
+		if (wounded_civs == 0) curr_screen = 9
 	end
 
 	if block_btns then
@@ -1026,6 +1030,7 @@ function droping_off()
 
 			if civ.y >= 112 then
 				add(wounded_civs_pcs, civ)
+				wounded_civs += 1
 
 				del(civ_pcs,civ)
 				player.rescuing = false
