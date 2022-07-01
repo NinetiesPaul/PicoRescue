@@ -92,8 +92,8 @@ function _init()
 	difficulty = "";
 	difficulties = {
 	"easy",
-	-- "normal",
-	-- "hard"
+	-- "normal", -- debug
+	-- "hard" -- debug
 	}
 
 	civ_spawn = {
@@ -132,7 +132,6 @@ function _init()
 	triage_cursor_x = 64
 	triage_cursor_y = 64
 	tool_selected = "none"
-	show_clipboard = false
 
 	wounds_created = false
 	all_wounds =
@@ -410,22 +409,6 @@ function _draw()
 
 		rect(0,0,127,127, 7)
 
-		if not show_clipboard then
-			spr(075, 110, 24, 2, 2)
-			spr(077, 110, 37, 2, 2)
-			spr(107, 109, 52, 2, 2)
-			pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
-			spr(105, 111, 80, 2, 2)
-		else
-			rectfill(60, 26, 112, 108, 4)
-			palt(0, false) palt(7, true) spr(074, 60, 26, 1, 1) palt()
-			palt(0, false) palt(7, true) spr(074, 105, 26, 1, 1, true, false) palt()
-			palt(0, false) palt(7, true) spr(074, 105, 101, 1, 1, true, true) palt()
-			palt(0, false) palt(7, true) spr(074, 60, 101, 1, 1, false, true) palt()
-			rectfill(63, 29, 109, 105, 7)
-			sspr(72, 32, 8, 8, 78, 20, 16, 16)
-		end
-
 		for wounded in all(wounded_civs_pcs) do
 
 			sspr(16, 56, 14, 94, 24, 24, 28, 188)
@@ -444,7 +427,21 @@ function _draw()
 				if (wound.taped) spr(081, wound.x, wound.y)
 				if (wound.under_clothing) wearing_clothing += 1
 
-				if wound.details and show_clipboard then
+				if not wound.details then
+					spr(075, 110, 24, 2, 2)
+					spr(077, 110, 37, 2, 2)
+					spr(107, 109, 52, 2, 2)
+					pal(7, 135) pal(6, 143) spr(109, 110, 64, 2, 2) pal()
+					spr(105, 111, 80, 2, 2)
+				else
+					rectfill(60, 26, 112, 108, 4)
+					palt(0, false) palt(7, true) spr(074, 60, 26, 1, 1) palt()
+					palt(0, false) palt(7, true) spr(074, 105, 26, 1, 1, true, false) palt()
+					palt(0, false) palt(7, true) spr(074, 105, 101, 1, 1, true, true) palt()
+					palt(0, false) palt(7, true) spr(074, 60, 101, 1, 1, false, true) palt()
+					rectfill(63, 29, 109, 105, 7)
+					sspr(72, 32, 8, 8, 78, 20, 16, 16)
+
 					print("cleaned?", 64, 40, 0) -- (wound.cleaned) and 11 or 8
 					-- palt(0, false) circ(94, 49, 3, 0) palt()
 					-- palt(0, false) circ(104, 49, 3, 0) palt()
@@ -487,7 +484,6 @@ function _draw()
 
 		print(tool_selected, 2, 2, 5) -- debug
 		print(triage_cursor_x .. " " .. triage_cursor_y, 2, 8, 7) -- debug
-		print(show_clipboard, 2, 16, 5) -- debug
 	end
 
 	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
@@ -688,7 +684,7 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 66 and triage_cursor_y <= 80 and btnp(4)) tool_selected = "tape"
 		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 94 and btnp(4)) tool_selected = "lens"
 
-		if (btnp(5) and tool_selected != "none") tool_selected = "none" show_clipboard = false
+		if (btnp(5)) tool_selected = "none"
 
 		wounds_under_clothing = 0
 
@@ -708,10 +704,8 @@ function _update()
 							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
 							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
 							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-							if tool_selected == "lens" then
-								show_clipboard = (not show_clipboard) and true or false
-								wound.details = (not wound.details) and true or false
-							end
+							if (tool_selected == "lens") wound.details = (not wound.details) and true or false
+							
 						else
 							wounds_under_clothing += 1
 						end
@@ -729,7 +723,7 @@ function _update()
 					end
 				end
 
-				if (not show_clipboard and wound.details) wound.details = false
+				if (tool_selected != "lens") wound.details = false
 
 				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) del(wounded.wounds, wound) -- wip: improve remove of object
 			end
