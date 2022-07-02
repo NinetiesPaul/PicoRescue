@@ -393,6 +393,7 @@ function _draw()
 			end
 		end ]]--
 		print(mission_has_wounded, 64, 0) -- debug
+		print(#wounded_civs_pcs, 64, 8) -- debug
 
 		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, 0)
 
@@ -412,16 +413,24 @@ function _draw()
 		sspr(16, 56, 14, 94, 24, 24, 28, 188)
 
 		wearing_clothing = 0
-		
 
-		print("wounded_civs" .. " " .. wounded_civ, 10, 34, 7)
+		print("civ " .. wounded_civ, 10, 20, 7)
+		print("wounds " .. current_civ_wounds_number, 10, 28, 7)
 
-		for i=1, #wounded_civs_pcs[wounded_civ].wounds do
+		-- leave this commented on the code
+
+		for j=1, #wounded_civs_pcs do
+			local wounded = wounded_civs_pcs[j]
+			print(j, 70, 64 + j * 8, 7)
+			for k=1, #wounded.wounds do
+				local wound = wounded.wounds[k]
+				print((wound.cleaned) and "y" or "n", 70 + k * 8, 64 + j * 8, 7)
+			end
+		end
+
+		for i=1, #(wounded_civs_pcs)[wounded_civ].wounds do
 
 			local wound = wounded_civs_pcs[wounded_civ].wounds[i]
-
-			print("detailed_wound" .. " " .. current_civ_detailed_wound, 10, 42, 7)
-			print("wounds_number" .. " " .. current_civ_wounds_number, 10, 50, 7)
 
 			if (wound.cleaned) palt(4, true)
 			if (not wound.bleeding) pal(8,14)
@@ -670,12 +679,13 @@ function _update()
 			music(-1)
 			prop_sound = false
 			block_btns = true
-			if (mission_has_wounded) civ_wounded = #wounded_civs_pcs
+			if (mission_has_wounded) wounded_civ = #wounded_civs_pcs
 			curr_screen = (mission_has_wounded) and 11 or 9
 		end
 	end
 
 	if curr_screen == 11 then -- triage mode
+
 		if (btn(0)) triage_cursor_x -= 2
 		if (btn(1)) triage_cursor_x += 2
 		if (btn(2)) triage_cursor_y -= 2
@@ -694,49 +704,55 @@ function _update()
 		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
 
 		wounds_under_clothing = 0
-		current_civ_wounds_number = #wounded_civs_pcs[wounded_civ].wounds
 
-		for i=1, #wounded_civs_pcs[wounded_civ].wounds do
+		for k=1, #wounded_civs_pcs do
 
-			local wound = wounded_civs_pcs[wounded_civ].wounds[i]
+			if k == wounded_civ then 
 
-			if
-				triage_cursor_x >= wound.x and
-				triage_cursor_x <= wound.x + 8 and
-				triage_cursor_y >= wound.y and
-				triage_cursor_y <= wound.y + 8
-				then
-				if btnp(4) then
-					if not wound.under_clothing then
-						if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
-						if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
-						if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
-						if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-						if (tool_selected == "lens") current_civ_detailed_wound = i
-						
-					else
-						wounds_under_clothing += 1
+				current_civ_wounds_number = #wounded_civs_pcs[k].wounds
+
+				for i=1, current_civ_wounds_number do
+
+					local wound = wounded_civs_pcs[k].wounds[i]
+
+					if
+						triage_cursor_x >= wound.x and
+						triage_cursor_x <= wound.x + 8 and
+						triage_cursor_y >= wound.y and
+						triage_cursor_y <= wound.y + 8
+						then
+						if btnp(4) then
+							if not wound.under_clothing then
+								if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+								if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+								if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+								if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+								if (tool_selected == "lens") current_civ_detailed_wound = i					
+							else
+								wounds_under_clothing += 1
+							end
+						end
 					end
+
+					if
+						triage_cursor_x >= 30 and
+						triage_cursor_x <= 50 and
+						triage_cursor_y >= 68 and
+						triage_cursor_y <= 101
+						then
+						if btnp(4) and tool_selected == "scissor" then
+							if (wound.under_clothing) wound.under_clothing = false
+						end
+					end
+
+					if (tool_selected != "lens") current_civ_detailed_wound = 0
+
+					if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) current_civ_wounds_number -= 1 
 				end
+
+				if (current_civ_wounds_number == 0) wounded_civ -= 1
 			end
-
-			if
-				triage_cursor_x >= 30 and
-				triage_cursor_x <= 50 and
-				triage_cursor_y >= 68 and
-				triage_cursor_y <= 101
-				then
-				if btnp(4) and tool_selected == "scissor" then
-					if (wound.under_clothing) wound.under_clothing = false
-				end
-			end
-
-			if (tool_selected != "lens") current_civ_detailed_wound = 0
-
-			if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) current_civ_wounds_number -= 1 -- wip: improve remove of object
 		end
-
-		if (current_civ_wounds_number == 0) wounded_civ -= 1
 
 		if (wounded_civ == 0) curr_screen = 9
 	end
@@ -1034,7 +1050,6 @@ function droping_off()
 			if civ.y >= 112 then
 				if #civ.wounds > 0 then
 					add(wounded_civs_pcs, civ)
-					wounded_civ += 1
 				end
 
 				del(civ_pcs,civ)
