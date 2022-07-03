@@ -46,6 +46,7 @@ function _init()
 		["rx2"] = 0,
 		["ry2"] = 0,
 		["finance"] = 1500,
+		["ladder_spd"] = 5
 	}
 
 	--[[
@@ -83,7 +84,6 @@ function _init()
 	wounded_civs_pcs = {}
 	wounded_civ = 0
 	current_civ_detailed_wound = 0
-	current_civ_wounds_number = 0
 
 	stats = {
 		["fire_put_out"] = 0,
@@ -415,7 +415,7 @@ function _draw()
 		wearing_clothing = 0
 
 		print("civ " .. wounded_civ, 10, 20, 7)
-		print("wounds " .. current_civ_wounds_number, 10, 28, 7)
+		print("wounds " .. #wounded_civs_pcs[wounded_civ].wounds, 10, 28, 7)
 
 		-- leave this commented on the code
 
@@ -707,13 +707,13 @@ function _update()
 
 		for k=1, #wounded_civs_pcs do
 
-			if k == wounded_civ then 
+			local wounded = wounded_civs_pcs[k]
 
-				current_civ_wounds_number = #wounded_civs_pcs[k].wounds
+			for i=1, #wounded.wounds do
 
-				for i=1, current_civ_wounds_number do
+				local wound = wounded.wounds[i]
 
-					local wound = wounded_civs_pcs[k].wounds[i]
+				if k == wounded_civ then
 
 					if
 						triage_cursor_x >= wound.x and
@@ -745,16 +745,17 @@ function _update()
 						end
 					end
 
-					if (tool_selected != "lens") current_civ_detailed_wound = 0
-
-					if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) current_civ_wounds_number -= 1 
 				end
 
-				if (current_civ_wounds_number == 0) wounded_civ -= 1
+				if (tool_selected != "lens") current_civ_detailed_wound = 0
+
+				-- if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) current_civ_wounds_number -= 1 
 			end
+
+			-- if (current_civ_wounds_number == 0) wounded_civ -= 1
 		end
 
-		if (wounded_civ == 0) curr_screen = 9
+		-- if (wounded_civ == 0) curr_screen = 9
 	end
 
 	if block_btns then
@@ -924,8 +925,13 @@ function create_civ()
 				if civ_is_wounded > 0 then
 					wound_type = rnd({"arms"}) -- wip: add legs
 
-					for i = 1, civ_is_wounded do 
-						add(wounds, all_wounds[wound_type][i])
+					for i = 1, civ_is_wounded do
+						for k,v in pairs(all_wounds) do
+							if k == wound_type then
+								local wound = v[i]
+								add(wounds, wound)
+							end
+						end
 					end
 
 					mission_has_wounded = true
@@ -999,10 +1005,10 @@ function pickup_civ(civ)
 		civ.clock += 1
 		if (civ.clock % 5 == 0) civ.spr += 1
 		if (civ.spr > 036) civ.spr = 035
-		if (civ.y > player.y) civ.y -= 0.25
+		if (civ.y > player.y) civ.y -= player.ladder_spd
 		player.rescuing = true
 
-		if civ.y == player.y then
+		if civ.y <= player.y then
 			civ.on_board = true
 			civ.rdy_to_climb_up = false
 			player.dpl_ldd_pkup = false
@@ -1045,7 +1051,7 @@ function droping_off()
 			civ.clock += 1
 			if (civ.clock % 5 == 0) civ.spr += 1
 			if (civ.spr > 036) civ.spr = 035
-			if (civ.y < 112) civ.y += 0.25
+			if (civ.y < 112) civ.y += player.ladder_spd
 
 			if civ.y >= 112 then
 				if #civ.wounds > 0 then
