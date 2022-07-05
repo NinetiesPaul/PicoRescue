@@ -45,7 +45,7 @@ function _init()
 		rx2 = 0,
 		ry2 = 0,
 		finance = 1500,
-		ladder_climb_spd = 5 -- 0.25 debug
+		ladder_climb_spd = 0.25
 	}
 
 	curr_screen = 1
@@ -67,8 +67,8 @@ function _init()
 	tree_pcs = {}
 	civ_pcs = {}
 	wounded_civs_pcs = {}
-	wounded_civ = 0
 	current_civ_detailed_wound = 0
+	current_wounds_treated = 0
 	current_wounds =
 	{
 		wounds = {},
@@ -77,7 +77,6 @@ function _init()
 		rescuee_name = "",
 		wearing_clothing = "true"
 	}
-	current_wounds_treated = 0
 
 	triage_cursor_x = 64
 	triage_cursor_y = 64
@@ -90,22 +89,10 @@ function _init()
 		missions_finished = 0,
 		missions_earnings = 0,
 	}
-	difficulties =
-	{
-		"easy",
-		-- "normal", -- debug
-		-- "hard" -- debug
-	}
+	difficulties = { "easy", "normal", "hard" }
 	civ_spawn =
 	{
-		easy =
-		{
-			120,
-			140, -- debug
-			-- 230,
-			-- 320,
-			-- 430
-		},
+		easy = { 120, 230, 320, 430 },
 		normal = { 250, 350, 470, 590 },
 		hard = { 290, 390, 540, 650, 740 }
 	}
@@ -707,7 +694,6 @@ function _update()
 			music(-1)
 			prop_sound = false
 			block_btns = true
-			if (mission_has_wounded) wounded_civ = #wounded_civs_pcs
 			curr_screen = (mission_has_wounded) and 11 or 9
 		end
 	end
@@ -735,12 +721,12 @@ function _update()
 		if (tool_selected != "lens") current_civ_detailed_wound = 0
 
 		if #current_wounds.wounds == 0 then
-			current_wounds.wounds = wounded_civs_pcs[wounded_civ].wounds
-			current_wounds.wound_type = wounded_civs_pcs[wounded_civ].wound_type
+			current_wounds.wounds = wounded_civs_pcs[#wounded_civs_pcs].wounds
+			current_wounds.wound_type = wounded_civs_pcs[#wounded_civs_pcs].wound_type
 			current_wounds.side = "front"
-			current_wounds.rescuee_name = wounded_civs_pcs[wounded_civ].name
+			current_wounds.rescuee_name = wounded_civs_pcs[#wounded_civs_pcs].name
 			current_wounds.wearing_clothing = true
-			del(wounded_civs_pcs, wounded_civs_pcs[wounded_civ])
+			del(wounded_civs_pcs, wounded_civs_pcs[#wounded_civs_pcs])
 		end
 
 		for i=1, #current_wounds.wounds do
@@ -787,9 +773,9 @@ function _update()
 			end
 		end
 
-		if (#current_wounds.wounds == current_wounds_treated) current_wounds_treated = 0 current_wounds.wounds = {} wounded_civ -= 1
+		if (#current_wounds.wounds == current_wounds_treated) current_wounds_treated = 0 current_wounds.wounds = {}
 
-		if (wounded_civ == 0 and #wounded_civs_pcs == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
+		if (#wounded_civs_pcs == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
 	end
 
 	if block_btns then
@@ -956,7 +942,7 @@ function create_civ()
 				civ.name = rnd({ "aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA" })
 				local wounds = {}
 
-				civ_is_wounded = rnd({ 1, 2, 3 }) -- debug flr(rnd(4)) -- wip: use rng to flag civ as wounded
+				civ_is_wounded = (rnd(1) > 0.55) and rnd({ 1, 2, 3 })  or 0
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
 
