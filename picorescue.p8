@@ -72,9 +72,10 @@ function _init()
 	current_wounds =
 	{
 		wounds = {},
-		wound_type = ""
+		wound_type = "",
+		current_side = "front",
+		rescuee_name = ""
 	}
-	current_name = ""
 	current_wounds_treated = 0
 
 	triage_cursor_x = 64
@@ -444,8 +445,10 @@ function _draw()
 
 		rect(0,0,127,127, 7)
 
-		if (current_wounds.wound_type == "arms") sspr(16, 56, 14, 94, 24, 24, 28, 188)
-		if (current_wounds.wound_type == "legs") sspr(36, 65, 14, 120, 24, 12, 28, 240)
+		flip_x = (current_wounds.current_side == "front") and true or false
+
+		if (current_wounds.wound_type == "arms") sspr(16, 56, 14, 94, 24, 24, 28, 188, flip_x)
+		if (current_wounds.wound_type == "legs") sspr(36, 65, 14, 120, 24, 12, 28, 240, flip_x)
 
 		wearing_clothing = 0
 
@@ -479,6 +482,7 @@ function _draw()
 				spr(108, 109, 52, 2, 2)
 				pal(7, 135) pal(6, 143) spr(110, 110, 64, 2, 2) pal()
 				spr(106, 111, 80, 2, 2)
+				spr(072, 111, 96, 2, 2)
 			end
 
 			if i == current_civ_detailed_wound then
@@ -490,7 +494,7 @@ function _draw()
 				rectfill(63, 29, 109, 105, 7)
 				sspr(0, 48, 8, 8, 78, 20, 16, 16)
 
-				print("PT: " .. current_name, 64, 40, 0)
+				print("PT: " .. current_wounds.rescuee_name, 64, 40, 0)
 				line(64, 46, 108, 46)
 
 				print("cLEANED?", 64, 54, 0) -- (wound.cleaned) and 11 or 8
@@ -519,8 +523,8 @@ function _draw()
 			end
 		end
 
-		if (wearing_clothing > 0 and current_wounds.wound_type == "arms") sspr(0, 56, 14, 94, 24, 24, 28, 188)
-		if (wearing_clothing > 0 and current_wounds.wound_type == "legs") sspr(58, 64, 16, 120, 22, 12, 32, 240)
+		if (wearing_clothing > 0 and current_wounds.wound_type == "arms") sspr(0, 56, 14, 94, 24, 24, 28, 188, flip_x)
+		if (wearing_clothing > 0 and current_wounds.wound_type == "legs") sspr(58, 64, 16, 120, 22, 12, 32, 240, flip_x)
 
 		if tool_selected != "none" then
 			if (tool_selected == "soap") tool_spr = 076
@@ -737,12 +741,16 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 66 and triage_cursor_y <= 80 and btnp(4)) tool_selected = "tape"
 		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 94 and btnp(4)) tool_selected = "lens"
 
+		if (triage_cursor_x > 100 and triage_cursor_y >= 96 and triage_cursor_y <= 120 and btnp(4)) current_wounds.current_side = (current_wounds.current_side == "front") and "back" or "front"
+
 		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
+		if (tool_selected != "lens") current_civ_detailed_wound = 0
 
 		if #current_wounds.wounds == 0 then
 			current_wounds.wounds = wounded_civs_pcs[wounded_civ].wounds
 			current_wounds.wound_type = wounded_civs_pcs[wounded_civ].wound_type
-			current_name = wounded_civs_pcs[wounded_civ].name
+			current_wounds.current_side = "front"
+			current_wounds.rescuee_name = wounded_civs_pcs[wounded_civ].name
 			del(wounded_civs_pcs, wounded_civs_pcs[wounded_civ])
 		end
 
@@ -752,49 +760,47 @@ function _update()
 
 			local wound = current_wounds.wounds[i]
 
-			if not wound.triaged then
+			if not wound.triaged then -- check if wound.side equals current_wounds side
 
-			if
-				triage_cursor_x >= wound.x and
-				triage_cursor_x <= wound.x + 8 and
-				triage_cursor_y >= wound.y and
-				triage_cursor_y <= wound.y + 8
-				then
-				if btnp(4) then
-					if not wound.under_clothing then
-						if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
-						if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
-						if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
-						if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-						if (tool_selected == "lens") current_civ_detailed_wound = i					
-					else
-						wounds_under_clothing += 1
+				if
+					triage_cursor_x >= wound.x and
+					triage_cursor_x <= wound.x + 8 and
+					triage_cursor_y >= wound.y and
+					triage_cursor_y <= wound.y + 8
+					then
+					if btnp(4) then
+						if not wound.under_clothing then
+							if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+							if (tool_selected == "lens") current_civ_detailed_wound = i					
+						else
+							wounds_under_clothing += 1
+						end
 					end
 				end
-			end
 
-			wound_clothing_x1 = (current_wounds.wound_type == "arms") and 30 or 22
-			wound_clothing_y1 = (current_wounds.wound_type == "arms") and 68 or 13
-			wound_clothing_x2 = (current_wounds.wound_type == "arms") and 50 or 46
-			wound_clothing_y2 = (current_wounds.wound_type == "arms") and 101 or 120
+				wound_clothing_x1 = (current_wounds.wound_type == "arms") and 30 or 22
+				wound_clothing_y1 = (current_wounds.wound_type == "arms") and 68 or 13
+				wound_clothing_x2 = (current_wounds.wound_type == "arms") and 50 or 46
+				wound_clothing_y2 = (current_wounds.wound_type == "arms") and 101 or 120
 
-			if
-				triage_cursor_x >= wound_clothing_x1 and
-				triage_cursor_x <= wound_clothing_x2 and
-				triage_cursor_y >= wound_clothing_y1 and
-				triage_cursor_y <= wound_clothing_y2
-				then
-				if btnp(4) and tool_selected == "scissor" then
-					if (wound.under_clothing) wound.under_clothing = false
+				if
+					triage_cursor_x >= wound_clothing_x1 and
+					triage_cursor_x <= wound_clothing_x2 and
+					triage_cursor_y >= wound_clothing_y1 and
+					triage_cursor_y <= wound_clothing_y2
+					then
+					if btnp(4) and tool_selected == "scissor" then
+						if (wound.under_clothing) wound.under_clothing = false
+					end
 				end
-			end
 
-			if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) wound.triaged = true current_wounds_treated += 1
+				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) wound.triaged = true current_wounds_treated += 1
 
 			end
 		end
-
-		if (tool_selected != "lens") current_civ_detailed_wound = 0
 
 		if (#current_wounds.wounds == current_wounds_treated) current_wounds_treated = 0 current_wounds.wounds = {} wounded_civ -= 1
 
@@ -962,12 +968,12 @@ function create_civ()
 				civ.distance = 0
 				civ.closer_to_player = false
 				civ.clock = 0
-				civ.name = rnd({"aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA"})
+				civ.name = rnd({ "aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA" })
 				local wounds = {}
 
-				civ_is_wounded = rnd({1,2,3}) -- debug flr(rnd(4)) -- wip: use rng to flag civ as wounded
+				civ_is_wounded = rnd({ 1, 2, 3 }) -- debug flr(rnd(4)) -- wip: use rng to flag civ as wounded
 				if civ_is_wounded > 0 then
-					wound_type = rnd({"arms", "legs"}) -- wip: arms, legs
+					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
 
 					for i = 1, civ_is_wounded do
 						for k,v in pairs(excoriation) do
@@ -983,6 +989,7 @@ function create_civ()
 									under_clothing = v[i].under_clothing,
 									triaged = v[i].triaged,
 									spr = rnd({ 082, 083, 084, 098, 099, 100 }),
+									side = rnd({ "front", "back" })
 								}
 								add(wounds, wound)
 							end
@@ -1186,13 +1193,13 @@ function create_fire()
 				local fire = {}
 				fire.x = value
 				fire.y = 112
-				fire.smk_mh = rnd({1,2,3})
+				fire.smk_mh = rnd({ 1, 2, 3 })
 				fire.smk_h = 0
-				fire.smk_cd_time = rnd({45, 60})
+				fire.smk_cd_time = rnd({ 45, 60 })
 				fire.smk_cd = false
 				fire.counter = 0
 				fire.spr = 056
-				fire.cadence = rnd({15, 30, 45})
+				fire.frequency = rnd({ 15, 30, 45 })
 				add(fire_pcs, fire)
 			end
 		end
@@ -1210,7 +1217,7 @@ function update_fire(fire)
 	if (counter % 2 == 0) fire.spr += 1
 	if (fire.spr > 058) fire.spr = 56
 
-	if fire.counter % fire.cadence == 0 and fire.smk_h < fire.smk_mh then
+	if fire.counter % fire.frequency == 0 and fire.smk_h < fire.smk_mh then
 		fire.smk_h += 1
 		local smoke = {}
 		smoke.x = fire.x
@@ -1226,7 +1233,7 @@ function update_fire(fire)
 
 	if fire.smk_cd and fire.counter % fire.smk_cd_time == 0 then
 		fire.smk_h = 0
-		fire.smk_mh = rnd({1,2,3})
+		fire.smk_mh = rnd({ 1, 2, 3 f})
 		fire.smk_cd = false
 	end
 end
