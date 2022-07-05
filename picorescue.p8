@@ -448,9 +448,6 @@ function _draw()
 
 		flip_x = (current_wounds.side == "front") and true or false
 
-		print(current_wounds.wearing_clothing, 64, 112, 5)
-		print(current_wounds.side, 64, 120, 5)
-
 		if (current_wounds.wound_type == "arms") sspr(16, 56, 14, 94, 24, 24, 28, 188, flip_x)
 		if (current_wounds.wound_type == "legs") sspr(36, 65, 14, 120, 24, 12, 28, 240, flip_x)
 
@@ -465,6 +462,15 @@ function _draw()
 		end
 		]]--
 
+		if current_civ_detailed_wound == 0 then
+			spr(076, 110, 24, 2, 2)
+			spr(078, 110, 37, 2, 2)
+			spr(108, 109, 52, 2, 2)
+			pal(7, 135) pal(6, 143) spr(110, 110, 64, 2, 2) pal()
+			spr(106, 111, 80, 2, 2)
+			spr(072, 111, 96, 2, 2)
+		end
+
 		for i=1, #current_wounds.wounds do
 
 			local wound = current_wounds.wounds[i]
@@ -478,15 +484,6 @@ function _draw()
 				palt()
 				if (wound.dressed) spr(080, wound.x, wound.y)
 				if (wound.taped) spr(081, wound.x, wound.y)
-
-				if current_civ_detailed_wound == 0 then
-					spr(076, 110, 24, 2, 2)
-					spr(078, 110, 37, 2, 2)
-					spr(108, 109, 52, 2, 2)
-					pal(7, 135) pal(6, 143) spr(110, 110, 64, 2, 2) pal()
-					spr(106, 111, 80, 2, 2)
-					spr(072, 111, 96, 2, 2)
-				end
 
 				if i == current_civ_detailed_wound then
 					rectfill(60, 26, 112, 108, 4)
@@ -527,10 +524,9 @@ function _draw()
 			spr(tool_spr, triage_cursor_x, triage_cursor_y, 2, 2)
 		end
 
-		spr(085, triage_cursor_x, triage_cursor_y)
-		print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
-
 		print(tool_selected, 2, 2, 5) -- debug
+		spr(085, triage_cursor_x, triage_cursor_y)
+		-- print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
 	end
 
 	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
@@ -962,7 +958,7 @@ function create_civ()
 
 				civ_is_wounded = rnd({ 1, 2, 3 }) -- debug flr(rnd(4)) -- wip: use rng to flag civ as wounded
 				if civ_is_wounded > 0 then
-					wound_type = rnd({ "arms" }) -- wip: arms, legs
+					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
 
 					for i = 1, civ_is_wounded do
 						for k,v in pairs(excoriation) do
