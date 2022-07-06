@@ -1192,7 +1192,7 @@ function update_fire(fire)
 		fire.smk_h += 1
 		local smoke = {}
 		smoke.x = fire.x
-		smoke.y = fire.y - fire.smk_h * 8
+		smoke.y = fire.y
 		smoke.spr = 049
 		smoke.damage = 0.175
 		add(smoke_pcs, smoke)
