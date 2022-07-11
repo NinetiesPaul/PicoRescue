@@ -985,16 +985,10 @@ function create_civ()
 end
 
 function draw_civ(civ)
-	-- print(flr(player.spotlight_py2)..","..civ.y, civ.x - 24, civ.y, 7)
-	-- print((flr(player.spotlight_py2) - civ.y) + 1, civ.x + 8, civ.y, 7)
-
 	draw_y = (flr(player.spotlight_py2) - civ.y) + 1
 	if (draw_y > 8 ) draw_y = 8
 
 	if civ.on_board == false then
-		-- print((player.px2 - flr(civ.x))-6, civ.x + 16, civ.y - 50, 7)
-		-- print((player.px2 < civ.x + 16) and "before" or "after", civ.x + 8, civ.y - 8, 7)
-
 		if (player.px2 < civ.x + 16) then
 			limit = ((player.px2 - flr(civ.x))-6 > 0) and (player.px2 - flr(civ.x))-6 or 0
 			if (limit > 8) limit = 8
@@ -1004,7 +998,6 @@ function draw_civ(civ)
 			end
 		else
 			limit = ((player.px2 - flr(civ.x))-6) - 10
-			-- print(limit, civ.x + 32, civ.y - 8, 7)
 			sspr(8 + limit, 16, 8 - limit, draw_y, civ.x + limit, civ.y)
 		end
 	end
@@ -1202,7 +1195,7 @@ function draw_fire(fire)
 end
 
 function update_fire(fire)
-	fire.radius = (counter % 1.5 == 0) and 15 or 14
+	fire.radius = (counter % 1.5 == 0) and 12 or 11
 	fire.counter += 1
 	if (counter % 2 == 0) fire.spr += 1
 	if (fire.spr > 058) fire.spr = 56
@@ -1229,11 +1222,28 @@ function update_fire(fire)
 end
 
 function draw_smoke(smoke)
-	spr(smoke.spr,smoke.x,smoke.y)
+	draw_y = (flr(player.spotlight_py2) - flr(smoke.y)) + 1
+	if (draw_y > 8) draw_y = 8
+
+
+	if flr(smoke.y) > (flr(player.spotlight_py1) - 4) then
+		if (player.px2 < smoke.x + 16) then
+			limit = ((player.px2 - flr(smoke.x))-6 > 0) and (player.px2 - flr(smoke.x))-6 or 0
+			if (limit > 8) limit = 8
+
+			for i=1, limit do
+				sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
+			end
+		else
+			limit = ((player.px2 - flr(smoke.x))-6) - 10
+			-- print(limit, smoke.x + 32, smoke.y - 8, 7)
+			sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
+		end
+	end
 end
 
 function move_smoke(smoke)
-	smoke.y -= 0.95
+	smoke.y -= 0.5
 	if (smoke.y < 68) smoke.spr = 050 smoke.damage = 0.050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
