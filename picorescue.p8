@@ -49,7 +49,8 @@ function _init()
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
 		spotlight_px2 = player_strt_x + 7,
-		spotlight_py2 = player_strt_y + 33
+		spotlight_py2 = player_strt_y + 33,
+		spotlight_height = 1
 	}
 
 	curr_screen = 1
@@ -340,7 +341,6 @@ function _draw()
 	end
 
 	if curr_screen == 2 then -- rotor mission
-		-- rectfill(0,0,128,119,12)
 		spr(006,drop_off_x,112)
 
 		flip_spr = (player.facing == "right") and true or false
@@ -351,10 +351,6 @@ function _draw()
 		spr(053, player.x, player.y - 8)
 		spr(player.vhc_front,player.x,player.y,1,1,flip_spr)
 		if (player.facing != false) spr(003,tail_pos,player.y,1,1,flip_spr)
-
-		for i = 1, player.ladder do
-			spr(001,player.x,player.y+i*8)
-		end
 
 		palt(0, false) rectfill(0, 0, 35, 20, 0) palt()
 		rectfill(0, 0, 35, 18, 13)
@@ -407,43 +403,28 @@ function _draw()
 		pal(7,0) spr(occup_spr,116,9) pal()
 		print(player.max_occup,124,12,0)
 
-		--[[ spr(006,0,32)
+		--[[
 		arrow_flip = (drop_off_x > player.x) and true or false
 		spr(037, 8 , 33, 1, 1, arrow_flip, false)
-		print(abs(flr(drop_off_x - player.x)), 16, 35) 
-
-		i=0
-		for civ in all(civ_pcs) do
-			if civ.closer_to_player and not civ.on_board then
-				spr(032,100,0+i*8)
-				arrow_flip = (civ.x > player.x) and true or false
-				spr(037,107,0+i*8,1,1,arrow_flip,false)
-				print(civ.distance, 116, 1 + i * 8, 5, 0)
-				i+=1
-			end
-		end ]]--
-
+		print(abs(flr(drop_off_x - player.x)), 16, 35)
+		spr(006,0,32)
+		]]--
 		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, 0)
 
-
-
-		sspr(80, 64, 3, 24, player.x, player.y + 10)
-		sspr(80, 64, 3, 24, player.x + 8, player.y + 10, 3, 24, true)		
+		sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x, player.y + 10)
+		sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x + 8, player.y + 10, 3, 24 + (player.spotlight_height * 8), true)		
 		rectfill(player.spotlight_px1, player.spotlight_py1, player.spotlight_px2, player.spotlight_py2, 2)
+		-- light dithering here
+
+		for i = 1, player.ladder do
+			spr(001,player.x,player.y+i*8)
+		end
+
 		foreach(fire_pcs,draw_fire)
 		foreach(civ_pcs,draw_civ)
 		foreach(smoke_pcs,draw_smoke)
 		foreach(water_drops,draw_water)
 		foreach(ground_pcs,draw_ground)
-
-		
-		--[[
-		palt(0, false) palt(6, true)
-		spr(139, player.x-8, player.y + 26)
-		spr(139, player.x, player.y + 26)
-		spr(139, player.x+8, player.y + 26)
-		palt(7, false)
-		]]--
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -942,7 +923,7 @@ function upd_pkup_area()
 	player.spotlight_px1 = player.x  + 3
 	player.spotlight_py1 = player.y  + 10
 	player.spotlight_px2 = player.x + 7
-	player.spotlight_py2 = player.y  + 33
+	player.spotlight_py2 = player.y  + 33 + (player.spotlight_height * 8)
 end
 -->8
 -- civilian logic
@@ -959,8 +940,6 @@ function create_civ()
 				civ.rdy_to_climb_up = false
 				civ.rdy_to_climb_down = false
 				civ.on_board = false
-				civ.distance = 0
-				civ.closer_to_player = false
 				civ.clock = 0
 				civ.name = rnd({ "aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA" })
 				local wounds = {}
@@ -1006,8 +985,11 @@ function create_civ()
 end
 
 function draw_civ(civ)
-	-- print(civ.x, civ.x + 16, civ.y - 50, 7)
-	-- print(player.x, player.x - 24, player.y, 7)
+	-- print(flr(player.spotlight_py2)..","..civ.y, civ.x - 24, civ.y, 7)
+	-- print((flr(player.spotlight_py2) - civ.y) + 1, civ.x + 8, civ.y, 7)
+
+	draw_y = (flr(player.spotlight_py2) - civ.y) + 1
+	if (draw_y > 8 ) draw_y = 8
 
 	if civ.on_board == false then
 		-- print((player.px2 - flr(civ.x))-6, civ.x + 16, civ.y - 50, 7)
@@ -1018,12 +1000,12 @@ function draw_civ(civ)
 			if (limit > 8) limit = 8
 
 			for i=1, limit do
-				sspr(8,16,0 + i, 8, civ.x, civ.y)
+				sspr(8,16,0 + i, draw_y, civ.x, civ.y)
 			end
 		else
 			limit = ((player.px2 - flr(civ.x))-6) - 10
 			-- print(limit, civ.x + 32, civ.y - 8, 7)
-			sspr(8 + limit, 16, 8 - limit, 8, civ.x + limit, civ.y)
+			sspr(8 + limit, 16, 8 - limit, draw_y, civ.x + limit, civ.y)
 		end
 	end
 end
@@ -1032,13 +1014,6 @@ function move_civ(civ)
 	if civ.on_board == false then
 		if (player.mvn_dir == "left") civ.x += player.speed_x
 		if (player.mvn_dir == "right") civ.x -= player.speed_x
-
-		civ.distance = abs(flr(civ.x - player.x))
-		civ.closer_to_player = false
-		if player.x - 32 >= civ.distance - 48 and
-		player.x - 32 <= civ.distance + 48 then
-			civ.closer_to_player = true
-		end
 	end
 end
 
