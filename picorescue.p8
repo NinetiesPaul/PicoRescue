@@ -1011,12 +1011,19 @@ function draw_civ(civ)
 
 	if civ.on_board == false then
 		-- print((player.px2 - flr(civ.x))-6, civ.x + 16, civ.y - 50, 7)
+		-- print((player.px2 < civ.x + 16) and "before" or "after", civ.x + 8, civ.y - 8, 7)
 
-		limit = ((player.px2 - flr(civ.x))-6 > 0) and (player.px2 - flr(civ.x))-6 or 0
-		if (limit > 8) limit = 8
+		if (player.px2 < civ.x + 16) then
+			limit = ((player.px2 - flr(civ.x))-6 > 0) and (player.px2 - flr(civ.x))-6 or 0
+			if (limit > 8) limit = 8
 
-		for i=1, limit do
-			sspr(8,16,0 + i, 8, civ.x, civ.y)
+			for i=1, limit do
+				sspr(8,16,0 + i, 8, civ.x, civ.y)
+			end
+		else
+			limit = ((player.px2 - flr(civ.x))-6) - 10
+			-- print(limit, civ.x + 32, civ.y - 8, 7)
+			sspr(8 + limit, 16, 8 - limit, 8, civ.x + limit, civ.y)
 		end
 	end
 end
