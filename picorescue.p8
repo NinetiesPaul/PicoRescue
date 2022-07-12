@@ -200,7 +200,7 @@ function _init()
 	mission_fire_put_out = 0
 	mission_earnings = 0
 	mission_has_wounded = false
-	mission_day_time = "night"
+	mission_day_time = rnd({"night", "day"})
 
 	block_btns = false
 	block_btns_counter = 0
@@ -341,6 +341,8 @@ function _draw()
 	end
 
 	if curr_screen == 2 then -- rotor mission
+		sky_color = (mission_day_time == "day") and 12 or 0
+		rectfill(0,0,128,119,sky_color)
 		spr(006,drop_off_x,112)
 
 		flip_spr = (player.facing == "right") and true or false
@@ -409,12 +411,16 @@ function _draw()
 		print(abs(flr(drop_off_x - player.x)), 16, 35)
 		spr(006,0,32)
 		]]--
-		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, 0)
 
-		sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x, player.y + 10)
-		sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x + 8, player.y + 10, 3, 24 + (player.spotlight_height * 8), true)		
-		rectfill(player.spotlight_px1, player.spotlight_py1, player.spotlight_px2, player.spotlight_py2, 2)
-		-- light dithering here
+		col = (mission_day_time == "day") and 0 or 7
+		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, col)
+
+		if mission_day_time == "night" then
+			sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x, player.y + 10)
+			sspr(80, 64, 3, 24 + (player.spotlight_height * 8), player.x + 8, player.y + 10, 3, 24 + (player.spotlight_height * 8), true)		
+			rectfill(player.spotlight_px1, player.spotlight_py1, player.spotlight_px2, player.spotlight_py2, 2)
+			-- light dithering here
+		end
 
 		for i = 1, player.ladder do
 			spr(001,player.x,player.y+i*8)
@@ -935,7 +941,7 @@ function create_civ()
 				local civ = {}
 				civ.x = value
 				civ.y = 112
-				civ.spr = 033
+				civ.spr = 8
 				civ.health = 10
 				civ.rdy_to_climb_up = false
 				civ.rdy_to_climb_down = false
@@ -985,20 +991,25 @@ function create_civ()
 end
 
 function draw_civ(civ)
-	draw_y = (flr(player.spotlight_py2) - civ.y) + 1
-	if (draw_y > 8 ) draw_y = 8
-
 	if civ.on_board == false then
-		if (player.px2 < civ.x + 16) then
-			limit = ((player.px2 - flr(civ.x))-6 > 0) and (player.px2 - flr(civ.x))-6 or 0
-			if (limit > 8) limit = 8
-
-			for i=1, limit do
-				sspr(8,16,0 + i, draw_y, civ.x, civ.y)
-			end
+		if (mission_day_time == "day") then
+			sspr(civ.spr, 16, 8, 8, civ.x, civ.y)
 		else
-			limit = ((player.px2 - flr(civ.x))-6) - 10
-			sspr(8 + limit, 16, 8 - limit, draw_y, civ.x + limit, civ.y)
+			draw_y = (flr(player.spotlight_py2) - civ.y) + 1
+			if (draw_y > 8 ) draw_y = 8
+
+			
+			if (player.px2 < civ.x + 16) then
+				limit = ((player.px2 - flr(civ.x))-6 > 0) and (player.px2 - flr(civ.x))-6 or 0
+				if (limit > 8) limit = 8
+
+				for i=1, limit do
+					sspr(civ.spr,16,0 + i, draw_y, civ.x, civ.y)
+				end
+			else
+				limit = ((player.px2 - flr(civ.x))-6) - 10
+				sspr(civ.spr + limit, 16, 8 - limit, draw_y, civ.x + limit, civ.y)
+			end
 		end
 	end
 end
@@ -1018,7 +1029,7 @@ function pickup_civ(civ)
 			civ.y >= 112 and
 			civ.y <= 120
 		then
-			civ.spr = 034
+			civ.spr = 16
 
 			if
 				civ.x+4 >= player.x and
@@ -1032,7 +1043,7 @@ function pickup_civ(civ)
 				player.dpl_ldd_pkup = false
 			end
 		else
-			if (not player.rescuing) civ.spr = 033
+			if (not player.rescuing) civ.spr = 8
 		end
 	end
 
@@ -1043,8 +1054,8 @@ function pickup_civ(civ)
 		player.occup < player.max_occup
 	then
 		civ.clock += 1
-		if (civ.clock % 5 == 0) civ.spr += 1
-		if (civ.spr > 036) civ.spr = 035
+		if (civ.clock % 5 == 0) civ.spr += 8
+		if (civ.spr > 32) civ.spr = 24
 		if (civ.y > player.y) civ.y -= player.ladder_climb_spd
 		player.rescuing = true
 
@@ -1089,8 +1100,8 @@ function droping_off()
 			not civ.on_board 			
 		then
 			civ.clock += 1
-			if (civ.clock % 5 == 0) civ.spr += 1
-			if (civ.spr > 036) civ.spr = 035
+			if (civ.clock % 5 == 0) civ.spr += 8
+			if (civ.spr > 32) civ.spr = 24
 			if (civ.y < 112) civ.y += player.ladder_climb_spd
 
 			if civ.y >= 112 then
@@ -1190,7 +1201,7 @@ function create_fire()
 end
 
 function draw_fire(fire)
-	circfill(fire.x + 4,fire.y + 6, fire.radius, 2)
+	if (mission_day_time == "night") circfill(fire.x + 4,fire.y + 6, fire.radius, 2)
 	spr(fire.spr,fire.x,fire.y)
 end
 
@@ -1222,28 +1233,32 @@ function update_fire(fire)
 end
 
 function draw_smoke(smoke)
-	draw_y = (flr(player.spotlight_py2) - flr(smoke.y)) + 1
-	if (draw_y > 8) draw_y = 8
+	if (mission_day_time == "day") then
+		sspr(8, 24, 8, 8, smoke.x, smoke.y)
+	else
+		draw_y = (flr(player.spotlight_py2) - flr(smoke.y)) + 1
+		if (draw_y > 8) draw_y = 8
 
 
-	if flr(smoke.y) > (flr(player.spotlight_py1) - 4) then
-		if (player.px2 < smoke.x + 16) then
-			limit = ((player.px2 - flr(smoke.x))-6 > 0) and (player.px2 - flr(smoke.x))-6 or 0
-			if (limit > 8) limit = 8
+		if flr(smoke.y) > (flr(player.spotlight_py1) - 4) then
+			if (player.px2 < smoke.x + 16) then
+				limit = ((player.px2 - flr(smoke.x))-6 > 0) and (player.px2 - flr(smoke.x))-6 or 0
+				if (limit > 8) limit = 8
 
-			for i=1, limit do
-				sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
+				for i=1, limit do
+					sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
+				end
+			else
+				limit = ((player.px2 - flr(smoke.x))-6) - 10
+				-- print(limit, smoke.x + 32, smoke.y - 8, 7)
+				sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
 			end
-		else
-			limit = ((player.px2 - flr(smoke.x))-6) - 10
-			-- print(limit, smoke.x + 32, smoke.y - 8, 7)
-			sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
 		end
 	end
 end
 
 function move_smoke(smoke)
-	smoke.y -= 0.5
+	smoke.y -= 0.95
 	if (smoke.y < 68) smoke.spr = 050 smoke.damage = 0.050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
