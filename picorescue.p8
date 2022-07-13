@@ -97,9 +97,9 @@ function _init()
 	difficulties = { "easy", "normal", "hard" }
 	civ_spawn =
 	{
-		easy = { 120, 230, 320, 430 },
+		easy = { 150, 250, 460 },
 		normal = { 250, 350, 470, 590 },
-		hard = { 290, 390, 540, 650, 740 }
+		hard = { 290, 390, 580, 680, 750 }
 	}
 	fire_spawn =
 	{
@@ -430,6 +430,7 @@ function _draw()
 			spr(001,player.x,player.y+i*8)
 		end
 
+		if (mission_day_time == "night") foreach(fire_pcs,draw_light_source)
 		foreach(fire_pcs,draw_fire)
 		foreach(civ_pcs,draw_civ)
 		foreach(smoke_pcs,draw_smoke)
@@ -996,6 +997,8 @@ end
 
 function draw_civ(civ)
 	if civ.on_board == false then
+		print(flr(civ.x), civ.x, civ.y - 8, 7)
+
 		if (mission_day_time == "day") then
 			sspr(civ.spr, 16, 8, 8, civ.x, civ.y)
 		else
@@ -1205,8 +1208,11 @@ function create_fire()
 end
 
 function draw_fire(fire)
-	if (mission_day_time == "night") circfill(fire.x + 4,fire.y + 6, fire.radius, 2)
 	spr(fire.spr,fire.x,fire.y)
+end
+
+function draw_light_source(fire)
+	circfill(fire.x + 4,fire.y + 6, fire.radius, 2)
 end
 
 function update_fire(fire)
