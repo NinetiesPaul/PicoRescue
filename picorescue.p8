@@ -917,11 +917,13 @@ function upd_rotor_mvmt()
 	if world_x > 84 then
 		world_x = 84 
 		player.speed_x = 0
+		player.px = world_x
 	end
 
 	if world_x < max_world_x then
 		world_x = max_world_x
 		player.speed_x = 0
+		player.px = world_x
 	end
 end
 
