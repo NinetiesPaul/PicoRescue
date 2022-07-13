@@ -194,12 +194,12 @@ function _init()
 		}
 	}
 
+	mission_leave_prompt = false
 	difficulty = "";
 	mission_ground = 20
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_has_wounded = false
 	mission_day_time = rnd({ "day", "night" })
 
 	block_btns = false
@@ -436,6 +436,13 @@ function _draw()
 		foreach(smoke_pcs,draw_smoke)
 		foreach(water_drops,draw_water)
 		foreach(ground_pcs,draw_ground)
+
+		if mission_leave_prompt then
+			rectfill(28,48, 100, 72, 1)
+			rect(30,50, 98, 70, 7)
+			print("abort mission?", 36, 53, 7)
+			print("[z] yes [x] no", 36, 62, 7)
+		end
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -658,7 +665,7 @@ function _update()
 		-- create_trees()
 		if (not fire_pcs_created) create_fire()
 		if (not civ_pcs_created) create_civ()
-		if (not player.rescuing) move_rotor()
+		if (not player.rescuing and not mission_leave_prompt) move_rotor()
 
 		upd_rotor_mvmt()
 		upd_pkup_area()
@@ -684,6 +691,11 @@ function _update()
 			block_btns = true
 		end
 
+		if mission_leave_prompt then
+			if (btnp(4)) civ_pcs = {}
+			if (btnp(5)) mission_leave_prompt = false
+		end
+
 		if count(civ_pcs) == 0 then
 			mission_earnings = mission_civ_saved * 75
 			stats.missions_finished += 1
@@ -704,7 +716,7 @@ function _update()
 			music(-1)
 			prop_sound = false
 			block_btns = true
-			curr_screen = (mission_has_wounded) and 11 or 9
+			curr_screen = (#wounded_civs_pcs > 0) and 11 or 9
 		end
 	end
 
@@ -915,6 +927,7 @@ function upd_rotor_mvmt()
 	end
 
 	if world_x > 84 then
+		mission_leave_prompt = true
 		world_x = 84 
 		player.speed_x = 0
 		player.px = world_x
@@ -957,7 +970,7 @@ function create_civ()
 				civ.name = rnd({ "aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA" })
 				local wounds = {}
 
-				civ_is_wounded = (rnd(1) > 0.55) and rnd({ 1, 2, 3 })  or 0
+				civ_is_wounded = (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
 
@@ -982,7 +995,6 @@ function create_civ()
 						end
 					end
 
-					mission_has_wounded = true
 					civ.wound_type = wound_type
 				end
 
