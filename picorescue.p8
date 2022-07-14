@@ -446,8 +446,6 @@ function _draw()
 	end
 
 	if curr_screen == 11 then -- triage mode
-		cls()
-
 		rect(0,0,127,127, 7)
 
 		flip_x = (current_wounds.side == "front") and true or false
@@ -501,7 +499,7 @@ function _draw()
 					print("PT: " .. current_wounds.rescuee_name, 64, 40, 0)
 					line(64, 46, 108, 46)
 
-					print("cLEANED?", 64, 54, 0) -- (wound.cleaned) and 11 or 8
+					print("cLEANED?", 64, 54, 0)
 					spr((wound.cleaned) and 064 or 065, 100, 54)
 
 					print("sTOPPED \nBLEEDING?", 64, 64, 0)
@@ -581,7 +579,7 @@ function _update()
 
 		if btnp(4) and not block_btns then
 			sfx(1)
-			if (mm_option == 1) curr_screen = 2 mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) 
+			if (mm_option == 1) mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) curr_screen = 2
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
@@ -692,7 +690,7 @@ function _update()
 		end
 
 		if mission_leave_prompt then
-			if (btnp(4)) civ_pcs = {}
+			if (btnp(4)) for civ in all (civ_pcs) do del(civ_pcs,civ) end
 			if (btnp(5)) mission_leave_prompt = false
 		end
 
@@ -712,6 +710,9 @@ function _update()
 			player.x = player_strt_x
 			player.y = player_strt_y
 			player.finance += mission_earnings
+			mission_leave_prompt = false
+			world_x = 0
+			drop_off_x = 32
 
 			music(-1)
 			prop_sound = false
@@ -797,7 +798,7 @@ function _update()
 
 		if (#current_wounds.wounds == current_wounds_treated) current_wounds_treated = 0 current_wounds.wounds = {}
 
-		if (#wounded_civs_pcs == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
+		if (#wounded_civs_pcs == 0 and #current_wounds.wounds == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
 	end
 
 	if block_btns then
