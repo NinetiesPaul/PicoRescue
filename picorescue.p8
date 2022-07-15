@@ -15,26 +15,22 @@ function _init()
 		px = player_strt_x,
 		y = player_strt_y,
 		py = player_strt_y,
-		mv_speed = 1,
-		on_mission = false,
 		speed_x = 0,
 		speed_y = 0,
 		acc_x = 0.015, -- 0.015, 0.025. 0.05
 		mvn_dir = false,
 		facing = "left",
 		vhc_front = 04,
-		civ_range = false,
-		civ_pkup = false,
 		occup = 0,
-		max_occup = 2,
+		max_occup = 2, -- 3 4
 		water_cap = 4,
 		max_water_cap = 4,
 		rotor_health = 10,
 		max_rotor_health = 10,
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
-		fuel_consumption = 0.03,
-		top_speed_x = 2,
+		fuel_consumption = 0.07, -- 0.05 0.03
+		top_speed_x = 2, -- 3 4
 		top_speed_y = 2,
 		ladder = 0,
 		ladder_empty = true,
@@ -47,12 +43,12 @@ function _init()
 		rx2 = 0,
 		ry2 = 0,
 		finance = 1500,
-		ladder_climb_spd = 0.25,
+		ladder_climb_spd = 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
 		spotlight_px2 = player_strt_x + 7,
 		spotlight_py2 = player_strt_y + 33,
-		spotlight_height = 0
+		spotlight_height = 0 -- 1
 	}
 
 	curr_screen = 1
@@ -305,14 +301,16 @@ function _draw()
 		print("$" .. player.finance,64,29,3)
 		print("$" .. player.finance,64,28,11)
 
-		print("health $300",15,48,7)
-		print("fuel $225",15,58,7)
+		print("health $95",15,48,7)
+		print("fuel $75",15,58,7)
 
 		selector_pos = (shop_option == 1) and 47 or 57
 		spr(018, 5, selector_pos, 1, 1, true)
 
 		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
 		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
+
+		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height
 	end
 	
 	if curr_screen == 9 then -- mission ended
@@ -451,12 +449,9 @@ function _draw()
 			print("[z] yes [x] no", 36, 62, 7)
 		end
 
-		print(mission_time, 112, 24, 7)
-
-		print(mission_wind_v, 64, 0, 7)
-		print(mission_wind_d, 54, 8, 7)
-		print(player.facing, 76, 8, 7)
-		print(player.speed_x.." , "..(player.top_speed_x + mission_top_speed), 64, 16, 7)
+		rectfill(60, 0, 82, 8, 13)
+		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 64, 2, 7)
+		rectfill(60,9, 82, 10, 0)
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -626,15 +621,14 @@ function _update()
 		if (shop_option < 1) shop_option = 2
 
 		if btnp(4) and not block_btns then
-
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
 				player.rotor_health = flr(player.rotor_health) + 1
-				player.finance -= 300
+				player.finance -= 95
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 225
+				player.finance -= 75
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -737,6 +731,8 @@ function _update()
 			player.y = player_strt_y
 			player.finance += mission_earnings
 			mission_leave_prompt = false
+			mission_counter = 0
+			mission_time = 0
 			world_x = 0
 			drop_off_x = 32
 
