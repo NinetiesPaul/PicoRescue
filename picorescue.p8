@@ -200,7 +200,12 @@ function _init()
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_day_time = rnd({ "day", "night" })
+	mission_day_time = rnd({ "day" })
+	mission_wind_v = rnd({ 0.05, 0.15, 0.3 }) -- add 0
+	mission_wind_d = rnd({ "left" })  -- right
+	mission_top_speed = 0
+	mission_time = 0
+	mission_counter = 0
 
 	block_btns = false
 	block_btns_counter = 0
@@ -443,6 +448,14 @@ function _draw()
 			print("abort mission?", 36, 53, 7)
 			print("[z] yes [x] no", 36, 62, 7)
 		end
+
+		print(mission_time, 112, 24, 7)
+
+		print(mission_wind_v, 64, 0, 7)
+		print(mission_wind_d, 54, 8, 7)
+		print(player.facing, 76, 8, 7)
+		print(player.speed_x.." , "..player.top_speed_x, 64, 16, 7)
+		print(mission_top_speed, 64, 24, 7)
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -647,6 +660,21 @@ function _update()
 		if prop_sound == false then
 			prop_sound = true
 			music(00)
+		end
+
+		mission_counter += 1
+		if (mission_counter % 30 == 0) mission_time += 1
+		if (mission_time > 0 and mission_time % 15 == 0) mission_wind_v = rnd({ 0.05, 0.15, 0.3 }) mission_wind_d = rnd({ "left" })
+
+		if player.facing != false and mission_wind_v > 0 then
+			if mission_wind_d == "left" then
+				if (player.facing == "left") mission_top_speed = player.top_speed_x + mission_wind_v 
+				if (player.facing == "right") mission_top_speed = player.top_speed_x - mission_wind_v
+			else
+				-- player.top_speed_x = 5 -- (player.facing == "right") and player.top_speed_x + mission_wind_v or player.top_speed_x - mission_wind_v
+			end
+
+			--  player.top_speed_x = mission_top_speed mission_top_speed_updated = true
 		end
 
 		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption
@@ -1282,6 +1310,12 @@ end
 
 function move_smoke(smoke)
 	smoke.y -= 0.95
+
+	if mission_wind_v > 0 then
+		if (mission_wind_d == "left") smoke.x -= mission_wind_v
+		if (mission_wind_d == "right") smoke.x += mission_wind_v
+	end
+
 	if (smoke.y < 68) smoke.spr = 050 smoke.damage = 0.050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
