@@ -9,6 +9,7 @@ function _init()
 	player_strt_y = 32
 	player_strt_x = drop_off_x + 16
 	max_world_x = 0
+
 	player = {
 		x = player_strt_x,
 		px = player_strt_x,
@@ -18,6 +19,7 @@ function _init()
 		on_mission = false,
 		speed_x = 0,
 		speed_y = 0,
+		acc_x = 0.015, -- 0.015, 0.025. 0.05
 		mvn_dir = false,
 		facing = "left",
 		vhc_front = 04,
@@ -32,7 +34,7 @@ function _init()
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
 		fuel_consumption = 0.03,
-		top_speed_x = 4,
+		top_speed_x = 2,
 		top_speed_y = 2,
 		ladder = 0,
 		ladder_empty = true,
@@ -201,8 +203,8 @@ function _init()
 	mission_fire_put_out = 0
 	mission_earnings = 0
 	mission_day_time = rnd({ "day" })
-	mission_wind_v = rnd({ 0.05, 0.15, 0.3 }) -- add 0
-	mission_wind_d = rnd({ "left" })  -- right
+	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 }) -- add 0
+	mission_wind_d = rnd({ "left", "right" })  -- right
 	mission_top_speed = 0
 	mission_time = 0
 	mission_counter = 0
@@ -454,8 +456,7 @@ function _draw()
 		print(mission_wind_v, 64, 0, 7)
 		print(mission_wind_d, 54, 8, 7)
 		print(player.facing, 76, 8, 7)
-		print(player.speed_x.." , "..player.top_speed_x, 64, 16, 7)
-		print(mission_top_speed, 64, 24, 7)
+		print(player.speed_x.." , "..(player.top_speed_x + mission_top_speed), 64, 16, 7)
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -664,17 +665,14 @@ function _update()
 
 		mission_counter += 1
 		if (mission_counter % 30 == 0) mission_time += 1
-		if (mission_time > 0 and mission_time % 15 == 0) mission_wind_v = rnd({ 0.05, 0.15, 0.3 }) mission_wind_d = rnd({ "left" })
+		if (mission_time > 0 and mission_time % 15 == 0) mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 }) mission_wind_d = rnd({ "left", "right" })
 
 		if player.facing != false and mission_wind_v > 0 then
-			if mission_wind_d == "left" then
-				if (player.facing == "left") mission_top_speed = player.top_speed_x + mission_wind_v 
-				if (player.facing == "right") mission_top_speed = player.top_speed_x - mission_wind_v
+			if player.facing == "left" then
+				mission_top_speed = (mission_wind_d == "left") and mission_wind_v * 1 or mission_wind_v * -1
 			else
-				-- player.top_speed_x = 5 -- (player.facing == "right") and player.top_speed_x + mission_wind_v or player.top_speed_x - mission_wind_v
+				mission_top_speed = (mission_wind_d == "right") and mission_wind_v * 1 or mission_wind_v * -1
 			end
-
-			--  player.top_speed_x = mission_top_speed mission_top_speed_updated = true
 		end
 
 		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption
@@ -850,7 +848,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "right"
-			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
 			player.px = world_x
 			world_x += player.speed_x
 		end
@@ -867,7 +865,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "left"
-			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
 			player.px = world_x
 			world_x -= player.speed_x
 		end
