@@ -198,9 +198,10 @@ function _init()
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_day_time = rnd({ "day" })
-	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 }) -- add 0
-	mission_wind_d = rnd({ "left", "right" })  -- right
+	mission_day_time = rnd({ "day" }) -- debug night
+	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
+	mission_wind_d = rnd({ "left", "right" })
+	mission_wind_roulette = true
 	mission_top_speed = 0
 	mission_time = 0
 	mission_counter = 0
@@ -452,6 +453,10 @@ function _draw()
 		rectfill(60, 0, 82, 8, 13)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 64, 2, 7)
 		rectfill(60,9, 82, 10, 0)
+
+		print(mission_wind_v, 64, 24, 7) -- debug
+		print(mission_wind_d, 64, 32, 7) -- debug
+		print(#fire_pcs, 96, 24, 7) -- debug
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -659,7 +664,16 @@ function _update()
 
 		mission_counter += 1
 		if (mission_counter % 30 == 0) mission_time += 1
-		if (mission_time > 0 and mission_time % 15 == 0) mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 }) mission_wind_d = rnd({ "left", "right" })
+		if mission_time % 15 == 0 then -- default 30
+			if mission_wind_roulette then
+				mission_wind_roulette = false
+				mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
+				mission_wind_d = rnd({ "left", "right" })
+			end
+		else
+			mission_wind_roulette = true
+		end
+
 
 		if player.facing != false and mission_wind_v > 0 then
 			if player.facing == "left" then
@@ -1234,6 +1248,7 @@ function create_fire()
 				fire.spr = 056
 				fire.frequency = rnd({ 15, 30, 45 })
 				fire.radius = 15
+				fire.is_wild = (rnd(1) > 0.7) and true or false
 				add(fire_pcs, fire)
 			end
 		end
@@ -1243,6 +1258,7 @@ function create_fire()
 end
 
 function draw_fire(fire)
+	print((fire.is_wild) and "wild" or "no", fire.x + 8, fire.y - 8, 7) -- debug
 	spr(fire.spr,fire.x,fire.y)
 end
 
@@ -1275,9 +1291,31 @@ function update_fire(fire)
 		fire.smk_mh = rnd({ 1, 2, 3 })
 		fire.smk_cd = false
 	end
+
+	if mission_wind_v == 0.3 and fire.is_wild then
+		fire.is_wild = false
+
+		local new_fire = {}
+		new_fire.x = (mission_wind_d == "left") and fire.x + 8 or fire.x - 8
+		new_fire.y = 112
+		new_fire.smk_mh = rnd({ 1, 2, 3 })
+		new_fire.smk_h = 0
+		new_fire.smk_cd_time = rnd({ 45, 60 })
+		new_fire.smk_cd = false
+		new_fire.counter = 0
+		new_fire.spr = 056
+		new_fire.frequency = rnd({ 15, 30, 45 })
+		new_fire.radius = 15
+		new_fire.is_wild = (rnd(1) > 0.9) and true or false
+		add(fire_pcs, new_fire)
+	end
+
 end
 
 function draw_smoke(smoke)
+	if (smoke.y < 70) pal(6, 13)
+	if (smoke.y < 56) pal(6, 5)
+	
 	if (mission_day_time == "day") then
 		sspr(8, 24, 8, 8, smoke.x, smoke.y)
 	else
@@ -1292,14 +1330,16 @@ function draw_smoke(smoke)
 
 				for i=1, limit do
 					sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
+					palt() pal()
 				end
 			else
 				limit = ((player.px2 - flr(smoke.x))-6) - 10
-				-- print(limit, smoke.x + 32, smoke.y - 8, 7)
 				sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
+				
 			end
 		end
 	end
+	palt() pal()
 end
 
 function move_smoke(smoke)
@@ -1310,7 +1350,7 @@ function move_smoke(smoke)
 		if (mission_wind_d == "right") smoke.x += mission_wind_v
 	end
 
-	if (smoke.y < 68) smoke.spr = 050 smoke.damage = 0.050
+	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
