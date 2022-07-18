@@ -92,7 +92,7 @@ function _init()
 		missions_finished = 0,
 		missions_earnings = 0,
 	}
-	difficulties = { "easy", "normal", "hard" }
+	difficulties = { "easy" } -- , "normal", "hard"
 	civ_spawn =
 	{
 		easy = { 150, 250, 460 },
@@ -199,7 +199,7 @@ function _init()
 	mission_fire_put_out = 0
 	mission_earnings = 0
 	mission_day_time = rnd({ "day" }) -- debug night
-	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
+	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3, 0.4, 0.6 })
 	mission_wind_d = rnd({ "left", "right" })
 	mission_wind_roulette = true
 	mission_top_speed = 0
@@ -667,7 +667,7 @@ function _update()
 		if mission_time % 15 == 0 then -- default 30
 			if mission_wind_roulette then
 				mission_wind_roulette = false
-				mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
+				mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3, 0.4, 0.6 })
 				mission_wind_d = rnd({ "left", "right" })
 			end
 		else
@@ -1240,15 +1240,13 @@ function create_fire()
 				local fire = {}
 				fire.x = value
 				fire.y = 112
-				fire.smk_mh = rnd({ 1, 2, 3 })
-				fire.smk_h = 0
-				fire.smk_cd_time = rnd({ 45, 60 })
+				fire.frequency = rnd({ 5, 10, 15})
+				-- fire.smk_cd_time = rnd({ 45, 60 })
 				fire.smk_cd = false
 				fire.counter = 0
 				fire.spr = 056
-				fire.frequency = rnd({ 15, 30, 45 })
 				fire.radius = 15
-				fire.is_wild = (rnd(1) > 0.7) and true or false
+				fire.is_wild = (rnd(1) > 0.6) and true or false
 				add(fire_pcs, fire)
 			end
 		end
@@ -1267,29 +1265,18 @@ function draw_light_source(fire)
 end
 
 function update_fire(fire)
-	fire.radius = (counter % 1.5 == 0) and 12 or 11
 	fire.counter += 1
+	fire.radius = (counter % 1.5 == 0) and 12 or 11
 	if (counter % 2 == 0) fire.spr += 1
 	if (fire.spr > 058) fire.spr = 56
 
-	if fire.counter % fire.frequency == 0 and fire.smk_h < fire.smk_mh then
-		fire.smk_h += 1
+	if not smk_cd and fire.counter % fire.frequency == 0 then
 		local smoke = {}
 		smoke.x = fire.x + rnd({ -2, -1, 1, 2 })
 		smoke.y = fire.y
 		smoke.spr = 049
-		smoke.damage = 0.175
+		smoke.damage = 0.0175
 		add(smoke_pcs, smoke)
-	end
-
-	if fire.smk_h == fire.smk_mh and fire.smk_cd == false then
-		fire.smk_cd = true
-	end
-
-	if fire.smk_cd and fire.counter % fire.smk_cd_time == 0 then
-		fire.smk_h = 0
-		fire.smk_mh = rnd({ 1, 2, 3 })
-		fire.smk_cd = false
 	end
 
 	if mission_wind_v == 0.3 and fire.is_wild then
@@ -1300,13 +1287,13 @@ function update_fire(fire)
 		new_fire.y = 112
 		new_fire.smk_mh = rnd({ 1, 2, 3 })
 		new_fire.smk_h = 0
-		new_fire.smk_cd_time = rnd({ 45, 60 })
+		-- new_fire.smk_cd_time = rnd({ 45, 60 })
 		new_fire.smk_cd = false
 		new_fire.counter = 0
 		new_fire.spr = 056
-		new_fire.frequency = rnd({ 15, 30, 45 })
+		new_fire.frequency = rnd({ 5, 10, 15})
 		new_fire.radius = 15
-		new_fire.is_wild = (rnd(1) > 0.9) and true or false
+		new_fire.is_wild = (rnd(1) > 0.8) and true or false
 		add(fire_pcs, new_fire)
 	end
 
@@ -1350,7 +1337,7 @@ function move_smoke(smoke)
 		if (mission_wind_d == "right") smoke.x += mission_wind_v
 	end
 
-	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.050
+	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.0050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
