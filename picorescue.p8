@@ -192,19 +192,22 @@ function _init()
 		}
 	}
 
-	mission_leave_prompt = false
 	difficulty = "";
 	mission_ground = 20
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_day_time = rnd({ "day" }) -- debug night
+	mission_day_time = rnd({ "day", "night" })
 	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
 	mission_wind_d = rnd({ "left", "right" })
 	mission_wind_roulette = true
 	mission_top_speed = 0
 	mission_time = 0
 	mission_counter = 0
+	mission_leave_prompt = false
+
+	low_fuel_prompt = false
+	low_fuel_prompt_confirm = false
 
 	block_btns = false
 	block_btns_counter = 0
@@ -259,6 +262,14 @@ function _draw()
 		print("carrer stats",39,68,mm_opt4_c)
 		print("finances",48,79,5)
 		print("finances",48,78,mm_opt5_c)
+
+		if low_fuel_prompt then
+			rectfill(26,48, 100, 79, 8)
+			rect(28,50, 98, 77, 7)
+			print("warning: low fuel", 30, 53, 7)
+			print("[z/🅾️] continue", 34, 62, 7)
+			print("[x/❎] back", 42, 70, 7)
+		end
 	end
 
 	if curr_screen == 7 then -- stats
@@ -447,19 +458,17 @@ function _draw()
 		foreach(ground_pcs,draw_ground)
 
 		if mission_leave_prompt then
-			rectfill(28,48, 100, 72, 1)
-			rect(30,50, 98, 70, 7)
+			rectfill(26,48, 100, 79, 8)
+			rect(28,50, 98, 77, 7)
 			print("abort mission?", 36, 53, 7)
-			print("[z] yes [x] no", 36, 62, 7)
+			print("[z/🅾️] yes ", 44, 62, 7)
+			print("[x/❎] no", 46, 70, 7)
 		end
+
 
 		rectfill(104, 1, 126, 9, 0)
 		rectfill(105, 0, 127, 8, 6)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
-
-		print(mission_wind_v, 64, 24, 7) -- debug
-		print(mission_wind_d, 64, 32, 7) -- debug
-		print(#fire_pcs, 96, 24, 7) -- debug
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -588,19 +597,29 @@ function _update()
 	end
 
 	if curr_screen == 6 then -- main
-		if (btnp(2)) mm_option -= 1 sfx(2)
-		if (btnp(3)) mm_option += 1 sfx(2)
+		if (btnp(2) and not low_fuel_prompt) mm_option -= 1 sfx(2)
+		if (btnp(3) and not low_fuel_prompt) mm_option += 1 sfx(2)
 
 		if (mm_option > 5) mm_option = 1
 		if (mm_option < 1) mm_option = 5
 
 		if btnp(4) and not block_btns then
 			sfx(1)
-			if (mm_option == 1) mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) curr_screen = 2
+			if mm_option == 1 then
+				if (player.rotor_fuel <= 5) low_fuel_prompt = true block_btns = true
+
+				if not low_fuel_prompt or low_fuel_prompt_confirm then
+					mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) curr_screen = 2
+				else
+					if (btnp(4)) low_fuel_prompt_confirm = true
+				end
+			end
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
 		end
+
+		if (btnp(5) and low_fuel_prompt) low_fuel_prompt = false low_fuel_prompt_confirm = false
 	end
 	
 	if curr_screen == 7 then -- stats
@@ -752,6 +771,8 @@ function _update()
 			mission_time = 0
 			world_x = 0
 			drop_off_x = 32
+			low_fuel_prompt = false
+			low_fuel_prompt_confirm = false
 
 			music(-1)
 			prop_sound = false
@@ -1259,7 +1280,6 @@ function create_fire()
 end
 
 function draw_fire(fire)
-	print((fire.is_wild) and "y" or "n", fire.x + 8, fire.y - 8, 7) -- debug
 	spr(fire.spr,fire.x,fire.y)
 end
 
