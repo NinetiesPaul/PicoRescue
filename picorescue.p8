@@ -9,30 +9,28 @@ function _init()
 	player_strt_y = 32
 	player_strt_x = drop_off_x + 16
 	max_world_x = 0
+
 	player = {
 		x = player_strt_x,
 		px = player_strt_x,
 		y = player_strt_y,
 		py = player_strt_y,
-		mv_speed = 1,
-		on_mission = false,
 		speed_x = 0,
 		speed_y = 0,
+		acc_x = 0.015, -- 0.015, 0.025. 0.05
 		mvn_dir = false,
 		facing = "left",
 		vhc_front = 04,
-		civ_range = false,
-		civ_pkup = false,
 		occup = 0,
-		max_occup = 2,
+		max_occup = 2, -- 3 4
 		water_cap = 4,
 		max_water_cap = 4,
 		rotor_health = 10,
 		max_rotor_health = 10,
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
-		fuel_consumption = 0.03,
-		top_speed_x = 4,
+		fuel_consumption = 0.07, -- 0.05 0.03
+		top_speed_x = 2, -- 3 4
 		top_speed_y = 2,
 		ladder = 0,
 		ladder_empty = true,
@@ -45,12 +43,12 @@ function _init()
 		rx2 = 0,
 		ry2 = 0,
 		finance = 1500,
-		ladder_climb_spd = 0.25,
+		ladder_climb_spd = 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
 		spotlight_px2 = player_strt_x + 7,
 		spotlight_py2 = player_strt_y + 33,
-		spotlight_height = 0
+		spotlight_height = 0 -- 1
 	}
 
 	curr_screen = 1
@@ -94,18 +92,18 @@ function _init()
 		missions_finished = 0,
 		missions_earnings = 0,
 	}
-	difficulties = { "easy", "normal", "hard" }
+	difficulties = { "easy",  "normal", "hard" }
 	civ_spawn =
 	{
-		easy = { 150, 250, 460 },
-		normal = { 250, 350, 470, 590 },
-		hard = { 290, 390, 580, 680, 750 }
+		easy = { 150, 250, 345, 460 },
+		normal = { 250, 350, 395, 470, 590 },
+		hard = { 290, 390, 580, 620, 680, 750 }
 	}
 	fire_spawn =
 	{
-		easy = { 200, 220, 330, 360, 410, 420, 440 },
-		normal = { 170, 200, 220, 330, 370, 420, 510, 520, 530, 560 },
-		hard = { 200, 220, 330, 370, 410, 460, 510, 530, 560, 610, 630, 660, 700, 730 }
+		easy = { 110, 130, 200, 220, 330, 360, 410, 420, 440 },
+		normal = { 170, 200, 220, 330, 370, 420, 450, 510, 520, 530, 560 },
+		hard = { 200, 220, 330, 370, 410, 460, 510, 530, 560, 605, 635, 660, 700, 730 }
 	}
 	excoriation =
 	{
@@ -194,13 +192,22 @@ function _init()
 		}
 	}
 
-	mission_leave_prompt = false
 	difficulty = "";
 	mission_ground = 20
 	mission_civ_saved = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
 	mission_day_time = rnd({ "day", "night" })
+	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
+	mission_wind_d = rnd({ "left", "right" })
+	mission_wind_roulette = true
+	mission_top_speed = 0
+	mission_time = 0
+	mission_counter = 0
+	mission_leave_prompt = false
+
+	low_fuel_prompt = false
+	low_fuel_prompt_confirm = false
 
 	block_btns = false
 	block_btns_counter = 0
@@ -255,6 +262,14 @@ function _draw()
 		print("carrer stats",39,68,mm_opt4_c)
 		print("finances",48,79,5)
 		print("finances",48,78,mm_opt5_c)
+
+		if low_fuel_prompt then
+			rectfill(26,48, 100, 79, 8)
+			rect(28,50, 98, 77, 7)
+			print("warning: low fuel", 30, 53, 7)
+			print("[z/🅾️] continue", 34, 62, 7)
+			print("[x/❎] back", 42, 70, 7)
+		end
 	end
 
 	if curr_screen == 7 then -- stats
@@ -298,14 +313,16 @@ function _draw()
 		print("$" .. player.finance,64,29,3)
 		print("$" .. player.finance,64,28,11)
 
-		print("health $300",15,48,7)
-		print("fuel $225",15,58,7)
+		print("health $95",15,48,7)
+		print("fuel $75",15,58,7)
 
 		selector_pos = (shop_option == 1) and 47 or 57
 		spr(018, 5, selector_pos, 1, 1, true)
 
 		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
 		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
+
+		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height
 	end
 	
 	if curr_screen == 9 then -- mission ended
@@ -350,56 +367,59 @@ function _draw()
 		spr(player.vhc_front, player.x, player.y, 1, 1, (player.facing == "right") and true or false)
 		if (player.facing != false) spr((mission_day_time == "day") and 003 or 006, (player.facing == "right") and player.x+8 or player.x-8, player.y, 1, 1, (player.facing == "right") and true or false)
 
-		palt(0, false) rectfill(0, 0, 35, 20, 0) palt()
-		rectfill(0, 0, 35, 18, 13)
-
-		palt(0, false) rectfill(108, 0, 127, 20, 0) palt()
-		rectfill(108, 0, 127, 18, 13)
+		palt(0, false) rectfill(1, 1, 54, 19, 0) palt()
+		rectfill(0, 0, 53, 18, 6)
 
 		health = player.rotor_health/player.max_rotor_health
-		rotor_health_bar_length = (health == 1) and 22 or
-		(health > 0.87 and health < 1) and 19 or
-		(health > 0.75 and health < 0.87) and 16 or
-		(health > 0.62 and health < 0.75) and 13 or
-		(health > 0.5 and health < 0.62) and 10 or
-		(health > 0.37 and health < 0.5) and 7 or
-		(health > 0.25 and health < 0.37) and 4 or
-		(health > 0.12 and health < 0.25) and 1
-		or 0
+		rotor_health_bar_length = (health > 0.9) and 19 or
+		(health > 0.8 and health < 0.9) and 17 or
+		(health > 0.7 and health < 0.8) and 15 or
+		(health > 0.6 and health < 0.7) and 13 or
+		(health > 0.5 and health < 0.6) and 11 or
+		(health > 0.4 and health < 0.5) and 9 or
+		(health > 0.3 and health < 0.4) and 7 or
+		(health > 0.2 and health < 0.3) and 5 or
+		(health > 0.1 and health < 0.2) and 3 or 1
 
-		spr(016,0,1)
-		rectfill(11,2,11 + rotor_health_bar_length,6, 14)
-		palt(0, false) palt(2, true) spr(026, 10, 0, 4, 1) palt()
+		spr(016, 0, 1)
+		rectfill(11, 3, 11 + rotor_health_bar_length, 6, 14)
+		palt(0, false) palt(2, true)
+		spr(026, 10, 0, 2, 1)
+		spr(026, 23, 0, 1, 1, true)
+		palt()
 
 		fuel_usage = player.rotor_fuel/player.max_rotor_fuel
-		rotor_fuel_bar_length = (fuel_usage == 1) and 22 or
-		(fuel_usage > 0.87 and fuel_usage < 1) and 19 or
-		(fuel_usage > 0.75 and fuel_usage < 0.87) and 16 or
-		(fuel_usage > 0.62 and fuel_usage < 0.75) and 13 or
-		(fuel_usage > 0.5 and fuel_usage < 0.62) and 10 or
-		(fuel_usage > 0.37 and fuel_usage < 0.5) and 7 or
-		(fuel_usage > 0.25 and fuel_usage < 0.37) and 4 or
-		(fuel_usage > 0.12 and fuel_usage < 0.25) and 1
-		or 0
+		rotor_fuel_bar_length = (fuel_usage > 0.9) and 19 or
+		(fuel_usage > 0.8 and fuel_usage < 0.9) and 17 or
+		(fuel_usage > 0.7 and fuel_usage < 0.8) and 15 or
+		(fuel_usage > 0.6 and fuel_usage < 0.7) and 13 or
+		(fuel_usage > 0.5 and fuel_usage < 0.6) and 11 or
+		(fuel_usage > 0.4 and fuel_usage < 0.5) and 9 or
+		(fuel_usage > 0.3 and fuel_usage < 0.4) and 7 or
+		(fuel_usage > 0.2 and fuel_usage < 0.3) and 5 or
+		(fuel_usage > 0.1 and fuel_usage < 0.2) and 3 or 1
 
-		spr(000,0,10)
-		rectfill(11,11,11 + rotor_fuel_bar_length,15, 11)
-		palt(0, false) palt(2, true) spr(026, 10, 9, 4, 1) palt()
+		spr(000, 0, 10)
+		rectfill(11, 12, 11 + rotor_fuel_bar_length, 15, 11)
+		palt(0, false) palt(2, true)
+		spr(026, 10, 9, 2, 1)
+		spr(026, 23, 9, 1, 1, true)
+		palt()
 
-		spr(048,108,1)
+		spr(048, 32, 1)
 		water_drop_spr = (player.water_cap == 0) and 043 or
 		(player.water_cap == 1) and 044 or
 		(player.water_cap == 2) and 045 or
 		(player.water_cap == 3) and 059 or
 		(player.water_cap == 4) and 060 or 061
-		pal(7,0) spr(water_drop_spr,116,0) pal()
-		print(player.max_water_cap,124,3,0)
+		pal(7, 0) spr(water_drop_spr, 40, 0) pal()
+		print(player.max_water_cap, 48, 3, 0)
 
-		spr(032,108,10)
+		spr(032, 32, 10)
 		occup_spr = (player.occup == 0) and 043 or
 		(player.occup == 1) and 044 or 045
-		pal(7,0) spr(occup_spr,116,9) pal()
-		print(player.max_occup,124,12,0)
+		pal(7, 0) spr(occup_spr, 40, 9) pal()
+		print(player.max_occup, 48, 12, 0)
 
 		--[[
 		arrow_flip = (drop_off_x > player.x) and true or false
@@ -417,12 +437,12 @@ function _draw()
 			rectfill(player.spotlight_px1, player.spotlight_py1, player.spotlight_px2 - 3, player.spotlight_py2, 2)
 
 			if player.spotlight_height == 0 then
-				sspr(40, 16, 4, 4, player.spotlight_px1-2, player.spotlight_py2 + 1)
-				sspr(40, 16, 3, 4, player.spotlight_px1+2, player.spotlight_py2 + 1)
+				sspr(104, 0, 4, 4, player.spotlight_px1-2, player.spotlight_py2 + 1)
+				sspr(104, 0, 3, 4, player.spotlight_px1+2, player.spotlight_py2 + 1)
 			else
-				sspr(40, 16, 4, 4, player.spotlight_px1-4, player.spotlight_py2 + 1)
-				sspr(40, 16, 4, 4, player.spotlight_px1, player.spotlight_py2 + 1)
-				sspr(40, 16, 3, 4, player.spotlight_px1+4, player.spotlight_py2 + 1)
+				sspr(104, 0, 4, 4, player.spotlight_px1-4, player.spotlight_py2 + 1)
+				sspr(104, 0, 4, 4, player.spotlight_px1, player.spotlight_py2 + 1)
+				sspr(104, 0, 3, 4, player.spotlight_px1+4, player.spotlight_py2 + 1)
 			end
 		end
 
@@ -438,11 +458,17 @@ function _draw()
 		foreach(ground_pcs,draw_ground)
 
 		if mission_leave_prompt then
-			rectfill(28,48, 100, 72, 1)
-			rect(30,50, 98, 70, 7)
+			rectfill(26,48, 100, 79, 8)
+			rect(28,50, 98, 77, 7)
 			print("abort mission?", 36, 53, 7)
-			print("[z] yes [x] no", 36, 62, 7)
+			print("[z/🅾️] yes ", 44, 62, 7)
+			print("[x/❎] no", 46, 70, 7)
 		end
+
+
+		rectfill(104, 1, 126, 9, 0)
+		rectfill(105, 0, 127, 8, 6)
+		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -571,19 +597,29 @@ function _update()
 	end
 
 	if curr_screen == 6 then -- main
-		if (btnp(2)) mm_option -= 1 sfx(2)
-		if (btnp(3)) mm_option += 1 sfx(2)
+		if (btnp(2) and not low_fuel_prompt) mm_option -= 1 sfx(2)
+		if (btnp(3) and not low_fuel_prompt) mm_option += 1 sfx(2)
 
 		if (mm_option > 5) mm_option = 1
 		if (mm_option < 1) mm_option = 5
 
 		if btnp(4) and not block_btns then
 			sfx(1)
-			if (mm_option == 1) mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) curr_screen = 2
+			if mm_option == 1 then
+				if (player.rotor_fuel <= 5) low_fuel_prompt = true block_btns = true
+
+				if not low_fuel_prompt or low_fuel_prompt_confirm then
+					mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) curr_screen = 2
+				else
+					if (btnp(4)) low_fuel_prompt_confirm = true
+				end
+			end
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
 		end
+
+		if (btnp(5) and low_fuel_prompt) low_fuel_prompt = false low_fuel_prompt_confirm = false
 	end
 	
 	if curr_screen == 7 then -- stats
@@ -612,15 +648,14 @@ function _update()
 		if (shop_option < 1) shop_option = 2
 
 		if btnp(4) and not block_btns then
-
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
 				player.rotor_health = flr(player.rotor_health) + 1
-				player.finance -= 300
+				player.finance -= 95
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 225
+				player.finance -= 75
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -647,6 +682,27 @@ function _update()
 		if prop_sound == false then
 			prop_sound = true
 			music(00)
+		end
+
+		mission_counter += 1
+		if (mission_counter % 30 == 0) mission_time += 1
+		if mission_time > 0 and mission_time % 15 == 0 then -- default 30
+			if mission_wind_roulette then
+				mission_wind_roulette = false
+				mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3, 0.4, 0.6 }) -- 0, 0.05, 0.15, 0.3
+				mission_wind_d = rnd({ "left", "right" })
+			end
+		else
+			mission_wind_roulette = true
+		end
+
+
+		if player.facing != false and mission_wind_v > 0 then
+			if player.facing == "left" then
+				mission_top_speed = (mission_wind_d == "left") and mission_wind_v * 1 or mission_wind_v * -1
+			else
+				mission_top_speed = (mission_wind_d == "right") and mission_wind_v * 1 or mission_wind_v * -1
+			end
 		end
 
 		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption
@@ -711,8 +767,12 @@ function _update()
 			player.y = player_strt_y
 			player.finance += mission_earnings
 			mission_leave_prompt = false
+			mission_counter = 0
+			mission_time = 0
 			world_x = 0
 			drop_off_x = 32
+			low_fuel_prompt = false
+			low_fuel_prompt_confirm = false
 
 			music(-1)
 			prop_sound = false
@@ -822,7 +882,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "right"
-			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
 			player.px = world_x
 			world_x += player.speed_x
 		end
@@ -839,7 +899,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "left"
-			if (player.speed_x <= player.top_speed_x) player.speed_x += 0.025
+			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
 			player.px = world_x
 			world_x -= player.speed_x
 		end
@@ -1204,14 +1264,13 @@ function create_fire()
 				local fire = {}
 				fire.x = value
 				fire.y = 112
-				fire.smk_mh = rnd({ 1, 2, 3 })
-				fire.smk_h = 0
-				fire.smk_cd_time = rnd({ 45, 60 })
+				fire.frequency = rnd({ 5, 10, 15})
+				-- fire.smk_cd_time = rnd({ 45, 60 })
 				fire.smk_cd = false
 				fire.counter = 0
 				fire.spr = 056
-				fire.frequency = rnd({ 15, 30, 45 })
 				fire.radius = 15
+				fire.is_wild = (rnd(1) > 0.6) and true or false
 				add(fire_pcs, fire)
 			end
 		end
@@ -1229,33 +1288,44 @@ function draw_light_source(fire)
 end
 
 function update_fire(fire)
-	fire.radius = (counter % 1.5 == 0) and 12 or 11
 	fire.counter += 1
+	fire.radius = (counter % 1.5 == 0) and 12 or 11
 	if (counter % 2 == 0) fire.spr += 1
 	if (fire.spr > 058) fire.spr = 56
 
-	if fire.counter % fire.frequency == 0 and fire.smk_h < fire.smk_mh then
-		fire.smk_h += 1
+	if not smk_cd and fire.counter % fire.frequency == 0 then
 		local smoke = {}
 		smoke.x = fire.x + rnd({ -2, -1, 1, 2 })
 		smoke.y = fire.y
 		smoke.spr = 049
-		smoke.damage = 0.175
+		smoke.damage = 0.0175
 		add(smoke_pcs, smoke)
 	end
 
-	if fire.smk_h == fire.smk_mh and fire.smk_cd == false then
-		fire.smk_cd = true
+	if mission_wind_v > 0.3 and fire.is_wild then
+		fire.is_wild = false
+
+		local new_fire = {}
+		new_fire.x = (mission_wind_d == "left") and fire.x + 8 or fire.x - 8
+		new_fire.y = 112
+		new_fire.smk_mh = rnd({ 1, 2, 3 })
+		new_fire.smk_h = 0
+		-- new_fire.smk_cd_time = rnd({ 45, 60 })
+		new_fire.smk_cd = false
+		new_fire.counter = 0
+		new_fire.spr = 056
+		new_fire.frequency = rnd({ 5, 10, 15})
+		new_fire.radius = 15
+		new_fire.is_wild = (rnd(1) > 0.8) and true or false
+		add(fire_pcs, new_fire)
 	end
 
-	if fire.smk_cd and fire.counter % fire.smk_cd_time == 0 then
-		fire.smk_h = 0
-		fire.smk_mh = rnd({ 1, 2, 3 })
-		fire.smk_cd = false
-	end
 end
 
 function draw_smoke(smoke)
+	if (smoke.y < 70) pal(6, 13)
+	if (smoke.y < 56) pal(6, 5)
+	
 	if (mission_day_time == "day") then
 		sspr(8, 24, 8, 8, smoke.x, smoke.y)
 	else
@@ -1270,19 +1340,27 @@ function draw_smoke(smoke)
 
 				for i=1, limit do
 					sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
+					palt() pal()
 				end
 			else
 				limit = ((player.px2 - flr(smoke.x))-6) - 10
-				-- print(limit, smoke.x + 32, smoke.y - 8, 7)
 				sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
+				
 			end
 		end
 	end
+	palt() pal()
 end
 
 function move_smoke(smoke)
 	smoke.y -= 0.95
-	if (smoke.y < 68) smoke.spr = 050 smoke.damage = 0.050
+
+	if mission_wind_v > 0 then
+		if (mission_wind_d == "left") smoke.x -= mission_wind_v
+		if (mission_wind_d == "right") smoke.x += mission_wind_v
+	end
+
+	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.0050
 	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
@@ -1339,37 +1417,37 @@ function move_water(water)
  if (water .y >= 116) del(water_drops,water)
 end
 __gfx__
-0b000bb000d00d000000300000b00000000d60000006600000d00000000d600000066000000000000004f000ff44f4ff11111111000000000002000000000000
-00b0b00b00dddd000000b0000b3b00000bbbbb0000bbbb000d5d00000ddddd0000dddd0000000004444400000545445031333131000000000002000000000000
-000bbbbb00d00d00000030000b3b0000b331c7b00b7c7cb00d5d0000d55d11d00d1111d0000000004cc700000c1c11c033333333000000000002000000000000
-00b7bbbb00dddd00000030000053bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223000000000002000000000000
-00bbbb7b00d00d000000b00000053333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000000000000
-00bbbb7b00dddd000000300000005555555533300333333000001111111155500555555006676665676766600767666022222222000000000002000000000000
-00bb77bb00d00d000000b00000000000006006000060060000000000005005000060060000565555555555500565565022222222000000000022000000000000
-000bbbb000dddd000000d00000000000055555600050050000000000011111500050050000051551511515000051150022222222000000000022000000000000
-00ee0ee0bbbbbbbb0000000000000000000000000004200000b3b300777777770000000099aaaaa9222222222222222222222222222222220022000000000000
-0e77eeee3b333b3b0000999000000000000000000004200003b33b30c7ccc7c70000000099aaaaa9222222222222222222222222222222220022000000000000
-0e7eeeee333333330099aa9007070070006ee000000420003b3bb3331cc1c1cc0000000099aaaaa9200000000000000000000000222222220022000000000000
-0eeeeeee3434344309aaa900077c77c00068ee7000042000b3bb33b3111c1c110002900099aaaaa9022222222222222222222222022222220022000000000000
-0eeeee7e499949940099aa900cccccc0006888e0000420003b33b333c1c1c1cc0029990099aaaaa9022222222222222222222222022222220022000000000000
-00eee7e099999999000099900cc1ccc000688000000440003b3b33b3111111110299a99099aaaaa9022222022222022222022222022222220022000000000000
-000e7e0099999999000000000c11c1c0006000000042420033b3b33311111111299aaa9999aaaaa9022022022022022022022022022222220022000000000000
-0000e0009999999900000000011111100060000004220000033333301111111199aaaaa999aaaaa9200000000000000000000000222222220022000000000000
-0007770000ffff0000ffff0000ffff0000ffff0020200000006d5076766635500000000066777776000000000000000000000000000000000222000000000000
-0007770000fcec00f0fcec0ff0fcec0000fcec0f02020000067cc5bbbbbbb3350000000066777776000000000000000000000000000000000222000000000000
-0007770000feef0050feef0550feef0000feef05202000000dccc5bbbbbb33350000000066777776000000000000000000000000000000000222000000000000
-00777770055dd550055dd550055dd550055dd5502020000066ddd6ddbbb333350005600066777776000000000000000000000000000000000222000000000000
-07077707505555050055550000555505505555000000000066666653333333350056660066777776070700000777007007700070077700700222000000000000
-07077707f0f55f0f00f55f0000f55ffffff55f0000000000d666d1533336d1310566766066777776007000000707007000700070007700700222000000000000
-0007070000f00f0000f00f0000f000f00f000f0000000000055dd151155dd1505667776666777776070700000707070000700700070007000222000000000000
-0007070000f00f0000f00f0000f0000000000f000000000000011100000111006677777666777776000000000777070007770700077707000222000000000000
+0300033000d00d000000300000b00000000d60000006600000d00000000d600000066000000000000004f000ff44f4ff11111111202000000002000000000000
+0030300300dddd000000b0000b3b00000bbbbb0000bbbb000d5d00000ddddd0000dddd0000000004444400000545445031333131020200000002000000000000
+0003333300d00d00000030000b3b0000b331c7b00b7c7cb00d5d0000d55d11d00d1111d0000000004cc700000c1c11c033333333202000000002000000000000
+0037333300dddd00000030000053bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223202000000002000000000000
+0033337300d00d000000b00000053333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000000000000
+0033337300dddd000000300000005555555533300333333000001111111155500555555006676665676766600767666022222222000000000002000000000000
+0033773300d00d000000b00000000000006006000060060000000000005005000060060000565555555555500565565022222222000000000022000000000000
+0003333000dddd000000d00000000000055555600050050000000000011111500050050000051551511515000051150022222222000000000022000000000000
+00880880bbbbbbbb0000000000000000000000000004200000b3b300777777770000000099aaaaa9222222222222222222222222000000000022000000000000
+087788883b333b3b0000999000000000000000000004200003b33b30c7ccc7c70000000099aaaaa9222222222222222222222222000000000022000000000000
+08788888333333330099aa9007070070006ee000000420003b3bb3331cc1c1cc0000000099aaaaa9200000000000000000000002000000000022000000000000
+088888783434344309aaa900077c77c00068ee7000042000b3bb33b3111c1c110002900099aaaaa9022222222222222222222220000000000022000000000000
+08888878499949940099aa900cccccc0006888e0000420003b33b333c1c1c1cc0029990099aaaaa9022222222222222222222220000000000022000000000000
+0088878099999999000099900cc1ccc000688000000440003b3b33b3111111110299a99099aaaaa9022202220222022222202220000000000022000000000000
+0008780099999999000000000c11c1c0006000000042420033b3b33311111111299aaa9999aaaaa9020202020202020220202020000000000022000000000000
+000080009999999900000000011111100060000004220000033333301111111199aaaaa999aaaaa9200000000000000000000002000000000022000000000000
+0005550000ffff0000ffff0000ffff0000ffff0000000000006d5076766635500000000066777776000000000000000000000000000000000222000000000000
+0005550000fcec00f0fcec0ff0fcec0000fcec0f00000000067cc5bbbbbbb3350000000066777776000000000000000000000000000000000222000000000000
+0005550000feef0050feef0550feef0000feef05000000000dccc5bbbbbb33350000000066777776000000000000000000000000000000000222000000000000
+00555550055dd550055dd550055dd550055dd5500000000066ddd6ddbbb333350005600066777776000000000000000000000000000000000222000000000000
+05055505505555050055550000555505505555000000000066666653333333350056660066777776070700000777007007700070077700700222000000000000
+05055505f0f55f0f00f55f0000f55ffffff55f0000000000d666d1533336d1310566766066777776007000000707007000700070007700700222000000000000
+0005050000f00f0000f00f0000f000f00f000f0000000000055dd151155dd1505667776666777776070700000707070000700700070007000222000000000000
+0005050000f00f0000f00f0000f0000000000f000000000000011100000111006677777666777776000000000777070007770700077707000222000000000000
 0000c0000600600006006000060000000000000000000000006d5076766635500000000000000000000000000000000000000000000000000222000000000000
 000c7c000060006000600060006000600000000000000000067cc5ccccccc1150000000000090000000000000000000000000000000000000222000000000000
 00c7ccc006060606060000060000000600000000000000000dccc5cccccc11150a0a00a000aa00000a0000000000000000000000000000002222000000000000
-00ccccc0606660606000006060000000000000000000000066ddd6ddccc1111509aaa99000a9a09009aa00000000000000000000000000002222000000000000
-0ccccc7c060606060000000600000006000000000000000066666651111111150aa9aaa00aaaaaa00aa9a0a00777007007070070077700702222000000000000
-0cccc77c6000600060006000600060000000000000000000d666d1511116d115099899900989a8900a99aaa00077007007770070077000702222000000000000
-00cc77c00606060006060600000000000000000000000000055dd155555dd15009889890088a9890098999a00007070000070700000707002222000000000000
+00c7ccc0606660606000006060000000000000000000000066ddd6ddccc1111509aaa99000a9a09009aa00000000000000000000000000002222000000000000
+0ccccccc060606060000000600000006000000000000000066666651111111150aa9aaa00aaaaaa00aa9a0a00777007007070070077700702222000000000000
+0ccccc7c6000600060006000600060000000000000000000d666d1511116d115099899900989a8900a99aaa00077007007070070077000702222000000000000
+00c777c00606060006060600000000000000000000000000055dd155555dd15009889890088a9890098999a00007070007770700000707002222000000000000
 000ccc00006060606060606060006060000000555555555500011100000111000888888009889880088898900777070000070700077707002222000000000000
 0000000b800080000010000000000000000000000000000000000000000000000000000000000000000000ffff00000000000000000000000000000000000000
 000000b008080000017100000000000000000000000000000000000000000000000000000000000000000ffffff0000000000000000000000007777700000000
