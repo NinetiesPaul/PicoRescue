@@ -92,10 +92,10 @@ function _init()
 		missions_finished = 0,
 		missions_earnings = 0,
 	}
-	difficulties = { "easy",  "normal", "hard" }
+	difficulties = { "easy" } -- ,  "normal", "hard"
 	civ_spawn =
 	{
-		easy = { 150, 250, 345, 460 },
+		easy = { 150 }, -- , 250, 345, 460
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -474,6 +474,8 @@ function _draw()
 	if curr_screen == 11 then -- triage mode
 		rect(0,0,127,127, 7)
 
+		print(current_wounds.blood_level, 64, 2, 7)
+
 		flip_x = (current_wounds.side == "front") and true or false
 
 		if (current_wounds.wound_type == "arms") sspr(0, 58, 11, 35, 24, 24, 22, 70, flip_x)
@@ -498,6 +500,8 @@ function _draw()
 			spr(106, 111, 80, 2, 2)
 			spr(072, 111, 96, 2, 2)
 		end
+
+		total_blood_loss_level = 0
 
 		for i=1, #current_wounds.wounds do
 
@@ -538,7 +542,14 @@ function _draw()
 					spr((wound.taped) and 064 or 065, 100, 90)
 				end
 			end
+
+			print("w"..i..":"..wound.blood_loss_level, 64, 18 + i * 8, 7)
+			total_blood_loss_level += wound.blood_loss_level
 		end
+
+		print("tt "..total_blood_loss_level, 64, 10, 7)
+
+
 
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 24, 62, 20, 32, flip_x)
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 22, 12, 32, 110, flip_x)
@@ -552,7 +563,7 @@ function _draw()
 			spr(tool_spr, triage_cursor_x, triage_cursor_y, 2, 2)
 		end
 
-		print(tool_selected, 2, 2, 5) -- debug
+		-- print(tool_selected, 2, 2, 5) -- debug
 		spr(066, triage_cursor_x, triage_cursor_y)
 		print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
 	end
@@ -809,12 +820,15 @@ function _update()
 			current_wounds.side = "front"
 			current_wounds.rescuee_name = wounded_civs_pcs[#wounded_civs_pcs].name
 			current_wounds.wearing_clothing = true
+			current_wounds.blood_level = wounded_civs_pcs[#wounded_civs_pcs].blood_level
 			del(wounded_civs_pcs, wounded_civs_pcs[#wounded_civs_pcs])
 		end
 
 		for i=1, #current_wounds.wounds do
 
 			local wound = current_wounds.wounds[i]
+
+			current_wounds.blood_level -= wound.blood_loss_level
 
 			if not wound.triaged and wound.side == current_wounds.side then
 
@@ -1029,9 +1043,10 @@ function create_civ()
 				civ.on_board = false
 				civ.clock = 0
 				civ.name = rnd({ "aNNA", "fRANK", "jOE", "jOHN", "pAULIE", "mARTHA", "bRUCE", "cLARK", "tONY", "mARY", "aNGELA" })
+				civ.blood_level = 10
 				local wounds = {}
 
-				civ_is_wounded = (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
+				civ_is_wounded = 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
 
@@ -1049,7 +1064,8 @@ function create_civ()
 									under_clothing = v[i].under_clothing,
 									triaged = v[i].triaged,
 									spr = rnd({ 082, 083, 084, 098, 099, 100 }),
-									side = rnd({ "front", "back" })
+									side = rnd({ "front", "back" }),
+									blood_loss_level = rnd({ 0.001, 0.005, 0.007 })
 								}
 								add(wounds, wound)
 							end
