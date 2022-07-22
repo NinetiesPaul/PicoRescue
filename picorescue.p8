@@ -43,7 +43,7 @@ function _init()
 		rx2 = 0,
 		ry2 = 0,
 		finance = 1500,
-		ladder_climb_spd = 0.20, -- 0.3 -- 0.5
+		ladder_climb_spd = 5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
 		spotlight_px2 = player_strt_x + 7,
@@ -96,7 +96,7 @@ function _init()
 	difficulties = { "easy" } -- ,  "normal", "hard"
 	civ_spawn =
 	{
-		easy = { 150 }, -- , 250, 345, 460
+		easy = { 70 }, -- 150, 250, 345, 460
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -549,9 +549,11 @@ function _draw()
 			total_blood_loss_level += wound.blood_loss_level
 		end
 
-		print("tt "..total_blood_loss_level, 64, 10, 7)
+		print("tt "..total_blood_loss_level .."," .. flr(total_blood_loss_level), 64, 10, 7)
 
-
+		rect(12, 28, 18, 108, 2)
+		rectfill(13, 21 + (11-flr(current_wounds.blood_level)) * 8, 17, 107, 8)
+		pal(12, 8) spr(048, 11, 111) pal()
 
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 24, 62, 20, 32, flip_x)
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 22, 12, 32, 110, flip_x)
