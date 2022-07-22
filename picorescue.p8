@@ -196,6 +196,8 @@ function _init()
 	difficulty = "";
 	mission_ground = 20
 	mission_civ_saved = 0
+	mission_civ_left_behind = 0
+	mission_civ_dead_by_blood_loss = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
 	mission_day_time = rnd({ "day", "night" })
@@ -205,8 +207,9 @@ function _init()
 	mission_top_speed = 0
 	mission_time = 0
 	mission_counter = 0
-	mission_leave_prompt = false
 
+	mission_leave_prompt = false
+	mission_rescuee_dead = false
 	low_fuel_prompt = false
 	low_fuel_prompt_confirm = false
 
@@ -466,12 +469,9 @@ function _draw()
 			print("[x/❎] no", 46, 70, 7)
 		end
 
-
 		rectfill(104, 1, 126, 9, 0)
 		rectfill(105, 0, 127, 8, 6)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
-
-		
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -572,6 +572,13 @@ function _draw()
 		print(tool_selected, 2, 2, 5) -- debug
 		spr(066, triage_cursor_x, triage_cursor_y)
 		print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
+
+		if mission_rescuee_dead then
+			rectfill(26,48, 100, 72, 8)
+			rect(28,50, 98, 70, 7)
+			print("patient has died", 32, 53, 7)
+			print("press any key", 38, 62, 7)
+		end
 	end
 
 	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
@@ -800,10 +807,10 @@ function _update()
 
 	if curr_screen == 11 then -- triage mode
 
-		if (btn(0)) triage_cursor_x -= 3
-		if (btn(1)) triage_cursor_x += 3
-		if (btn(2)) triage_cursor_y -= 3
-		if (btn(3)) triage_cursor_y += 3
+		if (btn(0) and not mission_rescuee_dead) triage_cursor_x -= 3
+		if (btn(1) and not mission_rescuee_dead) triage_cursor_x += 3
+		if (btn(2) and not mission_rescuee_dead) triage_cursor_y -= 3
+		if (btn(3) and not mission_rescuee_dead) triage_cursor_y += 3
 		if (triage_cursor_x > 120) triage_cursor_x = 120
 		if (triage_cursor_y > 120) triage_cursor_y = 120
 		if (triage_cursor_x < 0) triage_cursor_x = 0
@@ -833,32 +840,43 @@ function _update()
 			del(wounded_civs_pcs, wounded_civs_pcs[#wounded_civs_pcs])
 		end
 
-		for i=1, #current_wounds.wounds do
+		if (current_wounds.blood_level <= 0) mission_rescuee_dead = true
 
-			local wound = current_wounds.wounds[i]
 
-			current_wounds.blood_level -= (wound.bleeding) and wound.blood_loss_level or wound.blood_loss_level/2
+		if not mission_rescuee_dead then
+			for i=1, #current_wounds.wounds do
 
-			if not wound.triaged and wound.side == current_wounds.side then
+				local wound = current_wounds.wounds[i]
 
-				if
-					triage_cursor_x >= wound.x and
-					triage_cursor_x <= wound.x + 8 and
-					triage_cursor_y >= wound.y and
-					triage_cursor_y <= wound.y + 8
-					then
-					if btnp(4) then
-						if not wound.under_clothing or wound.under_clothing and not current_wounds.wearing_clothing then
-							if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
-							if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
-							if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
-							if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
-							if (tool_selected == "lens") current_civ_detailed_wound = i
+				current_wounds.blood_level -= (wound.bleeding) and wound.blood_loss_level or wound.blood_loss_level/2
+
+				if not wound.triaged and wound.side == current_wounds.side then
+
+					if
+						triage_cursor_x >= wound.x and
+						triage_cursor_x <= wound.x + 8 and
+						triage_cursor_y >= wound.y and
+						triage_cursor_y <= wound.y + 8
+						then
+						if btnp(4) then
+							if not wound.under_clothing or wound.under_clothing and not current_wounds.wearing_clothing then
+								if (tool_selected == "soap" and not wound.cleaned) wound.cleaned = true
+								if (tool_selected == "gauze" and not wound.bleeding and not wound.dressed) wound.dressed = true
+								if (tool_selected == "gauze" and wound.bleeding) wound.bleeding = false
+								if (tool_selected == "tape" and wound.dressed and not wound.taped) wound.taped = true
+								if (tool_selected == "lens") current_civ_detailed_wound = i
+							end
 						end
 					end
+
+					if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) wound.triaged = true current_wounds_treated += 1
 				end
 
-				if (wound.cleaned and wound.dressed and wound.taped and not wound.bleeding) wound.triaged = true current_wounds_treated += 1
+			end
+		else
+			if btnp(4) or btnp(5) then
+				current_wounds_treated = 0
+				current_wounds.wounds = {}
 			end
 		end
 
