@@ -111,7 +111,7 @@ function _init()
 		arms =
 		{
 			{
-				x = 32,
+				x = 58,
 				y = 52,
 				cleaned = false,
 				bleeding = true,
@@ -121,7 +121,7 @@ function _init()
 				triaged = false
 			},
 			{
-				x = 36,
+				x = 59,
 				y = 62,
 				cleaned = false,
 				bleeding = true,
@@ -131,7 +131,7 @@ function _init()
 				triaged = false
 			},
 			{
-				x = 36,
+				x = 57,
 				y = 84,
 				cleaned = false,
 				bleeding = true,
@@ -144,7 +144,7 @@ function _init()
 		legs =
 		{
 			{
-				x = 32,
+				x = 60,
 				y = 52,
 				cleaned = false,
 				bleeding = true,
@@ -154,7 +154,7 @@ function _init()
 				triaged = false
 			},
 			{
-				x = 36,
+				x = 62,
 				y = 62,
 				cleaned = false,
 				bleeding = true,
@@ -164,7 +164,7 @@ function _init()
 				triaged = false
 			},
 			{
-				x = 36,
+				x = 64,
 				y = 84,
 				cleaned = false,
 				bleeding = true,
@@ -470,6 +470,8 @@ function _draw()
 		rectfill(104, 1, 126, 9, 0)
 		rectfill(105, 0, 127, 8, 6)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
+
+		
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -479,8 +481,8 @@ function _draw()
 
 		flip_x = (current_wounds.side == "front") and true or false
 
-		if (current_wounds.wound_type == "arms") sspr(0, 58, 11, 35, 24, 24, 22, 70, flip_x)
-		if (current_wounds.wound_type == "legs") sspr(34, 58, 14, 120, 26, 12, 28, 240, flip_x)
+		if (current_wounds.wound_type == "arms") sspr(0, 58, 11, 35, 50, 24, 22, 70, flip_x)
+		if (current_wounds.wound_type == "legs") sspr(34, 58, 14, 120, 50, 12, 28, 240, flip_x)
 
 		--[[
 		for j=1, #wounded_civs_pcs do
@@ -555,8 +557,8 @@ function _draw()
 		rectfill(13, 21 + (11-flr(current_wounds.blood_level)) * 8, 17, 107, 8)
 		pal(12, 8) spr(048, 11, 111) pal()
 
-		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 24, 62, 20, 32, flip_x)
-		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 22, 12, 32, 110, flip_x)
+		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 50, 62, 20, 32, flip_x)
+		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 46, 12, 32, 110, flip_x)
 
 		if tool_selected != "none" then
 			if (tool_selected == "soap") tool_spr = 076
@@ -860,9 +862,9 @@ function _update()
 			end
 		end
 
-		wound_clothing_x1 = (current_wounds.wound_type == "arms") and 24 or 22
+		wound_clothing_x1 = (current_wounds.wound_type == "arms") and 50 or 46
 		wound_clothing_y1 = (current_wounds.wound_type == "arms") and 62 or 12
-		wound_clothing_x2 = (current_wounds.wound_type == "arms") and 43 or 53
+		wound_clothing_x2 = (current_wounds.wound_type == "arms") and 70 or 78
 		wound_clothing_y2 = (current_wounds.wound_type == "arms") and 93 or 121
 
 		if
