@@ -97,7 +97,7 @@ function _init()
 	difficulties = { "easy" } -- ,  "normal", "hard"
 	civ_spawn =
 	{
-		easy = { 70, 90, 110 }, -- 150, 250, 345, 460
+		easy = { 70 }, -- 150, 250, 345, 460
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -480,8 +480,6 @@ function _draw()
 	if curr_screen == 11 then -- triage mode
 		rect(0,0,127,127, 7)
 
-		print(current_wounds.blood_level, 64, 2, 7)
-
 		flip_x = (current_wounds.side == "front") and true or false
 
 		if (current_wounds.wound_type == "arms") sspr(0, 58, 11, 35, 50, 24, 22, 70, flip_x)
@@ -550,14 +548,15 @@ function _draw()
 				end
 			end
 
-			print("w"..i..":"..wound.blood_loss_level, 64, 18 + i * 8, 7)
+			-- print("w"..i..":"..wound.blood_loss_level, 64, 18 + i * 8, 7)
 			total_blood_loss_level += wound.blood_loss_level
 		end
 
-		print("tt "..total_blood_loss_level .."," .. flr(total_blood_loss_level), 64, 10, 7)
+		-- print(current_wounds.blood_level, 64, 2, 7)
 
+		-- print("tt "..total_blood_loss_level .."," .. flr(total_blood_loss_level), 64, 10, 7)
 		rect(12, 28, 18, 108, 2)
-		rectfill(13, 21 + (11-flr(current_wounds.blood_level)) * 8, 17, 107, 8)
+		if (not mission_rescuee_dead) rectfill(13, 13 + (11 - flr(current_wounds.blood_level)) * 8, 17, 107, 8)
 		pal(12, 8) spr(048, 11, 111) pal()
 
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 50, 62, 20, 32, flip_x)
@@ -723,7 +722,6 @@ function _update()
 			mission_wind_roulette = true
 		end
 
-
 		if player.facing != false and mission_wind_v > 0 then
 			if player.facing == "left" then
 				mission_top_speed = (mission_wind_d == "left") and mission_wind_v * 1 or mission_wind_v * -1
@@ -845,7 +843,6 @@ function _update()
 		end
 
 		if (current_wounds.blood_level <= 0) mission_rescuee_dead = true
-
 
 		if not mission_rescuee_dead then
 			for i=1, #current_wounds.wounds do
