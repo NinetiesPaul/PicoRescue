@@ -92,11 +92,12 @@ function _init()
 		civs_saved = 0,
 		missions_finished = 0,
 		missions_earnings = 0,
+		civs_left_behind = 0
 	}
 	difficulties = { "easy" } -- ,  "normal", "hard"
 	civ_spawn =
 	{
-		easy = { 70 }, -- 150, 250, 345, 460
+		easy = { 70, 90, 110 }, -- 150, 250, 345, 460
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -196,7 +197,7 @@ function _init()
 	difficulty = "";
 	mission_ground = 20
 	mission_civ_saved = 0
-	mission_civ_left_behind = 0
+	mission_n_of_rescuees = 0
 	mission_civ_dead_by_blood_loss = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
@@ -232,20 +233,20 @@ function _draw()
 		rectfill(0,0,127,127,8)
 
 		for i=0, 15 do
-			spr(025,0+i*8,0)
-			spr(025,0+i*8,8)
-			spr(024,0+i*8,16,1,1,false,true)
+			spr(025, 0 + i * 8, 0)
+			spr(025, 0 + i * 8, 8)
+			spr(024, 0 + i * 8, 16, 1, 1, false, true)
 		end
 
-		print("pico rescue",42,50,0)
-		print("pico rescue",41,49,7)
+		print("pico rescue", 42, 50, 0)
+		print("pico rescue", 41, 49, 7)
 
-		print("press any key",37,80,7)
+		print("press any key", 37, 80, 7)
 
 		for i=0, 15 do
-			spr(024,0+i*8,104)
-			spr(025,0+i*8,112)
-			spr(025,0+i*8,120)
+			spr(024, 0 + i * 8, 104)
+			spr(025, 0 + i * 8, 112)
+			spr(025, 0 + i * 8, 120)
 		end
 	end
 
@@ -256,16 +257,16 @@ function _draw()
 		mm_opt4_c = (mm_option == 4) and 7 or 9
 		mm_opt5_c = (mm_option == 5) and 7 or 9
 
-		print("play mission",40,39,5)
-		print("play mission",40,38,mm_opt1_c)
-		print("my heli",50,49,5)
-		print("my heli",50,48,mm_opt2_c)
-		print("shop",56,59,5)
-		print("shop",56,58,mm_opt3_c)
-		print("carrer stats",39,69,5)
-		print("carrer stats",39,68,mm_opt4_c)
-		print("finances",48,79,5)
-		print("finances",48,78,mm_opt5_c)
+		print("play mission", 40, 39, 5)
+		print("play mission", 40, 38, mm_opt1_c)
+		print("my heli", 50, 49, 5)
+		print("my heli", 50, 48, mm_opt2_c)
+		print("shop", 56, 59, 5)
+		print("shop", 56, 58, mm_opt3_c)
+		print("carrer stats", 39, 69, 5)
+		print("carrer stats", 39, 68, mm_opt4_c)
+		print("finances", 48, 79, 5)
+		print("finances", 48, 78, mm_opt5_c)
 
 		if low_fuel_prompt then
 			rectfill(26,48, 100, 79, 8)
@@ -277,48 +278,50 @@ function _draw()
 	end
 
 	if curr_screen == 7 then -- stats
-		print("carrer stats",40,19,5)
-		print("carrer stats",40,18,7)
+		print("carrer stats", 40, 19, 5)
+		print("carrer stats", 40, 18, 7)
 
-		print("civilians rescued",10,48,7)
-		print("fires put out",10,58,7)
-		print("missions finished",10,68,7)
-		print("missions earnings",10,78,7)
+		print("civilians rescued", 10, 48, 7)
+		print("civilians left behind", 10, 58, 7)
+		print("fires put out", 10, 68, 7)
+		print("missions finished", 10, 78, 7)
+		print("missions earnings", 10, 88, 7)
 
-		print(stats.civs_saved,110,48,7)
-		print(stats.fire_put_out,110,58,7)
-		print(stats.missions_finished,110,68,7)
-		print("$ " .. stats.missions_earnings,102,78,7)
+		print(stats.civs_saved, 110, 48, 7)
+		print(stats.civs_left_behind, 110, 58, 7)
+		print(stats.fire_put_out, 110, 68, 7)
+		print(stats.missions_finished, 110, 78, 7)
+		print("$ " .. stats.missions_earnings, 102, 88, 7)
 	end
 
 	if curr_screen == 8 then -- my heli
-		print("my heli",50,19,5)
-		print("my heli",50,18,7)
+		print("my heli", 50, 19, 5)
+		print("my heli", 50, 18, 7)
 
-		print("health",10,48,7)
-		print("fuel",10,56,7)
-		print("max occupancy",10,64,7)
-		print("water capacity",10,72,7)
+		print("health", 10, 48, 7)
+		print("fuel", 10, 56, 7)
+		print("max occupancy", 10, 64, 7)
+		print("water capacity", 10, 72, 7)
 
-		print(player.rotor_health,110,48,7)
-		print(player.rotor_fuel,110,56,7)
-		print(player.max_occup,110,64,7)
-		print(player.water_cap,110,72,7)
+		print(player.rotor_health, 110, 48, 7)
+		print(player.rotor_fuel, 110, 56, 7)
+		print(player.max_occup, 110, 64, 7)
+		print(player.water_cap, 110, 72, 7)
 
-		-- print("my upgrades",5,79,7)
+		-- print("my upgrades", 5, 79, 7)
 	end
 
 	if curr_screen == 10 then -- shop
-		print("shop",56,19,5)
-		print("shop",56,18,7)
+		print("shop", 56, 19, 5)
+		print("shop", 56, 18, 7)
 
-		print("cash",44,29,5)
-		print("cash",44,28,7)
-		print("$" .. player.finance,64,29,3)
-		print("$" .. player.finance,64,28,11)
+		print("cash", 44, 29, 5)
+		print("cash", 44, 28, 7)
+		print("$" .. player.finance, 64, 29, 3)
+		print("$" .. player.finance, 64, 28, 11)
 
-		print("health $95",15,48,7)
-		print("fuel $75",15,58,7)
+		print("health $95", 15, 48, 7)
+		print("fuel $75", 15, 58, 7)
 
 		selector_pos = (shop_option == 1) and 47 or 57
 		spr(018, 5, selector_pos, 1, 1, true)
@@ -336,7 +339,7 @@ function _draw()
 		print("fires put out",10,70,7)
 		print("mission earnings",10,80,7)
 
-		print(mission_civ_saved,110,60,7)
+		print(mission_civ_saved.."/"..mission_n_of_rescuees,110,60,7)
 		print(mission_fire_put_out,110,70,7)
 		print("$ " .. mission_earnings,102,80,7)
 	end
@@ -774,12 +777,13 @@ function _update()
 			if (btnp(5)) mission_leave_prompt = false
 		end
 
-		if count(civ_pcs) == 0 then
+		if count(civ_pcs) == 0 then -- end of mission
 			mission_earnings = mission_civ_saved * 75
 			stats.missions_finished += 1
 			stats.fire_put_out += mission_fire_put_out
 			stats.civs_saved += mission_civ_saved
 			stats.missions_earnings += mission_earnings
+			stats.civs_left_behind += (mission_n_of_rescuees - mission_civ_saved)
 			civ_pcs_created = false
 			fire_pcs_created = false
 			fire_pcs = {}
@@ -897,7 +901,7 @@ function _update()
 			end
 		end
 
-		if (#current_wounds.wounds == current_wounds_treated) current_wounds_treated = 0 current_wounds.wounds = {}
+		if (#current_wounds.wounds == current_wounds_treated) mission_rescuee_dead = false current_wounds_treated = 0 current_wounds.wounds = {}
 
 		if (#wounded_civs_pcs == 0 and #current_wounds.wounds == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
 	end
@@ -1048,10 +1052,10 @@ function upd_pkup_area()
 	player.px2 = player.x+16
 	player.py2 = 120
 
-	player.spotlight_px1 = player.x  + 3
-	player.spotlight_py1 = player.y  + 10
+	player.spotlight_px1 = player.x + 3
+	player.spotlight_py1 = player.y + 10
 	player.spotlight_px2 = player.x + 7
-	player.spotlight_py2 = player.y  + 33 + (player.spotlight_height * 8)
+	player.spotlight_py2 = player.y + 33 + (player.spotlight_height * 8)
 end
 -->8
 -- civilian logic
@@ -1110,6 +1114,7 @@ function create_civ()
 		end
 	end
 
+	mission_n_of_rescuees = #civ_pcs
 	civ_pcs_created = true
 end
 
@@ -1204,7 +1209,7 @@ function droping_off()
 	end
 
 	for civ in all(civ_pcs) do
-		if civ.on_board  then
+		if civ.on_board then
 			if
 				player.ladder == 3 and
 				civ.on_board and
@@ -1244,7 +1249,7 @@ end
 
 function upd_ladder()
 	if counter%15 == 0 then
-		if player.dpl_ldd_pkup  or  player.dpl_ldd_doof then
+		if player.dpl_ldd_pkup or player.dpl_ldd_doof then
 			if (player.ladder<3) player.ladder += 1
 		end
 		if not player.dpl_ldd_pkup and not player.dpl_ldd_doof and counter%30 == 0 then
@@ -1408,6 +1413,7 @@ function move_smoke(smoke)
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
 	if (player.mvn_dir == "right") smoke.x -= player.speed_x
+
 	if
 		player.x >= smoke.x - 2 and
 		player.x <= smoke.x + 6 and
@@ -1447,10 +1453,10 @@ function move_water(water)
 
  for fire in all(fire_pcs) do
 	 if
-	 	water.x >= fire.x-2 and
-	 	water.x <= fire.x+10 and
+	 	water.x >= fire.x - 2 and
+	 	water.x <= fire.x + 10 and
 	 	water.y >= fire.y and
-	 	water.y <= fire.y+8
+	 	water.y <= fire.y + 8
 		then
 			mission_fire_put_out += 1
 			del(fire_pcs,fire)
