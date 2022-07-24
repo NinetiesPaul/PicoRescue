@@ -202,7 +202,7 @@ function _init()
 	mission_civ_dead_by_blood_loss = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
-	mission_day_time = rnd({ "day", "night" })
+	mission_day_time = rnd({ "day" }) -- , "night"
 	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
 	mission_wind_d = rnd({ "left", "right" })
 	mission_wind_roulette = true
@@ -369,11 +369,17 @@ function _draw()
 		rectfill(0, 0, 128, 119, (mission_day_time == "day") and 12 or 0)
 		spr(020, drop_off_x, 112)
 
-		if (counter % 3 == 0) spr(052, player.x - 8, player.y - 8)
-		if (counter % 3 == 0) spr(052, player.x + 8, player.y - 8, 1, 1, true)
+		if counter % 3 == 0 then
+			sspr(37, 31, 3, 1, player.x - 3, player.y - 1)
+			sspr(37, 31, 3, 1, player.x + 8, player.y - 1)
+		end
 		spr(053, player.x, player.y - 8)
 		spr(player.vhc_front, player.x, player.y, 1, 1, (player.facing == "right") and true or false)
-		if (player.facing != false) spr((mission_day_time == "day") and 003 or 006, (player.facing == "right") and player.x+8 or player.x-8, player.y, 1, 1, (player.facing == "right") and true or false)
+		if player.facing != false then
+			spr((mission_day_time == "day") and 003 or 006, (player.facing == "right") and player.x+8 or player.x-8, player.y, 1, 1, (player.facing == "right") and true or false)
+			tail_rotor_x = (counter % 3 == 0) and 33 or 37
+			sspr(tail_rotor_x, 24, 4, 4, (player.facing == "right") and player.x+12 or player.x-7, player.y)
+		end
 
 		palt(0, false) rectfill(1, 1, 54, 19, 0) palt()
 		rectfill(0, 0, 53, 18, 6)
@@ -388,7 +394,6 @@ function _draw()
 		(health > 0.3 and health < 0.4) and 7 or
 		(health > 0.2 and health < 0.3) and 5 or
 		(health > 0.1 and health < 0.2) and 3 or 1
-
 		spr(016, 0, 1)
 		rectfill(11, 3, 11 + rotor_health_bar_length, 6, 14)
 		palt(0, false) palt(2, true)
@@ -406,7 +411,6 @@ function _draw()
 		(fuel_usage > 0.3 and fuel_usage < 0.4) and 7 or
 		(fuel_usage > 0.2 and fuel_usage < 0.3) and 5 or
 		(fuel_usage > 0.1 and fuel_usage < 0.2) and 3 or 1
-
 		spr(000, 0, 10)
 		rectfill(11, 12, 11 + rotor_fuel_bar_length, 15, 11)
 		palt(0, false) palt(2, true)
@@ -499,8 +503,9 @@ function _draw()
 
 		if current_civ_detailed_wound == 0 then
 			for i=1,#tools do
-				spr(tools[i], 110, 0 + 16 * i, 2, 2)
+				spr(tools[i], 110, -14 + 16 * i, 2, 2)
 			end
+			spr(072, 110, 110, 2, 2)
 		end
 
 		total_blood_loss_level = 0
@@ -814,17 +819,15 @@ function _update()
 		if (triage_cursor_x < 0) triage_cursor_x = 0
 		if (triage_cursor_y < 0) triage_cursor_y = 0
 
-		if (triage_cursor_x > 100 and triage_cursor_y >= 16 and triage_cursor_y <= 32 and btnp(4)) tool_selected = tools[1]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 32 and triage_cursor_y <= 48 and btnp(4)) tool_selected = tools[2]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 48 and triage_cursor_y <= 64 and btnp(4)) tool_selected = tools[3]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 64 and triage_cursor_y <= 80 and btnp(4)) tool_selected = tools[4]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 96 and btnp(4)) tool_selected = tools[5]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 96 and triage_cursor_y <= 112 and btnp(4)) tool_selected = tools[6]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 0 and triage_cursor_y <= 16 and btnp(4)) tool_selected = tools[1]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 16 and triage_cursor_y <= 32 and btnp(4)) tool_selected = tools[2]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 32 and triage_cursor_y <= 48 and btnp(4)) tool_selected = tools[3]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 48 and triage_cursor_y <= 64 and btnp(4)) tool_selected = tools[4]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 64 and triage_cursor_y <= 80 and btnp(4)) tool_selected = tools[5]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 96 and btnp(4)) tool_selected = tools[6]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 110 and btnp(4)) current_wounds.side = (current_wounds.side == "front") and "back" or "front"
 
 		if (tool_selected == 074) current_wounds.blood_level += 3 tool_selected = "none"
-
-		-- if (triage_cursor_x > 100 and triage_cursor_y >= 96 and triage_cursor_y <= 120 and btnp(4)) current_wounds.side = (current_wounds.side == "front") and "back" or "front"
-
 		if (current_wounds.blood_level > 10) current_wounds.blood_level = 10
 
 		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
@@ -1074,7 +1077,7 @@ function create_civ()
 
 				civ_is_wounded = 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
 				if civ_is_wounded > 0 then
-					wound_type = rnd({ "arms", "legs" }) -- wip: arms, legs
+					wound_type = rnd({ "arms", "legs" })
 
 					for i = 1, civ_is_wounded do
 						for k,v in pairs(excoriation) do
@@ -1464,9 +1467,9 @@ __gfx__
 0300033000d00d000000300000b00000000d60000006600000d00000000d600000066000000000000004f000ff44f4ff11111111202000000002000000000000
 0030300300dddd000000b0000b3b00000bbbbb0000bbbb000d5d00000ddddd0000dddd0000000004444400000545445031333131020200000002000000000000
 0003333300d00d00000030000b3b0000b331c7b00b7c7cb00d5d0000d55d11d00d1111d0000000004cc700000c1c11c033333333202000000002000000000000
-0037333300dddd00000030000053bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223202000000002000000000000
-0033337300d00d000000b00000053333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000000000000
-0033337300dddd000000300000005555555533300333333000001111111155500555555006676665676766600767666022222222000000000002000000000000
+0037333300dddd000000300000d3bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223202000000002000000000000
+0033337300d00d000000b000000d3333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000000000000
+0033337300dddd00000030000000dddddddd33300333333000001111111155500555555006676665676766600767666022222222000000000002000000000000
 0033773300d00d000000b00000000000006006000060060000000000005005000060060000565555555555500565565022222222000000000022000000000000
 0003333000dddd000000d00000000000055555600050050000000000011111500050050000051551511515000051150022222222000000000022000000000000
 00880880bbbbbbbb0000000000000000000000000004200000b3b300777777770000000099aaaaa9222222222222222222222222000000000022000000000000
@@ -1485,14 +1488,14 @@ __gfx__
 05055505f0f55f0f00f55f0000f55ffffff55f0000000000d666d1533336d1310566766066777776007000000707007000700070007700700222000000000000
 0005050000f00f0000f00f0000f000f00f000f0000000000055dd151155dd1505667776666777776070700000707070000700700070007000222000000000000
 0005050000f00f0000f00f0000f0000000000f000000000000011100000111006677777666777776000000000777070007770700077707000222000000000000
-0000c0000600600006006000060000000000000000000000006d5076766635500000000000000000000000000000000000000000000000000222000000000000
-000c7c000060006000600060006000600000000000000000067cc5ccccccc1150000000000090000000000000000000000000000000000000222000000000000
-00c7ccc006060606060000060000000600000000000000000dccc5cccccc11150a0a00a000aa00000a0000000000000000000000000000002222000000000000
+0000c0000600600006006000060000000050050500000000006d5076766635500000000000000000000000000000000000000000000000000222000000000000
+000c7c000060006000600060006000600555005000000000067cc5ccccccc1150000000000090000000000000000000000000000000000000222000000000000
+00c7ccc006060606060000060000000600500505000000000dccc5cccccc11150a0a00a000aa00000a0000000000000000000000000000002222000000000000
 00c7ccc0606660606000006060000000000000000000000066ddd6ddccc1111509aaa99000a9a09009aa00000000000000000000000000002222000000000000
 0ccccccc060606060000000600000006000000000000000066666651111111150aa9aaa00aaaaaa00aa9a0a00777007007070070077700702222000000000000
 0ccccc7c6000600060006000600060000000000000000000d666d1511116d115099899900989a8900a99aaa00077007007070070077000702222000000000000
 00c777c00606060006060600000000000000000000000000055dd155555dd15009889890088a9890098999a00007070007770700000707002222000000000000
-000ccc00006060606060606060006060000000555555555500011100000111000888888009889880088898900777070000070700077707002222000000000000
+000ccc00006060606060606060006060000005555555555500011100000111000888888009889880088898900777070000070700077707002222000000000000
 0000000b8000800000100000000000000000000000000000000000ffff0000000000000000000000000666666666000000000000000000000000000000000000
 000000b0080800000171000000000000000000000000000000000ffffff000000000000000000000006888888888600000000000000000000007777700000000
 00000b00008000000177100000000000000000000000000000000f0ff0f0000000000660000000000688888888888600000eeeeeeeeee0000076666670000000
