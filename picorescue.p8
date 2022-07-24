@@ -483,8 +483,6 @@ function _draw()
 			print("[x/❎] no", 46, 70, 7)
 		end
 
-		print(flr(world_x), 64, 0, 7)
-
 		rectfill(104, 1, 126, 9, 0)
 		rectfill(105, 0, 127, 8, 6)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
