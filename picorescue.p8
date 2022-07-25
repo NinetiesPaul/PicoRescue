@@ -596,10 +596,9 @@ function _draw()
 		end
 	end
 
-	if curr_screen == 6 or curr_screen == 7 or curr_screen == 8 then
-		print("z/🅾️ [select]", 2, 120, 7)
-		print("x/❎ [back]", 82, 120, 7)
-	end
+	left_bottom_text = (curr_screen == 10) and "z/🅾️ [buy]" or "z/🅾️ [select]"
+	if (curr_screen == 6 or curr_screen == 10) print(left_bottom_text, 2, 120, 7)
+	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10) print("x/❎ [back]", 82, 120, 7)
 end
 
 function _update()
