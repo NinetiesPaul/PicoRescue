@@ -93,12 +93,13 @@ function _init()
 		civs_saved = 0,
 		missions_finished = 0,
 		missions_earnings = 0,
-		civs_left_behind = 0
+		civs_left_behind = 0,
+		civs_lost_on_triage = 0
 	}
-	difficulties = { "hard" } -- ,  "normal", "hard"
+	difficulties = { "easy" } -- "normal", "hard"
 	civ_spawn =
 	{
-		easy = { 150, 250, 345, 460 },
+		easy = { 70  }, -- 150, 250, 345, 460
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -111,7 +112,7 @@ function _init()
 	tree_spawn = {
 		easy = { 75, 95, 160, 235, 270, 310, 450, 470 },
 		normal = { 85, 110, 150, 240, 270, 300, 385, 485, 610, 630, 660 },
-		hard = { 65, 110, 130, 180, 245, 270, 420, 440, 480, 500          , 785, 800, 820, 830, 855 }
+		hard = { 65, 110, 130, 180, 245, 270, 420, 440, 480, 500, 785, 800, 820, 830, 855 }
 	}
 	excoriation =
 	{
@@ -207,6 +208,8 @@ function _init()
 	mission_civ_dead_by_blood_loss = 0
 	mission_fire_put_out = 0
 	mission_earnings = 0
+	mission_civ_lost_on_triage = 0
+	mission_n_of_blood_bag = 3
 	mission_day_time = rnd({ "day" }) -- , "night"
 	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
 	mission_wind_d = rnd({ "left", "right" })
@@ -289,15 +292,17 @@ function _draw()
 
 		print("civilians rescued", 10, 48, 7)
 		print("civilians left behind", 10, 58, 7)
-		print("fires put out", 10, 68, 7)
-		print("missions finished", 10, 78, 7)
-		print("missions earnings", 10, 88, 7)
+		print("civilians lost on triage", 10, 68, 7)
+		print("fires put out", 10, 78, 7)
+		print("missions finished", 10, 88, 7)
+		print("missions earnings", 10, 98, 7)
 
 		print(stats.civs_saved, 110, 48, 7)
 		print(stats.civs_left_behind, 110, 58, 7)
-		print(stats.fire_put_out, 110, 68, 7)
-		print(stats.missions_finished, 110, 78, 7)
-		print("$ " .. stats.missions_earnings, 102, 88, 7)
+		print(stats.civs_lost_on_triage, 110, 68, 7)
+		print(stats.fire_put_out, 110, 78, 7)
+		print(stats.missions_finished, 110, 88, 7)
+		print("$ " .. stats.missions_earnings, 102, 98, 7)
 	end
 
 	if curr_screen == 8 then -- my heli
@@ -339,15 +344,17 @@ function _draw()
 	end
 	
 	if curr_screen == 9 then -- mission ended
-		print("mission ended",40,21,11)
+		print("mission ended", 40, 21, 11)
 
-		print("civilians saved",10,60,7)
-		print("fires put out",10,70,7)
-		print("mission earnings",10,80,7)
+		print("civilians saved", 10, 60, 7)
+		print("civilians lost on triage", 10, 70, 7)
+		print("fires put out", 10, 80, 7)
+		print("mission earnings", 10, 90, 7)
 
-		print(mission_civ_saved.."/"..mission_n_of_rescuees,110,60,7)
-		print(mission_fire_put_out,110,70,7)
-		print("$ " .. mission_earnings,102,80,7)
+		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 60, 7)
+		print(mission_civ_lost_on_triage, 110, 70, 7)
+		print(mission_fire_put_out, 110, 80, 7)
+		print("$ " .. mission_earnings, 102, 90, 7)
 	end
 
 	if curr_screen == 5 then -- game over
@@ -510,6 +517,11 @@ function _draw()
 		if current_civ_detailed_wound == 0 then
 			for i=1,#tools do
 				spr(tools[i], 110, -14 + 16 * i, 2, 2)
+				if tools[i] == 074 then 
+					for k=1, mission_n_of_blood_bag do
+						spr(067, 104, -14 + 14 * i + (k * 5))
+					end
+				end
 			end
 			spr(072, 110, 110, 2, 2)
 		end
@@ -556,20 +568,15 @@ function _draw()
 				end
 			end
 
-			-- print("w"..i..":"..wound.blood_loss_level, 64, 18 + i * 8, 7)
 			total_blood_loss_level += wound.blood_loss_level
 		end
 
-		-- print(current_wounds.blood_level, 64, 2, 7)
-
-		-- print("tt "..total_blood_loss_level .."," .. flr(total_blood_loss_level), 64, 10, 7)
 		rect(12, 28, 18, 108, 2)
 		if (not mission_rescuee_dead) rectfill(13, 13 + (11 - flr(current_wounds.blood_level)) * 8, 17, 107, 8)
 		pal(12, 8) spr(048, 11, 111) pal()
 
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 50, 62, 20, 32, flip_x)
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 46, 12, 32, 110, flip_x)
-
 
 		if (tool_selected != "none") spr(tool_selected, triage_cursor_x, triage_cursor_y, 2, 2)
 
@@ -637,7 +644,15 @@ function _update()
 				if (player.rotor_fuel <= 5) low_fuel_prompt = true block_btns = true
 
 				if not low_fuel_prompt or low_fuel_prompt_confirm then
-					mission_civ_saved = 0 mission_fire_put_out = 0 mission_earnings = 0 difficulty = rnd(difficulties) create_tree() curr_screen = 2
+					mission_civ_saved = 0
+					mission_civ_lost_on_triage = 0
+					mission_fire_put_out = 0
+					mission_earnings = 0
+					mission_n_of_rescuees = 0
+					mission_n_of_blood_bag = 3
+					difficulty = rnd(difficulties)
+					create_tree()
+					curr_screen = 2
 				else
 					if (btnp(4)) low_fuel_prompt_confirm = true
 				end
@@ -778,30 +793,6 @@ function _update()
 		end
 
 		if count(civ_pcs) == 0 then -- end of mission
-			mission_earnings = mission_civ_saved * 75
-			stats.missions_finished += 1
-			stats.fire_put_out += mission_fire_put_out
-			stats.civs_saved += mission_civ_saved
-			stats.missions_earnings += mission_earnings
-			stats.civs_left_behind += (mission_n_of_rescuees - mission_civ_saved)
-			civ_pcs_created = false
-			fire_pcs_created = false
-			fire_pcs = {}
-			smoke_pcs = {}
-			civ_pcs = {}
-			player.water_cap = player.max_water_cap
-			player.ladder = 0
-			player.x = player_strt_x
-			player.y = player_strt_y
-			player.finance += mission_earnings
-			mission_leave_prompt = false
-			mission_counter = 0
-			mission_time = 0
-			world_x = 0
-			drop_off_x = 32
-			low_fuel_prompt = false
-			low_fuel_prompt_confirm = false
-
 			for i = #tools, 2, -1 do
 				local j = flr(rnd(#tools)) + 1
 				tools[i], tools[j] = tools[j], tools[i]
@@ -810,7 +801,13 @@ function _update()
 			music(-1)
 			prop_sound = false
 			block_btns = true
-			curr_screen = (#wounded_civs_pcs > 0) and 11 or 9
+
+			if #wounded_civs_pcs > 0 then
+				curr_screen = 11
+			else
+				end_mission()
+				curr_screen = 9
+			end
 		end
 	end
 
@@ -833,7 +830,7 @@ function _update()
 		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 96 and btnp(4)) tool_selected = tools[6]
 		if (triage_cursor_x > 100 and triage_cursor_y >= 110 and btnp(4)) current_wounds.side = (current_wounds.side == "front") and "back" or "front"
 
-		if (tool_selected == 074) current_wounds.blood_level += 3 tool_selected = "none"
+		if (tool_selected == 074 and mission_n_of_blood_bag > 0 ) current_wounds.blood_level += 3 mission_n_of_blood_bag -= 1 tool_selected = "none"
 		if (current_wounds.blood_level > 10) current_wounds.blood_level = 10
 
 		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
@@ -883,6 +880,8 @@ function _update()
 			end
 		else
 			if btnp(4) or btnp(5) then
+				stats.civs_lost_on_triage += 1
+				mission_civ_lost_on_triage += 1
 				current_wounds_treated = 0
 				current_wounds.wounds = {}
 			end
@@ -907,7 +906,7 @@ function _update()
 
 		if (#current_wounds.wounds == current_wounds_treated) mission_rescuee_dead = false current_wounds_treated = 0 current_wounds.wounds = {}
 
-		if (#wounded_civs_pcs == 0 and #current_wounds.wounds == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" curr_screen = 9
+		if (#wounded_civs_pcs == 0 and #current_wounds.wounds == 0) triage_cursor_x = 64 triage_cursor_y = 64 tool_selected = "none" end_mission() curr_screen = 9
 	end
 
 	if block_btns then
@@ -1262,6 +1261,33 @@ function upd_ladder()
 	end
 end
 
+function end_mission()
+	mission_earnings = mission_civ_saved * 75
+	stats.missions_finished += 1
+	stats.fire_put_out += mission_fire_put_out
+	stats.civs_saved += mission_civ_saved
+	stats.missions_earnings += mission_earnings
+	stats.civs_left_behind += (mission_n_of_rescuees - mission_civ_saved)
+	civ_pcs_created = false
+	fire_pcs_created = false
+	fire_pcs = {}
+	smoke_pcs = {}
+	civ_pcs = {}
+	tree_pcs = {}
+	player.water_cap = player.max_water_cap
+	player.ladder = 0
+	player.x = player_strt_x
+	player.y = player_strt_y
+	player.finance += mission_earnings
+	mission_leave_prompt = false
+	mission_counter = 0
+	mission_time = 0
+	world_x = 0
+	drop_off_x = 32
+	low_fuel_prompt = false
+	low_fuel_prompt_confirm = false
+end
+
 -->8
 -- scenery logic
 
@@ -1511,10 +1537,10 @@ __gfx__
 00c777c00606060006060600000000000000000000000000055dd155555dd15009889890088a9890098999a00007070007770700000707002222000000000000
 000ccc00006060606060606060006060000005555555555500011100000111000888888009889880088898900777070000070700077707002222000000000000
 0000000b8000800000100000000000000000000000000000000000ffff0000000000000000000000000666666666000000000000000000000000000000000000
-000000b0080800000171000000000000000000000000000000000ffffff000000000000000000000006888888888600000000000000000000007777700000000
-00000b00008000000177100000000000000000000000000000000f0ff0f0000000000660000000000688888888888600000eeeeeeeeee0000076666670000000
-b000b000080800000177710000000000000000000000000000000ffffff0000000006d6000000000068887777788860000ee22222222ee000766ddd667000000
-0b0b0000800080000177771000000000000000000000000000000ff00ff000000006dd666660000000687007777860000ee7eeeeeeee2ee00776666677777700
+000000b0080800000171000000088000000000000000000000000ffffff000000000000000000000006888888888600000000000000000000007777700000000
+00000b0000800000017710000087e800000000000000000000000f0ff0f0000000000660000000000688888888888600000eeeeeeeeee0000076666670000000
+b000b0000808000001777100008ee800000000000000000000000ffffff0000000006d6000000000068887777788860000ee22222222ee000766ddd667000000
+0b0b0000800080000177771000088000000000000000000000000ff00ff000000006dd666660000000687007777860000ee7eeeeeeee2ee00776666677777700
 00b000000000000001771100000000000000000000000000000000ffff000000006dddddddd6000000687777077860000ee7eeeeeeee2ee007d77777d7dddd70
 0000000000000000001171000000000000000000000000000005055ff55050000006dd6666dd600000687000007860000ee7eeeeeeee2ee007ddddddd7dddd70
 000000000000000000000000000000000000000000000000005505555505550000006d60006dd60000687777777860000ee7eeeeeeee2ee007ddddddd7dddd70
