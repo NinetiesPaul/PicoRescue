@@ -226,6 +226,9 @@ function _init()
 	block_btns = false
 	block_btns_counter = 0
 
+	notification_counter = 0
+	notification_message = ""
+
 	counter = 0
 	mm_option = 1
 	shop_option = 1
@@ -582,9 +585,10 @@ function _draw()
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "arms") sspr(0, 96, 10, 16, 50, 62, 20, 32, flip_x)
 		if (current_wounds.wearing_clothing and current_wounds.wound_type == "legs") sspr(17, 58, 16, 55, 46, 12, 32, 110, flip_x)
 
-		if (tool_selected != "none") spr(tool_selected, triage_cursor_x, triage_cursor_y, 2, 2)
+		if (tool_selected != "none" and tool_selected != 074) spr(tool_selected, triage_cursor_x, triage_cursor_y, 2, 2)
 
-		print(tool_selected, 2, 2, 5) -- debug
+		print(notification_message, 2, 2, 7)
+
 		spr(066, triage_cursor_x, triage_cursor_y)
 		-- print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
 
@@ -825,19 +829,21 @@ function _update()
 		if (triage_cursor_x < 0) triage_cursor_x = 0
 		if (triage_cursor_y < 0) triage_cursor_y = 0
 
-		if (triage_cursor_x > 100 and triage_cursor_y >= 0 and triage_cursor_y <= 16 and btnp(4)) tool_selected = tools[1]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 16 and triage_cursor_y <= 32 and btnp(4)) tool_selected = tools[2]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 32 and triage_cursor_y <= 48 and btnp(4)) tool_selected = tools[3]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 48 and triage_cursor_y <= 64 and btnp(4)) tool_selected = tools[4]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 64 and triage_cursor_y <= 80 and btnp(4)) tool_selected = tools[5]
-		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 96 and btnp(4)) tool_selected = tools[6]
+		if (triage_cursor_x > 100 and triage_cursor_y >= 0 and triage_cursor_y <= 16 and btnp(4)) tool_selected = tools[1] notification("tool")
+		if (triage_cursor_x > 100 and triage_cursor_y >= 16 and triage_cursor_y <= 32 and btnp(4)) tool_selected = tools[2] notification("tool")
+		if (triage_cursor_x > 100 and triage_cursor_y >= 32 and triage_cursor_y <= 48 and btnp(4)) tool_selected = tools[3] notification("tool")
+		if (triage_cursor_x > 100 and triage_cursor_y >= 48 and triage_cursor_y <= 64 and btnp(4)) tool_selected = tools[4] notification("tool")
+		if (triage_cursor_x > 100 and triage_cursor_y >= 64 and triage_cursor_y <= 80 and btnp(4)) tool_selected = tools[5] notification("tool")
+		if (triage_cursor_x > 100 and triage_cursor_y >= 80 and triage_cursor_y <= 96 and btnp(4)) tool_selected = tools[6] notification("tool")
 		if (triage_cursor_x > 100 and triage_cursor_y >= 110 and btnp(4)) current_wounds.side = (current_wounds.side == "front") and "back" or "front"
 
-		if (tool_selected == 074 and mission_n_of_blood_bag > 0 ) current_wounds.blood_level += 3 mission_n_of_blood_bag -= 1 tool_selected = "none"
+		if (tool_selected == 074 and mission_n_of_blood_bag > 0 ) current_wounds.blood_level += 3 mission_n_of_blood_bag -= 1 tool_selected = "none" notification("blood bag used")
 		if (current_wounds.blood_level > 10) current_wounds.blood_level = 10
 
 		if (btnp(5)) tool_selected = "none" current_civ_detailed_wound = 0
 		if (tool_selected != 106) current_civ_detailed_wound = 0
+
+		if (current_wounds.blood_level <= 3) notification("low blood level!")
 
 		if #current_wounds.wounds == 0 then
 			current_wounds.wounds = wounded_civs_pcs[#wounded_civs_pcs].wounds
@@ -916,6 +922,21 @@ function _update()
 		block_btns_counter += 1
 		unblock_after = (curr_screen == 5) and 150 or 5
 		if (block_btns_counter % unblock_after == 0) block_btns = false
+	end
+
+	if notification_message != "" then
+		notification_counter += 1
+		if (notification_counter % 60 == 0) notification_message = "" notification_counter = 0
+	end
+end
+
+function notification(msg)
+	notification_counter = 0
+	if msg == "tool" then
+		tool_name = (tool_selected == 076) and "soup" or (tool_selected == 078) and "gauze" or (tool_selected == 106) and "lens" or (tool_selected == 108) and "scissor" or "tape"
+		notification_message = tool_name .. " selected"
+	else
+		notification_message = msg
 	end
 end
 -->8
