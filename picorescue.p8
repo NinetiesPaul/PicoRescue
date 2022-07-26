@@ -228,6 +228,8 @@ function _init()
 
 	notification_counter = 0
 	notification_message = ""
+	notification_message_x = 0
+	notification_message_y = 0
 
 	slide_down_title_screen = false
 	slide_down_title_screen_y = 14
@@ -581,8 +583,6 @@ function _draw()
 
 		if (tool_selected != "none" and tool_selected != 074) spr(tool_selected, triage_cursor_x, triage_cursor_y, 2, 2)
 
-		print(notification_message, 2, 2, 7)
-
 		spr(066, triage_cursor_x, triage_cursor_y)
 		-- print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
 
@@ -593,6 +593,9 @@ function _draw()
 			print("press any key", 38, 62, 7)
 		end
 	end
+
+	if (curr_screen == 11) print(notification_message, 2, 2, 7)
+	if (curr_screen == 10) print(notification_message, 64, 29, 8) print(notification_message, 64, 28, 14)
 
 	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 10) bottom_gui()
 	left_bottom_text = (curr_screen == 10) and "z/🅾️ [buy]" or "z/🅾️ [select]"
@@ -621,8 +624,8 @@ function _update()
 		end
 
 		if slide_down_title_screen then
-			if (slide_down_title_screen_y < 127) slide_down_title_screen_y += 15
-			if (slide_down_title_screen_y >= 127) curr_screen = 6
+			if (slide_down_title_screen_y < 117) slide_down_title_screen_y += 15
+			if (slide_down_title_screen_y >= 117) curr_screen = 6
 		end
 	end
 
@@ -701,11 +704,13 @@ function _update()
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
 				player.rotor_health = flr(player.rotor_health) + 1
 				player.finance -= 95
+				notification("-$95")
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
 				player.finance -= 75
+				notification("-$75")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
