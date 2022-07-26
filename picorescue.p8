@@ -229,6 +229,8 @@ function _init()
 	notification_counter = 0
 	notification_message = ""
 
+	slide_down_title_screen = false
+	slide_down_title_screen_y = 14
 	counter = 0
 	mm_option = 1
 	shop_option = 1
@@ -239,27 +241,17 @@ end
 function _draw()
 	cls()
 
-	rect(0,0,127,127, 7)
+	-- rect(0,0,127,127, 7)
 
-	if curr_screen == 1 then
-		rectfill(0,0,127,127,8)
+	if (curr_screen == 1 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 10) top_gui()
 
-		for i=0, 15 do
-			spr(025, 0 + i * 8, 0)
-			spr(025, 0 + i * 8, 8)
-			spr(024, 0 + i * 8, 16, 1, 1, false, true)
-		end
-
-		print("pico rescue", 42, 50, 0)
-		print("pico rescue", 41, 49, 7)
-
-		print("press any key", 37, 80, 7)
-
-		for i=0, 15 do
-			spr(024, 0 + i * 8, 104)
-			spr(025, 0 + i * 8, 112)
-			spr(025, 0 + i * 8, 120)
-		end
+	if curr_screen == 1 then -- start screen
+		-- slide_down_title_screen_y 14
+		palt(2, t) spr(015, 53, slide_down_title_screen_y - 2, 1, 1, true, true ) palt() -- 12
+		rectfill(0, slide_down_title_screen_y + 5, 127, 127, 8) -- 19
+		rectfill(60, slide_down_title_screen_y - 1, 127, slide_down_title_screen_y + 6, 8) -- 13
+		print("press any key", 70, slide_down_title_screen_y + 2, 0)
+		print("press any key", 70, slide_down_title_screen_y + 1, 7)
 	end
 
 	if curr_screen == 6 then -- main
@@ -268,6 +260,8 @@ function _draw()
 		mm_opt3_c = (mm_option == 3) and 7 or 9
 		mm_opt4_c = (mm_option == 4) and 7 or 9
 		mm_opt5_c = (mm_option == 5) and 7 or 9
+
+		top_gui()
 
 		print("play mission", 40, 39, 5)
 		print("play mission", 40, 38, mm_opt1_c)
@@ -290,8 +284,8 @@ function _draw()
 	end
 
 	if curr_screen == 7 then -- stats
-		print("carrer stats", 40, 19, 5)
-		print("carrer stats", 40, 18, 7)
+		print("carrer stats", 76, 3, 0)
+		print("carrer stats", 76, 2, 7)
 
 		print("civilians rescued", 10, 48, 7)
 		print("civilians left behind", 10, 58, 7)
@@ -309,8 +303,8 @@ function _draw()
 	end
 
 	if curr_screen == 8 then -- my heli
-		print("my heli", 50, 19, 5)
-		print("my heli", 50, 18, 7)
+		print("my heli", 96, 3, 0)
+		print("my heli", 96, 2, 7)
 
 		print("health", 10, 48, 7)
 		print("fuel", 10, 56, 7)
@@ -326,8 +320,8 @@ function _draw()
 	end
 
 	if curr_screen == 10 then -- shop
-		print("shop", 56, 19, 5)
-		print("shop", 56, 18, 7)
+		print("shop", 109, 3, 0)
+		print("shop", 109, 2, 7)
 
 		print("cash", 44, 29, 5)
 		print("cash", 44, 28, 7)
@@ -600,6 +594,7 @@ function _draw()
 		end
 	end
 
+	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 10) bottom_gui()
 	left_bottom_text = (curr_screen == 10) and "z/🅾️ [buy]" or "z/🅾️ [select]"
 	if (curr_screen == 6 or curr_screen == 10) print(left_bottom_text, 2, 120, 7)
 	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10) print("x/❎ [back]", 82, 120, 7)
@@ -619,10 +614,15 @@ function _update()
 		main_music = false
 	end
 
-	if curr_screen == 1 then
-		if btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5) then
+	if curr_screen == 1 then  -- start screen
+		if btnp(1) or btnp(2) or btnp(0) or btnp(3) or btnp(4) or btnp(5) and not slide_down_title_screen then
 			block_btns = true
-			curr_screen = 6
+			slide_down_title_screen = true
+		end
+
+		if slide_down_title_screen then
+			if (slide_down_title_screen_y < 127) slide_down_title_screen_y += 15
+			if (slide_down_title_screen_y >= 127) curr_screen = 6
 		end
 	end
 
@@ -944,6 +944,32 @@ function notification(msg)
 	else
 		notification_message = msg
 	end
+end
+
+
+function top_gui()
+	rectfill(0,0, 127, 11, 8)
+	rectfill(0,0, 50, 17)
+
+	spr(015, 51, 11)
+
+	line(0, 16, 51, 16, 14)
+	line(52, 15, 57, 10, 14)
+	line(58, 10, 127, 10, 14)
+
+	print("pico rescue", 4, 7, 0)
+	print("pico rescue", 4, 6, 7)
+end
+
+function bottom_gui()
+	rectfill(0,116, 127, 127, 8)
+	rectfill(59,110, 127, 127)
+
+	palt(2, t) spr(015, 51, 109, 1,1, true, true) palt()
+
+	line(0, 117, 51, 117, 14)
+	line(52, 117, 57, 112, 14)   
+	line(58, 111, 127, 111, 14)
 end
 -->8
 -- movement logic
@@ -1534,13 +1560,13 @@ function move_water(water)
 	if (water .y >= 116) del(water_drops,water)
 end
 __gfx__
-0300033000d00d000000300000b00000000d60000006600000d00000000d600000066000000000000004f000ff44f4ff11111111202000000002000000000000
-0030300300dddd000000b0000b3b00000bbbbb0000bbbb000d5d00000ddddd0000dddd0000000004444400000545445031333131020200000002000000000000
-0003333300d00d00000030000b3b0000b331c7b00b7c7cb00d5d0000d55d11d00d1111d0000000004cc700000c1c11c033333333202000000002000000000000
-0037333300dddd000000300000d3bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223202000000002000000000000
-0033337300d00d000000b000000d3333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000000000000
-0033337300dddd00000030000000dddddddd33300333333000001111111155500555555006676665676766600767666022222222000000000002000000000000
-0033773300d00d000000b00000000000006006000060060000000000005005000060060000565555555555500565565022222222000000000022000000000000
+0300033000d00d000000300000b00000000d60000006600000d00000000d600000066000000000000004f000ff44f4ff11111111202000000002000088888888
+0030300300dddd000000b0000b3b00000bbbbb0000bbbb000d5d00000ddddd0000dddd0000000004444400000545445031333131020200000002000088888882
+0003333300d00d00000030000b3b0000b331c7b00b7c7cb00d5d0000d55d11d00d1111d0000000004cc700000c1c11c033333333202000000002000088888820
+0037333300dddd000000300000d3bbbb3331ccb00bc7c7b00015dddd555d11d00d1111d00000000041cc06677767767732323223202000000002000088888200
+0033337300d00d000000b000000d3333333311cbb3bbbb3b000155555555dd1dd5dddd5d76700006655576677666656722222222000000000002000088882000
+0033337300dddd00000030000000dddddddd33300333333000001111111155500555555006676665676766600767666022222222000000000002000088820000
+0033773300d00d000000b00000000000006006000060060000000000005005000060060000565555555555500565565022222222000000000022000088200000
 0003333000dddd000000d00000000000055555600050050000000000011111500050050000051551511515000051150022222222000000000022000000000000
 00880880bbbbbbbb0000000000000000000000000004200000b3b300777777770000000099aaaaa9222222222222222222222222000000000022000000000000
 087788883b333b3b0000999000000000000000000004200003b33b30c7ccc7c70000000099aaaaa9222222222222222222222222000000000022000000000000
