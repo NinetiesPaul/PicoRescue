@@ -42,7 +42,7 @@ function _init()
 		ry1 = 0,
 		rx2 = 0,
 		ry2 = 0,
-		finance = 1500,
+		finance = 700,
 		ladder_climb_spd = 5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
@@ -273,8 +273,8 @@ function _draw()
 		print("shop", 56, 58, mm_opt3_c)
 		print("carrer stats", 39, 69, 5)
 		print("carrer stats", 39, 68, mm_opt4_c)
-		-- print("finances", 48, 79, 5)
-		-- print("finances", 48, 78, mm_opt5_c)
+		print("upgrades", 48, 79, 5)
+		print("upgrades", 48, 78, mm_opt5_c)
 
 		if low_fuel_prompt then
 			rectfill(26,48, 100, 79, 8)
@@ -325,21 +325,28 @@ function _draw()
 		print("shop", 109, 3, 0)
 		print("shop", 109, 2, 7)
 
-		print("cash", 15, 29, 5)
-		print("cash", 15, 28, 7)
-		print("$" .. player.finance, 35, 29, 3)
-		print("$" .. player.finance, 35, 28, 11)
+		print("funds", 15, 29, 5)
+		print("funds", 15, 28, 7)
+		print("$" .. player.finance, 39, 29, 3)
+		print("$" .. player.finance, 39, 28, 11)
 
 		print("health $95", 15, 48, 7)
 		print("fuel $75", 15, 58, 7)
+		print("upg fuel consumption", 15, 68)
+		print("upg acceleration", 15, 78)
+		print("upg top speed", 15, 88)
 
-		selector_pos = (shop_option == 1) and 47 or 57
-		spr(018, 5, selector_pos, 1, 1, true)
+		-- print("ladder deployment speed")
+		-- print("spotlight heigth")
+		-- print("max occupancy")
+		-- print("max water capacity")
+
+		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
 
 		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
 		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
 
-		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height
+		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height max_water_cap
 	end
 	
 	if curr_screen == 9 then -- mission ended
@@ -675,21 +682,11 @@ function _update()
 		if (btnp(5) and low_fuel_prompt) low_fuel_prompt = false low_fuel_prompt_confirm = false
 	end
 	
-	if curr_screen == 7 then -- stats
+	if curr_screen == 7 or curr_screen == 8 then -- stats and my heli
 		if btnp(5) then
 			sfx(0)
 			block_btns = true
 			curr_screen = 6
-			mm_option = 4
-		end
-	end
-	
-	if curr_screen == 8 then -- my heli
-		if btnp(5) then
-			sfx(0)
-			block_btns = true
-			curr_screen = 6
-			mm_option = 2
 		end
 	end
 	
@@ -719,7 +716,6 @@ function _update()
 			sfx(0)
 			block_btns = true
 			curr_screen = 6
-			mm_option = 3
 		end
 	end
 	
@@ -728,7 +724,6 @@ function _update()
 			sfx(0)
 			block_btns = true
 			curr_screen = 6
-			mm_option = 1
 		end
 	end
 
