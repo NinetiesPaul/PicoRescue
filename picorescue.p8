@@ -17,20 +17,25 @@ function _init()
 		py = player_strt_y,
 		speed_x = 0,
 		speed_y = 0,
-		acc_x = 0.015, -- 0.015, 0.025. 0.05
+		acc_x_lv = 1,
+		acc_x = { 0.015, 0.025, 0.035 },
 		mvn_dir = false,
 		facing = "left",
 		vhc_front = 04,
 		occup = 0,
-		max_occup = 2, -- 3 4
-		water_cap = 4,
-		max_water_cap = 4,
+		max_occup_lv = 1,
+		max_occup = { 2, 3, 4 },
+		water_cap = 5,
+		max_water_cap_lv = 1,
+		max_water_cap = { 3, 4, 5 },
 		rotor_health = 10,
 		max_rotor_health = 10,
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
-		fuel_consumption = 0.07, -- 0.05 0.03
-		top_speed_x = 2, -- 3 4
+		fuel_consumption_lv = 1,
+		fuel_consumption = { 0.07, 0.05, 0.05 }, -- 0.05 0.03
+		top_speed_x_lv = 1,
+		top_speed_x = { 2, 3, 4 },
 		top_speed_y = 2,
 		ladder = 0,
 		ladder_empty = true,
@@ -236,6 +241,7 @@ function _init()
 	counter = 0
 	mm_option = 1
 	shop_option = 1
+	upgrade_option = 1
 	prop_sound = false
 	main_music = false
 end
@@ -243,15 +249,12 @@ end
 function _draw()
 	cls()
 
-	-- rect(0,0,127,127, 7)
-
-	if (curr_screen == 1 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 10) top_gui()
+	if (curr_screen == 1 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12) top_gui()
 
 	if curr_screen == 1 then -- start screen
-		-- slide_down_title_screen_y 14
-		palt(2, t) spr(015, 53, slide_down_title_screen_y - 2, 1, 1, true, true ) palt() -- 12
+		palt(2, t) spr(015, 53, slide_down_title_screen_y - 2, 1, 1, true, true ) palt()
 		rectfill(0, slide_down_title_screen_y + 5, 127, 127, 8) -- 19
-		rectfill(60, slide_down_title_screen_y - 1, 127, slide_down_title_screen_y + 6, 8) -- 13
+		rectfill(60, slide_down_title_screen_y - 1, 127, slide_down_title_screen_y + 6, 8)
 		print("press any key", 70, slide_down_title_screen_y + 2, 0)
 		print("press any key", 70, slide_down_title_screen_y + 1, 7)
 	end
@@ -315,31 +318,23 @@ function _draw()
 
 		print(flr(player.rotor_health), 110, 48, 7)
 		print(flr(player.rotor_fuel), 110, 56, 7)
-		print(player.max_occup, 110, 64, 7)
+		print(player.max_occup[player.max_occup_lv], 110, 64, 7)
 		print(player.water_cap, 110, 72, 7)
 
 		-- print("my upgrades", 5, 79, 7)
 	end
 
 	if curr_screen == 10 then -- shop
-		print("shop", 109, 3, 0)
-		print("shop", 109, 2, 7)
+		print("shop", 108, 3, 0)
+		print("shop", 108, 2, 7)
 
-		print("funds", 15, 29, 5)
-		print("funds", 15, 28, 7)
-		print("$" .. player.finance, 39, 29, 3)
-		print("$" .. player.finance, 39, 28, 11)
+		print("funds", 15, 27, 5)
+		print("funds", 15, 26, 7)
+		print("$" .. player.finance, 39, 27, 3)
+		print("$" .. player.finance, 39, 26, 11)
 
 		print("health $95", 15, 48, 7)
 		print("fuel $75", 15, 58, 7)
-		print("upg fuel consumption", 15, 68)
-		print("upg acceleration", 15, 78)
-		print("upg top speed", 15, 88)
-
-		-- print("ladder deployment speed")
-		-- print("spotlight heigth")
-		-- print("max occupancy")
-		-- print("max water capacity")
 
 		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
 
@@ -348,19 +343,48 @@ function _draw()
 
 		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height max_water_cap
 	end
+
+	if curr_screen == 12 then -- upgrade
+		print("upgrades", 91, 3, 0)
+		print("upgrades", 91, 2, 7)
+
+		print("funds", 15, 27, 5)
+		print("funds", 15, 26, 7)
+		print("$" .. player.finance, 39, 27, 3)
+		print("$" .. player.finance, 39, 26, 11)
+
+		print("fuel consumption", 15, 40, 7)
+		print("acceleration", 15, 48)
+		print("top speed", 15, 56)
+		print("occupancy lv", 15, 64)
+		print("water capacity lv", 15, 72)
+		-- print("ladder speed", 15, 64)
+		-- print("spotlight height", 15, 72)
+
+		spr(018, 5, 31 + upgrade_option * 8, 1, 1, true)
+
+		print(player.fuel_consumption_lv .. "/3", 100, 40, 7)
+		print(player.acc_x_lv .. "/3", 100, 48, 7)
+		print(player.top_speed_x_lv .. "/3", 100, 56, 7)
+		print(player.max_occup_lv .. "/3", 100, 64, 7)
+		print(player.max_water_cap_lv .. "/3", 100, 72, 7)
+		-- print(player.ladder_climb_spd .. "/3", 100, 64, 7)
+		-- print(player.spotlight_height + 1 .. "/2", 100, 72, 7)
+	end
 	
 	if curr_screen == 9 then -- mission ended
-		print("mission ended", 40, 21, 11)
+		print("mission ended", 72, 3, 0)
+		print("mission ended", 72, 2, 7)
 
-		print("civilians saved", 10, 60, 7)
-		print("civilians lost on triage", 10, 70, 7)
-		print("fires put out", 10, 80, 7)
-		print("mission earnings", 10, 90, 7)
+		print("civilians saved", 10, 50, 7)
+		print("civilians lost on triage", 10, 58, 7)
+		print("fires put out", 10, 66, 7)
+		print("mission earnings", 10, 74, 7)
 
-		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 60, 7)
-		print(mission_civ_lost_on_triage, 110, 70, 7)
-		print(mission_fire_put_out, 110, 80, 7)
-		print("$ " .. mission_earnings, 102, 90, 7)
+		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 50, 7)
+		print(mission_civ_lost_on_triage, 110, 58, 7)
+		print(mission_fire_put_out, 110, 66, 7)
+		print("$ " .. mission_earnings, 102, 74, 7)
 	end
 
 	if curr_screen == 5 then -- game over
@@ -443,13 +467,13 @@ function _draw()
 		(player.water_cap == 3) and 059 or
 		(player.water_cap == 4) and 060 or 061
 		pal(7, 0) spr(water_drop_spr, 40, 0) pal()
-		print(player.max_water_cap, 48, 3, 0)
+		print(player.max_water_cap[player.max_water_cap_lv], 48, 3, 0)
 
 		spr(032, 32, 10)
 		occup_spr = (player.occup == 0) and 043 or
 		(player.occup == 1) and 044 or 045
 		pal(7, 0) spr(occup_spr, 40, 9) pal()
-		print(player.max_occup, 48, 12, 0)
+		print(player.max_occup[player.max_occup_lv], 48, 12, 0)
 
 		--[[
 		arrow_flip = (drop_off_x > player.x) and true or false
@@ -499,8 +523,6 @@ function _draw()
 		rectfill(104, 1, 126, 9, 0)
 		rectfill(105, 0, 127, 8, 6)
 		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
-
-		-- rectfill(66, 11, 76, 14, 8) -- 3 > 3 / 2 > 7 / 1 > 11
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -524,14 +546,14 @@ function _draw()
 
 		if current_civ_detailed_wound == 0 then
 			for i=1,#tools do
-				spr_heigth = -14 + 16 * i
+				spr_height = -14 + 16 * i
 				if tools[i] == 074 then 
 					if mission_n_of_blood_bag > 0 then
-						blood_heigth = (mission_n_of_blood_bag == 3) and 0 or (mission_n_of_blood_bag == 2) and 4 or 8
-						rectfill(112, spr_heigth + 1 + blood_heigth, 122, spr_heigth+12, 8)
+						blood_height = (mission_n_of_blood_bag == 3) and 0 or (mission_n_of_blood_bag == 2) and 4 or 8
+						rectfill(112, spr_height + 1 + blood_height, 122, spr_height+12, 8)
 					end
 				end
-				spr(tools[i], 110, spr_heigth, 2, 2)
+				spr(tools[i], 110, spr_height, 2, 2)
 			end
 			spr(072, 110, 110, 2, 2)
 		end
@@ -604,10 +626,10 @@ function _draw()
 	if (curr_screen == 11) print(notification_message, 2, 2, 7)
 	if (curr_screen == 10) print(notification_message, 64, 29, 8) print(notification_message, 64, 28, 14)
 
-	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 10) bottom_gui()
-	left_bottom_text = (curr_screen == 10) and "z/🅾️ [buy]" or "z/🅾️ [select]"
-	if (curr_screen == 6 or curr_screen == 10) print(left_bottom_text, 2, 120, 7)
-	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10) print("x/❎ [back]", 82, 120, 7)
+	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12) bottom_gui()
+	left_bottom_text = (curr_screen == 10 or curr_screen == 12) and "[z/🅾️] buy" or (curr_screen == 6 or curr_screen == 10) and "[z/🅾️] select" or (curr_screen == 9) and "[x/❎ or z/🅾️] ok" or ""
+	print(left_bottom_text, 2, 120, 7)
+	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10 or curr_screen == 12) print("[x/❎] back", 82, 120, 7)
 end
 
 function _update()
@@ -677,6 +699,7 @@ function _update()
 			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
+			if (mm_option == 5) curr_screen = 12 block_btns = true
 		end
 
 		if (btnp(5) and low_fuel_prompt) low_fuel_prompt = false low_fuel_prompt_confirm = false
@@ -710,6 +733,35 @@ function _update()
 				notification("-$75")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
+		end
+
+		if btnp(5) then
+			sfx(0)
+			block_btns = true
+			curr_screen = 6
+		end
+	end
+	
+	if curr_screen == 12 then -- upgrade
+		if (btnp(2)) upgrade_option -= 1 sfx(2)
+		if (btnp(3)) upgrade_option += 1 sfx(2)
+
+		if (upgrade_option > 7) upgrade_option = 1
+		if (upgrade_option < 1) upgrade_option = 7
+
+		if btnp(4) and not block_btns then
+			--[[ if shop_option == 1 and player.rotor_health < player.max_rotor_health then
+				player.rotor_health = flr(player.rotor_health) + 1
+				player.finance -= 95
+				notification("-$95")
+				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
+			end
+			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
+				player.rotor_fuel = flr(player.rotor_fuel) + 1
+				player.finance -= 75
+				notification("-$75")
+				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
+			end ]]--
 		end
 
 		if btnp(5) then
@@ -754,7 +806,7 @@ function _update()
 			end
 		end
 
-		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption
+		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption[player.fuel_consumption_lv]
 
 		btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 		mvn_y = btn(2) or btn(3)
@@ -986,7 +1038,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "right"
-			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
+			if (player.speed_x <= (player.top_speed_x[player.top_speed_x_lv] + mission_top_speed)) player.speed_x += player.acc_x[player.acc_x_lv]
 			player.px = world_x
 			world_x += player.speed_x
 		end
@@ -1003,7 +1055,7 @@ function move_rotor()
 		else
 			player.vhc_front = (mission_day_time == "day") and 004 or 007
 			player.facing = "left"
-			if (player.speed_x <= (player.top_speed_x + mission_top_speed)) player.speed_x += player.acc_x
+			if (player.speed_x <= (player.top_speed_x[player.top_speed_x_lv] + mission_top_speed)) player.speed_x += player.acc_x[player.acc_x_lv]
 			player.px = world_x
 			world_x -= player.speed_x
 		end
@@ -1136,7 +1188,7 @@ function create_civ()
 				civ.blood_level = 10
 				local wounds = {}
 
-				civ_is_wounded = 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
+				civ_is_wounded = 0 -- 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" })
 
@@ -1238,7 +1290,7 @@ function pickup_civ(civ)
 	if
 		player.ladder == 3 and
 		civ.rdy_to_climb_up and
-		player.occup < player.max_occup
+		player.occup < player.max_occup[player.max_occup_lv]
 	then
 		civ.clock += 1
 		if (civ.clock % 5 == 0) civ.spr += 8
@@ -1330,7 +1382,7 @@ function end_mission()
 	smoke_pcs = {}
 	civ_pcs = {}
 	tree_pcs = {}
-	player.water_cap = player.max_water_cap
+	player.water_cap = player.max_water_cap[player.max_water_cap_lv]
 	player.ladder = 0
 	player.x = player_strt_x
 	player.y = player_strt_y
