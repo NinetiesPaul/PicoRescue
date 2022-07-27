@@ -25,7 +25,7 @@ function _init()
 		occup = 0,
 		max_occup_lv = 1,
 		max_occup = { 2, 3, 4 },
-		water_cap = 5,
+		water_cap = 3,
 		max_water_cap_lv = 1,
 		max_water_cap = { 3, 4, 5 },
 		rotor_health = 10,
@@ -33,7 +33,7 @@ function _init()
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
 		fuel_consumption_lv = 1,
-		fuel_consumption = { 0.07, 0.05, 0.05 }, -- 0.05 0.03
+		fuel_consumption = { 0.07, 0.05, 0.05 },
 		top_speed_x_lv = 1,
 		top_speed_x = { 2, 3, 4 },
 		top_speed_y = 2,
@@ -47,7 +47,7 @@ function _init()
 		ry1 = 0,
 		rx2 = 0,
 		ry2 = 0,
-		finance = 700,
+		finance = 200,
 		ladder_climb_spd = 5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
@@ -101,10 +101,10 @@ function _init()
 		civs_left_behind = 0,
 		civs_lost_on_triage = 0
 	}
-	difficulties = { "easy" } -- "normal", "hard"
+	difficulties = { "easy" } -- "normal", "hard" [debug]
 	civ_spawn =
 	{
-		easy = { 70  }, -- 150, 250, 345, 460
+		easy = { 70  }, -- 150, 250, 345, 460 [debug]
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -215,7 +215,7 @@ function _init()
 	mission_earnings = 0
 	mission_civ_lost_on_triage = 0
 	mission_n_of_blood_bag = 3
-	mission_day_time = rnd({ "day" }) -- , "night"
+	mission_day_time = rnd({ "day" }) -- , "night" [debug]
 	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
 	mission_wind_d = rnd({ "left", "right" })
 	mission_wind_roulette = true
@@ -253,7 +253,7 @@ function _draw()
 
 	if curr_screen == 1 then -- start screen
 		palt(2, t) spr(015, 53, slide_down_title_screen_y - 2, 1, 1, true, true ) palt()
-		rectfill(0, slide_down_title_screen_y + 5, 127, 127, 8) -- 19
+		rectfill(0, slide_down_title_screen_y + 5, 127, 127, 8)
 		rectfill(60, slide_down_title_screen_y - 1, 127, slide_down_title_screen_y + 6, 8)
 		print("press any key", 70, slide_down_title_screen_y + 2, 0)
 		print("press any key", 70, slide_down_title_screen_y + 1, 7)
@@ -319,9 +319,7 @@ function _draw()
 		print(flr(player.rotor_health), 110, 48, 7)
 		print(flr(player.rotor_fuel), 110, 56, 7)
 		print(player.max_occup[player.max_occup_lv], 110, 64, 7)
-		print(player.water_cap, 110, 72, 7)
-
-		-- print("my upgrades", 5, 79, 7)
+		print(player.max_water_cap[player.max_water_cap_lv], 110, 72, 7)
 	end
 
 	if curr_screen == 10 then -- shop
@@ -340,8 +338,6 @@ function _draw()
 
 		print(flr(player.rotor_health) .. "/" .. player.max_rotor_health, 100, 48, 7)
 		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
-
-		-- fuel_consumption acc_x max_occup top_speed_x ladder_climb_spd spotlight_height max_water_cap
 	end
 
 	if curr_screen == 12 then -- upgrade
@@ -356,18 +352,18 @@ function _draw()
 		print("fuel consumption", 15, 40, 7)
 		print("acceleration", 15, 48)
 		print("top speed", 15, 56)
-		print("occupancy lv", 15, 64)
-		print("water capacity lv", 15, 72)
+		print("max occupancy", 15, 64)
+		print("water capacity", 15, 72)
 		-- print("ladder speed", 15, 64)
 		-- print("spotlight height", 15, 72)
 
 		spr(018, 5, 31 + upgrade_option * 8, 1, 1, true)
 
-		print(player.fuel_consumption_lv .. "/3", 100, 40, 7)
-		print(player.acc_x_lv .. "/3", 100, 48, 7)
-		print(player.top_speed_x_lv .. "/3", 100, 56, 7)
-		print(player.max_occup_lv .. "/3", 100, 64, 7)
-		print(player.max_water_cap_lv .. "/3", 100, 72, 7)
+		print("lV. " .. player.fuel_consumption_lv .. "/3", 88, 40, 7)
+		print("lV. " .. player.acc_x_lv .. "/3", 88, 48, 7)
+		print("lV. " .. player.top_speed_x_lv .. "/3", 88, 56, 7)
+		print("lV. " .. player.max_occup_lv .. "/3", 88, 64, 7)
+		print("lV. " .. player.max_water_cap_lv .. "/3", 88, 72, 7)
 		-- print(player.ladder_climb_spd .. "/3", 100, 64, 7)
 		-- print(player.spotlight_height + 1 .. "/2", 100, 72, 7)
 	end
@@ -613,7 +609,6 @@ function _draw()
 		if (tool_selected != "none" and tool_selected != 074) spr(tool_selected, triage_cursor_x, triage_cursor_y, 2, 2)
 
 		spr(066, triage_cursor_x, triage_cursor_y)
-		-- print(triage_cursor_x..","..triage_cursor_y, 2, 10, 7)
 
 		if mission_rescuee_dead then
 			rectfill(26,48, 100, 72, 8)
@@ -623,8 +618,8 @@ function _draw()
 		end
 	end
 
-	if (curr_screen == 11) print(notification_message, 2, 2, 7)
-	if (curr_screen == 10) print(notification_message, 64, 29, 8) print(notification_message, 64, 28, 14)
+	if (curr_screen == 11) print(notification_message, 2, 2, 7) 
+	if (curr_screen == 10 or curr_screen == 12) print(notification_message, 65, 27, 8) print(notification_message, 65, 26, 14)
 
 	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12) bottom_gui()
 	left_bottom_text = (curr_screen == 10 or curr_screen == 12) and "[z/🅾️] buy" or (curr_screen == 6 or curr_screen == 10) and "[z/🅾️] select" or (curr_screen == 9) and "[x/❎ or z/🅾️] ok" or ""
@@ -689,6 +684,7 @@ function _update()
 					mission_earnings = 0
 					mission_n_of_rescuees = 0
 					mission_n_of_blood_bag = 3
+					player.water_cap = player.max_water_cap[player.max_water_cap_lv]
 					difficulty = rnd(difficulties)
 					create_tree()
 					curr_screen = 2
@@ -723,14 +719,14 @@ function _update()
 		if btnp(4) and not block_btns then
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
 				player.rotor_health = flr(player.rotor_health) + 1
-				player.finance -= 95
-				notification("-$95")
+				player.finance -= 35
+				notification("-$35")
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 75
-				notification("-$75")
+				player.finance -= 34
+				notification("-$45")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -746,22 +742,41 @@ function _update()
 		if (btnp(2)) upgrade_option -= 1 sfx(2)
 		if (btnp(3)) upgrade_option += 1 sfx(2)
 
-		if (upgrade_option > 7) upgrade_option = 1
-		if (upgrade_option < 1) upgrade_option = 7
+		if (upgrade_option > 5) upgrade_option = 1
+		if (upgrade_option < 1) upgrade_option = 5
+
+		print("fuel consumption", 15, 40, 7)
+		print("acceleration", 15, 48)
+		print("top speed", 15, 56)
+		print("occupancy lv", 15, 64)
+		print("water capacity lv", 15, 72)
 
 		if btnp(4) and not block_btns then
-			--[[ if shop_option == 1 and player.rotor_health < player.max_rotor_health then
-				player.rotor_health = flr(player.rotor_health) + 1
-				player.finance -= 95
-				notification("-$95")
-				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
+			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= player.fuel_consumption_lv * 30 then
+				player.fuel_consumption_lv += 1
+				player.finance -= player.fuel_consumption_lv * 30
+				notification("-$" .. player.fuel_consumption_lv * 30)
 			end
-			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
-				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 75
-				notification("-$75")
-				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
-			end ]]--
+			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= player.acc_x_lv * 40 then
+				player.acc_x_lv += 1
+				player.finance -= player.acc_x_lv * 40
+				notification("-$" .. player.acc_x_lv * 40)
+			end
+			if upgrade_option == 3 and player.top_speed_x_lv < 3 and player.finance >= player.top_speed_x_lv * 45 then
+				player.top_speed_x_lv += 1
+				player.finance -= player.top_speed_x_lv * 45
+				notification("-$" .. player.top_speed_x_lv * 45)
+			end
+			if upgrade_option == 4 and player.max_occup_lv < 3 and player.finance >= player.max_occup_lv * 60 then
+				player.max_occup_lv += 1
+				player.finance -= player.max_occup_lv * 60
+				notification("-$" .. player.max_occup_lv * 60)
+			end
+			if upgrade_option == 5 and player.max_water_cap_lv < 3 and player.finance >= player.max_water_cap_lv * 25 then
+				player.max_water_cap_lv += 1
+				player.finance -= player.max_water_cap_lv * 25
+				notification("-$" .. player.max_water_cap_lv * 25)
+			end
 		end
 
 		if btnp(5) then
@@ -788,7 +803,7 @@ function _update()
 
 		mission_counter += 1
 		if (mission_counter % 30 == 0) mission_time += 1
-		if mission_time > 0 and mission_time % 15 == 0 then -- default 30
+		if mission_time > 0 and mission_time % 15 == 0 then -- default 30 wip: difficulty dependent
 			if mission_wind_roulette then
 				mission_wind_roulette = false
 				mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3, 0.4, 0.6 }) -- 0, 0.05, 0.15, 0.3
@@ -1188,7 +1203,7 @@ function create_civ()
 				civ.blood_level = 10
 				local wounds = {}
 
-				civ_is_wounded = 0 -- 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
+				civ_is_wounded = 0 -- 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0 [debug]
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" })
 
@@ -1370,7 +1385,7 @@ function upd_ladder()
 end
 
 function end_mission()
-	mission_earnings = mission_civ_saved * 75
+	mission_earnings = mission_civ_saved * 35
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
@@ -1418,7 +1433,7 @@ end
 function draw_tree(tree)
 	spr(025, tree.x, 105)
 	spr(tree.spr, tree.x, 113)
-	if (tree.has_flower) sspr(tree.flower_type, 18, 4, 6, tree.x + 8, 114)  -- spr(041, tree.x + 8, 113)
+	if (tree.has_flower) sspr(tree.flower_type, 18, 4, 6, tree.x + 8, 114)
 end
 
 function move_tree(tree)
@@ -1463,7 +1478,6 @@ function create_fire()
 				fire.x = value
 				fire.y = 112
 				fire.frequency = rnd({ 5, 10, 15})
-				-- fire.smk_cd_time = rnd({ 45, 60 })
 				fire.smk_cd = false
 				fire.counter = 0
 				fire.spr = 056
@@ -1508,7 +1522,6 @@ function update_fire(fire)
 		new_fire.y = 112
 		new_fire.smk_mh = rnd({ 1, 2, 3 })
 		new_fire.smk_h = 0
-		-- new_fire.smk_cd_time = rnd({ 45, 60 })
 		new_fire.smk_cd = false
 		new_fire.counter = 0
 		new_fire.spr = 056
