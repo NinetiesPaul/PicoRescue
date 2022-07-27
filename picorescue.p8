@@ -47,7 +47,7 @@ function _init()
 		ry1 = 0,
 		rx2 = 0,
 		ry2 = 0,
-		finance = 200,
+		finance = 75,
 		ladder_climb_spd = 5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
@@ -752,30 +752,30 @@ function _update()
 		print("water capacity lv", 15, 72)
 
 		if btnp(4) and not block_btns then
-			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= player.fuel_consumption_lv * 30 then
+			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= (player.fuel_consumption_lv + 1) * 50 then
 				player.fuel_consumption_lv += 1
-				player.finance -= player.fuel_consumption_lv * 30
-				notification("-$" .. player.fuel_consumption_lv * 30)
+				player.finance -= player.fuel_consumption_lv * 50
+				notification("-$" .. player.fuel_consumption_lv * 50)
 			end
-			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= player.acc_x_lv * 40 then
+			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= (player.acc_x_lv + 1) * 60 then
 				player.acc_x_lv += 1
-				player.finance -= player.acc_x_lv * 40
-				notification("-$" .. player.acc_x_lv * 40)
+				player.finance -= player.acc_x_lv * 60
+				notification("-$" .. player.acc_x_lv * 60)
 			end
-			if upgrade_option == 3 and player.top_speed_x_lv < 3 and player.finance >= player.top_speed_x_lv * 45 then
+			if upgrade_option == 3 and player.top_speed_x_lv < 3 and player.finance >= (player.top_speed_x_lv + 1) * 75 then
 				player.top_speed_x_lv += 1
-				player.finance -= player.top_speed_x_lv * 45
-				notification("-$" .. player.top_speed_x_lv * 45)
+				player.finance -= player.top_speed_x_lv * 75
+				notification("-$" .. player.top_speed_x_lv * 75)
 			end
-			if upgrade_option == 4 and player.max_occup_lv < 3 and player.finance >= player.max_occup_lv * 60 then
+			if upgrade_option == 4 and player.max_occup_lv < 3 and player.finance >= (player.max_occup_lv + 1) * 95 then
 				player.max_occup_lv += 1
-				player.finance -= player.max_occup_lv * 60
-				notification("-$" .. player.max_occup_lv * 60)
+				player.finance -= player.max_occup_lv * 95
+				notification("-$" .. player.max_occup_lv * 95)
 			end
-			if upgrade_option == 5 and player.max_water_cap_lv < 3 and player.finance >= player.max_water_cap_lv * 25 then
+			if upgrade_option == 5 and player.max_water_cap_lv < 3 and player.finance >= (player.max_water_cap_lv + 1) * 55 then
 				player.max_water_cap_lv += 1
-				player.finance -= player.max_water_cap_lv * 25
-				notification("-$" .. player.max_water_cap_lv * 25)
+				player.finance -= player.max_water_cap_lv * 55
+				notification("-$" .. player.max_water_cap_lv * 55)
 			end
 		end
 
