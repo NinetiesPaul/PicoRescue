@@ -242,6 +242,7 @@ function _init()
 	mm_option = 1
 	shop_option = 1
 	upgrade_option = 1
+	help_page = 1
 	prop_sound = false
 	main_music = false
 end
@@ -337,6 +338,20 @@ function _draw()
 	if curr_screen == 13 then -- help
 		print("help", 108, 3, 0)
 		print("help", 108, 2, 7)
+
+		if help_page  == 1 then
+			print("main objectives:\n---", 10, 28)
+			print("you must rescue all rescuees\nbefore running out of fuel", 10, 38)
+
+			print("to do that, get real low and\nhover above them to deploy\nthe ladder. avoid smoke\ncolumns because they can\ndamage your helicopter,\ncausing the most damage at\nlow altitudes", 10, 58)
+		end
+
+		if help_page == 2 then
+			print("triaging patients:\n---", 10, 28)
+			print("treat any rescuee hurt and\nin need of medical care", 10, 38)
+
+			print("for every wound, you'll have\nto clean it with soap, then\nuse a gauze to stop the\nbleeding and to patch it up.\nto finish it, use a tape to\nhold the gauze in place", 10, 58)
+		end
 	end
 
 	if curr_screen == 12 then -- upgrade
@@ -349,20 +364,25 @@ function _draw()
 		print("$" .. player.finance, 39, 26, 11)
 
 		print("fuel consumption", 15, 40, 7)
-		print("acceleration", 15, 48)
-		print("top speed", 15, 56)
-		print("max occupancy", 15, 64)
-		print("water capacity", 15, 72)
+		print("$" .. (player.fuel_consumption_lv + 1) * 50, 92, 40, 8)
+		print("acceleration", 15, 48, 7)
+		print("$" .. (player.acc_x_lv + 1) * 60, 92, 48, 8)
+		print("top speed", 15, 56, 7)
+		print("$" .. (player.top_speed_x_lv + 1) * 75, 92, 56, 8)
+		print("max occupancy", 15, 64, 7)
+		print("$" .. (player.max_occup_lv + 1) * 95, 92, 64, 8)
+		print("water capacity", 15, 72, 7)
+		print("$" .. (player.max_water_cap_lv + 1) * 55 , 92, 72, 8)
 		-- print("ladder speed", 15, 64)
 		-- print("spotlight height", 15, 72)
 
 		spr(018, 5, 31 + upgrade_option * 8, 1, 1, true)
 
-		print("lV. " .. player.fuel_consumption_lv .. "/3", 88, 40, 7)
-		print("lV. " .. player.acc_x_lv .. "/3", 88, 48, 7)
-		print("lV. " .. player.top_speed_x_lv .. "/3", 88, 56, 7)
-		print("lV. " .. player.max_occup_lv .. "/3", 88, 64, 7)
-		print("lV. " .. player.max_water_cap_lv .. "/3", 88, 72, 7)
+		print(player.fuel_consumption_lv .. "/3", 110, 40, 7)
+		print(player.acc_x_lv .. "/3", 110, 48, 7)
+		print(player.top_speed_x_lv .. "/3", 110, 56, 7)
+		print(player.max_occup_lv .. "/3", 110, 64, 7)
+		print(player.max_water_cap_lv .. "/3", 110, 72, 7)
 		-- print(player.ladder_climb_spd .. "/3", 100, 64, 7)
 		-- print(player.spotlight_height + 1 .. "/2", 100, 72, 7)
 	end
@@ -687,6 +707,11 @@ function _update()
 			sfx(0)
 			block_btns = true
 			curr_screen = 6
+		end
+
+		if curr_screen == 13 then 
+			if (btnp(0) and help_page > 1) help_page -= 1 sfx(2)
+			if (btnp(1) and help_page < 2) help_page += 1 sfx(2)
 		end
 	end
 	
