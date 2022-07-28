@@ -249,7 +249,7 @@ end
 function _draw()
 	cls()
 
-	if (curr_screen == 1 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12) top_gui()
+	if (curr_screen == 1 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12 or curr_screen == 5 or curr_screen == 13) top_gui()
 
 	if curr_screen == 1 then -- start screen
 		palt(2, t) spr(015, 53, slide_down_title_screen_y - 2, 1, 1, true, true ) palt()
@@ -260,28 +260,22 @@ function _draw()
 	end
 
 	if curr_screen == 6 then -- main
-		mm_opt1_c = (mm_option == 1) and 7 or 9
-		mm_opt2_c = (mm_option == 2) and 7 or 9
-		mm_opt3_c = (mm_option == 3) and 7 or 9
-		mm_opt4_c = (mm_option == 4) and 7 or 9
-		mm_opt5_c = (mm_option == 5) and 7 or 9
-
-		top_gui()
-
 		print("play mission", 40, 39, 5)
-		print("play mission", 40, 38, mm_opt1_c)
+		print("play mission", 40, 38, (mm_option == 1) and 7 or 9)
 		print("my heli", 50, 49, 5)
-		print("my heli", 50, 48, mm_opt2_c)
+		print("my heli", 50, 48, (mm_option == 2) and 7 or 9)
 		print("shop", 56, 59, 5)
-		print("shop", 56, 58, mm_opt3_c)
+		print("shop", 56, 58, (mm_option == 3) and 7 or 9)
 		print("carrer stats", 39, 69, 5)
-		print("carrer stats", 39, 68, mm_opt4_c)
+		print("carrer stats", 39, 68, (mm_option == 4) and 7 or 9)
 		print("upgrades", 48, 79, 5)
-		print("upgrades", 48, 78, mm_opt5_c)
+		print("upgrades", 48, 78, (mm_option == 5) and 7 or 9)
+		print("help", 56, 89, 5)
+		print("help", 56, 88, (mm_option == 6) and 7 or 9)
 
 		if low_fuel_prompt then
-			rectfill(26,48, 100, 79, 8)
-			rect(28,50, 98, 77, 7)
+			rectfill(26, 48, 100, 79, 8)
+			rect(28, 50, 98, 77, 7)
 			print("warning: low fuel", 30, 53, 7)
 			print("[z/🅾️] continue", 34, 62, 7)
 			print("[x/❎] back", 42, 70, 7)
@@ -340,6 +334,11 @@ function _draw()
 		print(flr(player.rotor_fuel) .. "/" .. player.max_rotor_fuel, 100, 58, 7)
 	end
 
+	if curr_screen == 13 then -- help
+		print("help", 108, 3, 0)
+		print("help", 108, 2, 7)
+	end
+
 	if curr_screen == 12 then -- upgrade
 		print("upgrades", 91, 3, 0)
 		print("upgrades", 91, 2, 7)
@@ -384,23 +383,8 @@ function _draw()
 	end
 
 	if curr_screen == 5 then -- game over
-		rectfill(0,0,127,127,0)
-
-		for i=0, 15 do
-			spr(041,0+i*8,0)
-			spr(041,0+i*8,8)
-			spr(040,0+i*8,16,1,1,false,true)
-		end		
-
-		print("game over",42,50,7)
-
-		if (not block_btns) print("press any key",37,80,7)
-
-		for i=0, 15 do
-			spr(040,0+i*8,104)
-			spr(041,0+i*8,112)
-			spr(041,0+i*8,120)
-		end
+		print("game over", 42, 50, 7)
+		if (not block_btns) print("press any key", 32, 58, 7)
 	end
 
 	if curr_screen == 2 then -- rotor mission
@@ -478,8 +462,7 @@ function _draw()
 		spr(006,0,32)
 		]]--
 
-		col = (mission_day_time == "day") and 0 or 7
-		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, col)
+		print(count(civ_spawn[difficulty]) - mission_civ_saved .. " left to save!", drop_off_x - 8, 100, (mission_day_time == "day") and 0 or 7)
 
 		if mission_day_time == "night" then
 			sspr(112, 0, 4, 24 + (player.spotlight_height * 8), player.x, player.y + 10)
@@ -621,10 +604,10 @@ function _draw()
 	if (curr_screen == 11) print(notification_message, 2, 2, 7) 
 	if (curr_screen == 10 or curr_screen == 12) print(notification_message, 65, 27, 8) print(notification_message, 65, 26, 14)
 
-	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12) bottom_gui()
+	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12 or curr_screen == 5 or curr_screen == 13) bottom_gui()
 	left_bottom_text = (curr_screen == 10 or curr_screen == 12) and "[z/🅾️] buy" or (curr_screen == 6 or curr_screen == 10) and "[z/🅾️] select" or (curr_screen == 9) and "[x/❎ or z/🅾️] ok" or ""
 	print(left_bottom_text, 2, 120, 7)
-	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10 or curr_screen == 12) print("[x/❎] back", 82, 120, 7)
+	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10 or curr_screen == 12 or curr_screen == 13) print("[x/❎] back", 82, 120, 7)
 end
 
 function _update()
@@ -666,11 +649,8 @@ function _update()
 	end
 
 	if curr_screen == 6 then -- main
-		if (btnp(2) and not low_fuel_prompt) mm_option -= 1 sfx(2)
-		if (btnp(3) and not low_fuel_prompt) mm_option += 1 sfx(2)
-
-		if (mm_option > 5) mm_option = 1
-		if (mm_option < 1) mm_option = 5
+		if (btnp(2) and not low_fuel_prompt and mm_option > 1) mm_option -= 1 sfx(2)
+		if (btnp(3) and not low_fuel_prompt and mm_option < 6) mm_option += 1 sfx(2)
 
 		if btnp(4) and not block_btns then
 			sfx(1)
@@ -696,12 +676,13 @@ function _update()
 			if (mm_option == 2) curr_screen = 8
 			if (mm_option == 3) curr_screen = 10 block_btns = true
 			if (mm_option == 5) curr_screen = 12 block_btns = true
+			if (mm_option == 6) curr_screen = 13
 		end
 
 		if (btnp(5) and low_fuel_prompt) low_fuel_prompt = false low_fuel_prompt_confirm = false
 	end
 	
-	if curr_screen == 7 or curr_screen == 8 then -- stats and my heli
+	if curr_screen == 7 or curr_screen == 8 or curr_screen == 13 then -- stats and my heli help
 		if btnp(5) then
 			sfx(0)
 			block_btns = true
@@ -710,11 +691,8 @@ function _update()
 	end
 	
 	if curr_screen == 10 then -- shop
-		if (btnp(2)) shop_option -= 1 sfx(2)
-		if (btnp(3)) shop_option += 1 sfx(2)
-
-		if (shop_option > 2) shop_option = 1
-		if (shop_option < 1) shop_option = 2
+		if (btnp(2) and shop_option > 1) shop_option -= 1 sfx(2)
+		if (btnp(3) and shop_option < 2) shop_option += 1 sfx(2)
 
 		if btnp(4) and not block_btns then
 			if shop_option == 1 and player.rotor_health < player.max_rotor_health and player.finance >= 35 then
@@ -739,11 +717,8 @@ function _update()
 	end
 	
 	if curr_screen == 12 then -- upgrade
-		if (btnp(2)) upgrade_option -= 1 sfx(2)
-		if (btnp(3)) upgrade_option += 1 sfx(2)
-
-		if (upgrade_option > 5) upgrade_option = 1
-		if (upgrade_option < 1) upgrade_option = 5
+		if (btnp(2) and upgrade_option > 1) upgrade_option -= 1 sfx(2)
+		if (btnp(3) and upgrade_option < 5) upgrade_option += 1 sfx(2)
 
 		print("fuel consumption", 15, 40, 7)
 		print("acceleration", 15, 48)
@@ -892,7 +867,6 @@ function _update()
 			if (counter % heart_beat_sound_interval == 0) sfx(6)
 		end
 		
-
 		if (btn(0) and not mission_rescuee_dead) triage_cursor_x -= 3
 		if (btn(1) and not mission_rescuee_dead) triage_cursor_x += 3
 		if (btn(2) and not mission_rescuee_dead) triage_cursor_y -= 3
