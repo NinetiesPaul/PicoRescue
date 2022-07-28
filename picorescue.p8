@@ -48,7 +48,7 @@ function _init()
 		rx2 = 0,
 		ry2 = 0,
 		finance = 75,
-		ladder_climb_spd = 5, -- 0.20, -- 0.3 -- 0.5
+		ladder_climb_spd = 0.5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
 		spotlight_px2 = player_strt_x + 7,
@@ -265,10 +265,10 @@ function _draw()
 		print("play mission", 40, 38, (mm_option == 1) and 7 or 9)
 		print("my heli", 50, 49, 5)
 		print("my heli", 50, 48, (mm_option == 2) and 7 or 9)
-		print("shop", 56, 59, 5)
-		print("shop", 56, 58, (mm_option == 3) and 7 or 9)
-		print("carrer stats", 39, 69, 5)
-		print("carrer stats", 39, 68, (mm_option == 4) and 7 or 9)
+		print("carrer stats", 39, 59, 5)
+		print("carrer stats", 39, 58, (mm_option == 3) and 7 or 9)
+		print("shop", 56, 69, 5)
+		print("shop", 56, 68, (mm_option == 4) and 7 or 9)
 		print("upgrades", 48, 79, 5)
 		print("upgrades", 48, 78, (mm_option == 5) and 7 or 9)
 		print("help", 56, 89, 5)
@@ -327,7 +327,7 @@ function _draw()
 		print("$" .. player.finance, 39, 26, 11)
 
 		print("health $35", 15, 48, 7)
-		print("fuel $45", 15, 58, 7)
+		print("fuel $25", 15, 58, 7)
 
 		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
 
@@ -692,9 +692,9 @@ function _update()
 					if (btnp(4)) low_fuel_prompt_confirm = true
 				end
 			end
-			if (mm_option == 4) curr_screen = 7
 			if (mm_option == 2) curr_screen = 8
-			if (mm_option == 3) curr_screen = 10 block_btns = true
+			if (mm_option == 3) curr_screen = 7
+			if (mm_option == 4) curr_screen = 10 block_btns = true
 			if (mm_option == 5) curr_screen = 12 block_btns = true
 			if (mm_option == 6) curr_screen = 13
 		end
@@ -728,8 +728,8 @@ function _update()
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel and player.finance >= 45 then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 45
-				notification("-$45")
+				player.finance -= 25
+				notification("-$25")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -1509,7 +1509,7 @@ function update_fire(fire)
 		smoke.x = fire.x + rnd({ -2, -1, 1, 2 })
 		smoke.y = fire.y
 		smoke.spr = 049
-		smoke.damage = 0.0175
+		smoke.damage = 0.03
 		add(smoke_pcs, smoke)
 	end
 
@@ -1570,8 +1570,8 @@ function move_smoke(smoke)
 		if (mission_wind_d == "right") smoke.x += mission_wind_v
 	end
 
-	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.0050
-	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.025
+	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.02
+	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.01
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
 	if (player.mvn_dir == "right") smoke.x -= player.speed_x
