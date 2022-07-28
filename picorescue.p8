@@ -101,10 +101,10 @@ function _init()
 		civs_left_behind = 0,
 		civs_lost_on_triage = 0
 	}
-	difficulties = { "easy" } -- "normal", "hard" [debug]
+	difficulties = { "easy", "normal", "hard" }
 	civ_spawn =
 	{
-		easy = { 70  }, -- 150, 250, 345, 460 [debug]
+		easy = { 150, 250, 345, 460 },
 		normal = { 250, 350, 395, 470, 590 },
 		hard = { 290, 390, 580, 620, 680, 750 }
 	}
@@ -215,7 +215,7 @@ function _init()
 	mission_earnings = 0
 	mission_civ_lost_on_triage = 0
 	mission_n_of_blood_bag = 3
-	mission_day_time = rnd({ "day" }) -- , "night" [debug]
+	mission_day_time = rnd({ "day", "night" })
 	mission_wind_v = rnd({ 0, 0.05, 0.15, 0.3 })
 	mission_wind_d = rnd({ "left", "right" })
 	mission_wind_roulette = true
@@ -331,8 +331,8 @@ function _draw()
 		print("$" .. player.finance, 39, 27, 3)
 		print("$" .. player.finance, 39, 26, 11)
 
-		print("health $95", 15, 48, 7)
-		print("fuel $75", 15, 58, 7)
+		print("health $35", 15, 48, 7)
+		print("fuel $45", 15, 58, 7)
 
 		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
 
@@ -633,7 +633,7 @@ function _update()
 	if curr_screen != 2 then
 		if main_music == false then
 			main_music = true
-			-- music(1)
+			music(1)
 		else
 			if (stat(56) >= 430) main_music = false
 		end
@@ -717,15 +717,15 @@ function _update()
 		if (shop_option < 1) shop_option = 2
 
 		if btnp(4) and not block_btns then
-			if shop_option == 1 and player.rotor_health < player.max_rotor_health then
+			if shop_option == 1 and player.rotor_health < player.max_rotor_health and player.finance >= 35 then
 				player.rotor_health = flr(player.rotor_health) + 1
 				player.finance -= 35
 				notification("-$35")
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
-			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel then
+			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel and player.finance >= 45 then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 34
+				player.finance -= 45
 				notification("-$45")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
@@ -1203,7 +1203,7 @@ function create_civ()
 				civ.blood_level = 10
 				local wounds = {}
 
-				civ_is_wounded = 0 -- 2 -- (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0 [debug]
+				civ_is_wounded = (rnd(1) > 0.55) and rnd({ 1, 2, 3 }) or 0
 				if civ_is_wounded > 0 then
 					wound_type = rnd({ "arms", "legs" })
 
