@@ -1553,16 +1553,13 @@ function draw_smoke(smoke)
 
 				for i=1, limit do
 					sspr(8,24,0 + i, draw_y, smoke.x, smoke.y)
-					palt() pal()
 				end
 			else
 				limit = ((player.px2 - flr(smoke.x))-6) - 10
-				sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)
-				
+				sspr(8 + limit, 24, 8 - limit, draw_y, smoke.x + limit, smoke.y)		
 			end
 		end
 	end
-	palt() pal()
 end
 
 function move_smoke(smoke)
