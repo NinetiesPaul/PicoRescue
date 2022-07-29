@@ -361,7 +361,7 @@ function _draw()
 		end
 
 		if help_page == 4 then
-			print("enviroment:", 10, 28)
+			print("environment:", 10, 28)
 			print("during missions, pay close\nattention to everything", 10, 38)
 
 			print("avoid smoke columns because\nthey can damage your\nhelicopter, causing the\nmost damage at low altitudes.\nalso, take into consideration\nwind direction by looking the\ndirection the smoke blows. it\ncan boost your speed but also\nhold you down", 10, 54)
