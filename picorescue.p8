@@ -408,15 +408,13 @@ function _draw()
 		print("civilians saved", 10, 40, 7)
 		print("civilians lost on triage", 10, 48, 7)
 		print("fires put out", 10, 56, 7)
-		if (mission_n_of_rescuees == mission_civ_saved) print("all saved bonus", 10, 64, 11)
-		if (mission_day_time == "night") print("night mission bonus", 10, 72, 11)
+		if (mission_n_of_rescuees == mission_civ_saved) print("all saved bonus", 10, 64, 11) print("$50", 110, 64, 7)
+		if (mission_day_time == "night") print("night mission bonus", 10, 72, 11) print("$35", 110, 72, 7)
 		print("mission earnings", 10, 80, 7)
 
 		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 40, 7)
 		print(mission_civ_lost_on_triage, 110, 48, 7)
 		print(mission_fire_put_out, 110, 56, 7)
-		print("$50", 110, 64, 7)
-		print("$35", 110, 72, 7)
 		print("$" .. mission_earnings, 110, 80, 7)
 	end
 
