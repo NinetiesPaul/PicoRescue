@@ -631,9 +631,9 @@ function _draw()
 	if (curr_screen == 10 or curr_screen == 12) print(notification_message, 65, 27, 8) print(notification_message, 65, 26, 14)
 
 	if (curr_screen == 5 or curr_screen == 6 or curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12 or curr_screen == 5 or curr_screen == 13) bottom_gui()
-	left_bottom_text = (curr_screen == 10 or curr_screen == 12) and "[z/🅾️] buy" or (curr_screen == 6 or curr_screen == 10) and "[z/🅾️] select" or (curr_screen == 9) and "[x/❎ or z/🅾️] ok" or ""
+	left_bottom_text = (curr_screen == 10 or curr_screen == 12) and "[z/🅾️] buy" or (curr_screen == 6 or curr_screen == 10) and "[z/🅾️] select" or ""
 	print(left_bottom_text, 2, 120, 7)
-	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10 or curr_screen == 12 or curr_screen == 13) print("[x/❎] back", 82, 120, 7)
+	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 9 or curr_screen == 10 or curr_screen == 12 or curr_screen == 13) print("[x/❎] back", 82, 120, 7)
 end
 
 function top_gui()
@@ -735,16 +735,12 @@ function _update()
 	end
 	
 	if curr_screen == 7 or curr_screen == 8 or curr_screen == 13 then -- stats and my heli help
-		if btnp(5) then
-			sfx(0)
-			block_btns = true
-			curr_screen = 6
-		end
-
 		if curr_screen == 13 then 
 			if (btnp(0) and help_page > 1) help_page -= 1 sfx(2)
 			if (btnp(1) and help_page < 4) help_page += 1 sfx(2)
 		end
+
+		back_button()
 	end
 	
 	if curr_screen == 10 then -- shop
@@ -766,11 +762,7 @@ function _update()
 			end
 		end
 
-		if btnp(5) then
-			sfx(0)
-			block_btns = true
-			curr_screen = 6
-		end
+		back_button()
 	end
 	
 	if curr_screen == 12 then -- upgrade
@@ -811,19 +803,11 @@ function _update()
 			end
 		end
 
-		if btnp(5) then
-			sfx(0)
-			block_btns = true
-			curr_screen = 6
-		end
+		back_button()
 	end
 	
 	if curr_screen == 9 then -- mission ended
-		if btnp(5) or btnp(4) then
-			sfx(0)
-			block_btns = true
-			curr_screen = 6
-		end
+		back_button()
 	end
 
 	if curr_screen == 2 then -- rotor mission
@@ -1041,6 +1025,14 @@ function notification(msg)
 		notification_message = tool_name .. " selected"
 	else
 		notification_message = msg
+	end
+end
+
+function back_button()
+	if btnp(5) then
+		sfx(0)
+		block_btns = true
+		curr_screen = 6
 	end
 end
 -->8
