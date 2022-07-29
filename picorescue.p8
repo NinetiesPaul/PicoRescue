@@ -326,7 +326,7 @@ function _draw()
 		print("$" .. player.finance, 39, 27, 3)
 		print("$" .. player.finance, 39, 26, 11)
 
-		print("health $35", 15, 48, 7)
+		print("health $30", 15, 48, 7)
 		print("fuel $15", 15, 58, 7)
 
 		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
@@ -532,17 +532,6 @@ function _draw()
 		if (current_wounds.wound_type == "arms") sspr(0, 58, 11, 35, 50, 24, 22, 70, flip_x)
 		if (current_wounds.wound_type == "legs") sspr(34, 58, 14, 120, 50, 12, 28, 240, flip_x)
 
-		--[[
-		for j=1, #wounded_civs_pcs do
-			local wounded = wounded_civs_pcs[j]
-			print(j, 70, 64 + j * 8, 7)
-			for k=1, #wounded.wounds do
-				local wound = wounded.wounds[k]
-				print((wound.cleaned) and "y" or "n", 70 + k * 8, 64 + j * 8, 7)
-			end
-		end
-		]]--
-
 		if current_civ_detailed_wound == 0 then
 			for i=1,#tools do
 				spr_height = -14 + 16 * i
@@ -720,10 +709,10 @@ function _update()
 		if (btnp(3) and shop_option < 2) shop_option += 1 sfx(2)
 
 		if btnp(4) and not block_btns then
-			if shop_option == 1 and player.rotor_health < player.max_rotor_health and player.finance >= 35 then
+			if shop_option == 1 and player.rotor_health < player.max_rotor_health and player.finance >= 30 then
 				player.rotor_health = flr(player.rotor_health) + 1
-				player.finance -= 35
-				notification("-$35")
+				player.finance -= 30
+				notification("-$30")
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
 			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel and player.finance >= 15 then
@@ -815,9 +804,9 @@ function _update()
 
 		if player.facing != false and mission_wind_v > 0 then
 			if player.facing == "left" then
-				mission_top_speed = (mission_wind_d == "left") and mission_wind_v * 1 or mission_wind_v * -1
-			else
 				mission_top_speed = (mission_wind_d == "right") and mission_wind_v * 1 or mission_wind_v * -1
+			else
+				mission_top_speed = (mission_wind_d == "left") and mission_wind_v * 1 or mission_wind_v * -1
 			end
 		end
 
@@ -1384,7 +1373,8 @@ function upd_ladder()
 end
 
 function end_mission()
-	mission_earnings = (mission_civ_saved - mission_civ_lost_on_triage) * 35
+	mission_day_time_bonus = (mission_day_time == "night") and 35 or 0
+	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 40) + mission_day_time_bonus
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
