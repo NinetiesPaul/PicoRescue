@@ -340,17 +340,31 @@ function _draw()
 		print("help", 108, 2, 7)
 
 		if help_page  == 1 then
-			print("main objctives:\n---", 10, 28)
+			print("main objectives:", 10, 28)
 			print("you must rescue all rescuees\nbefore running out of fuel", 10, 38)
 
-			print("to do that, hover just above\nthem to deploy the ladder.\navoid smoke columns because\nthey can damage your\nhelicopter, causing the\nmost damage at low altitudes", 10, 58)
+			print("to do that, hover just above\nthem to deploy the ladder.\nwhile they climb up or down,\nyou'll be unable to move. to\nleave early, just head left\nuntil the game ask if you\nwant to leave. there are no\npenalties for that, don't\nworry", 10, 54)
 		end
 
 		if help_page == 2 then
-			print("triaging patients:\n---", 10, 28)
+			print("triaging patients:", 10, 28)
 			print("treat any rescuee hurt and\nin need of medical care", 10, 38)
 
-			print("remove clothing with the\nscissor and check for wounds\nbeneath it. for every wound,\nyou'll have to clean it with\nsoap, then use a gauze to\nstop the bleeding and to\npatch it up. after that tape\nit to hold it all in place.", 10, 58)
+			print("remove clothing with the\nscissor and check for wounds\nbeneath it. for every wound,\nyou'll have to clean it with\nsoap, then use a gauze to\nstop the bleeding and to\npatch it up. after that tape\nit to hold it all in place", 10, 54)
+		end
+
+		if help_page == 3 then
+			print("earnings:", 10, 28)
+			print("after every mission you'll be\nrewarded accordingly", 10, 38)
+
+			print("for every civilian rescued\nand succesfully triaged,\nyou'll net $40. for their\nadded difficulty, night\nmissions gives you a $50\nbonus. and if you manage to\nrescue and treat everyone\nyou'll get a $35 bonus", 10, 54)
+		end
+
+		if help_page == 4 then
+			print("enviroment:", 10, 28)
+			print("during missions, pay close\nattention to everything", 10, 38)
+
+			print("avoid smoke columns because\nthey can damage your\nhelicopter, causing the\nmost damage at low altitudes.\nalso, take into consideration\nwind direction by looking the\ndirection the smoke blows. it\ncan boost your speed but also\nhold you down", 10, 54)
 		end
 	end
 
@@ -391,15 +405,19 @@ function _draw()
 		print("mission ended", 72, 3, 0)
 		print("mission ended", 72, 2, 7)
 
-		print("civilians saved", 10, 50, 7)
-		print("civilians lost on triage", 10, 58, 7)
-		print("fires put out", 10, 66, 7)
-		print("mission earnings", 10, 74, 7)
+		print("civilians saved", 10, 40, 7)
+		print("civilians lost on triage", 10, 48, 7)
+		print("fires put out", 10, 56, 7)
+		if (mission_n_of_rescuees == mission_civ_saved) print("all saved bonus", 10, 64, 11)
+		if (mission_day_time == "night") print("night mission bonus", 10, 72, 11)
+		print("mission earnings", 10, 80, 7)
 
-		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 50, 7)
-		print(mission_civ_lost_on_triage, 110, 58, 7)
-		print(mission_fire_put_out, 110, 66, 7)
-		print("$ " .. mission_earnings, 102, 74, 7)
+		print(mission_civ_saved .. "/" .. mission_n_of_rescuees, 110, 40, 7)
+		print(mission_civ_lost_on_triage, 110, 48, 7)
+		print(mission_fire_put_out, 110, 56, 7)
+		print("$50", 110, 64, 7)
+		print("$35", 110, 72, 7)
+		print("$" .. mission_earnings, 110, 80, 7)
 	end
 
 	if curr_screen == 5 then -- game over
@@ -700,7 +718,7 @@ function _update()
 
 		if curr_screen == 13 then 
 			if (btnp(0) and help_page > 1) help_page -= 1 sfx(2)
-			if (btnp(1) and help_page < 2) help_page += 1 sfx(2)
+			if (btnp(1) and help_page < 4) help_page += 1 sfx(2)
 		end
 	end
 	
@@ -1374,7 +1392,8 @@ end
 
 function end_mission()
 	mission_day_time_bonus = (mission_day_time == "night") and 35 or 0
-	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 40) + mission_day_time_bonus
+	mission_all_rescued_bonus = (mission_n_of_rescuees == mission_civ_saved) and 50 or 0
+	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 40) + mission_day_time_bonus + mission_all_rescued_bonus
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
@@ -1499,7 +1518,7 @@ function update_fire(fire)
 		smoke.x = fire.x + rnd({ -2, -1, 1, 2 })
 		smoke.y = fire.y
 		smoke.spr = 049
-		smoke.damage = 0.03
+		smoke.damage = 0.02
 		add(smoke_pcs, smoke)
 	end
 
@@ -1560,8 +1579,8 @@ function move_smoke(smoke)
 		if (mission_wind_d == "right") smoke.x += mission_wind_v
 	end
 
-	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.02
-	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.01
+	if (smoke.y < 70) smoke.spr = 050 smoke.damage = 0.01
+	if (smoke.y < 56) smoke.spr = 051 smoke.damage = 0.007
 
 	if (player.mvn_dir == "left") smoke.x += player.speed_x
 	if (player.mvn_dir == "right") smoke.x -= player.speed_x
