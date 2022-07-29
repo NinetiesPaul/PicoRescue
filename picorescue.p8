@@ -327,7 +327,7 @@ function _draw()
 		print("$" .. player.finance, 39, 26, 11)
 
 		print("health $35", 15, 48, 7)
-		print("fuel $25", 15, 58, 7)
+		print("fuel $15", 15, 58, 7)
 
 		spr(018, 5, 37 + shop_option * 10, 1, 1, true)
 
@@ -340,17 +340,17 @@ function _draw()
 		print("help", 108, 2, 7)
 
 		if help_page  == 1 then
-			print("main objectives:\n---", 10, 28)
+			print("main objctives:\n---", 10, 28)
 			print("you must rescue all rescuees\nbefore running out of fuel", 10, 38)
 
-			print("to do that, get real low and\nhover above them to deploy\nthe ladder. avoid smoke\ncolumns because they can\ndamage your helicopter,\ncausing the most damage at\nlow altitudes", 10, 58)
+			print("to do that, hover just above\nthem to deploy the ladder.\navoid smoke columns because\nthey can damage your\nhelicopter, causing the\nmost damage at low altitudes", 10, 58)
 		end
 
 		if help_page == 2 then
 			print("triaging patients:\n---", 10, 28)
 			print("treat any rescuee hurt and\nin need of medical care", 10, 38)
 
-			print("for every wound, you'll have\nto clean it with soap, then\nuse a gauze to stop the\nbleeding and to patch it up.\nto finish it, use a tape to\nhold the gauze in place", 10, 58)
+			print("remove clothing with the\nscissor and check for wounds\nbeneath it. for every wound,\nyou'll have to clean it with\nsoap, then use a gauze to\nstop the bleeding and to\npatch it up. after that tape\nit to hold it all in place.", 10, 58)
 		end
 	end
 
@@ -364,15 +364,15 @@ function _draw()
 		print("$" .. player.finance, 39, 26, 11)
 
 		print("fuel consumption", 15, 40, 7)
-		print("$" .. (player.fuel_consumption_lv + 1) * 50, 92, 40, 8)
+		if (player.fuel_consumption_lv < 3) print("$" .. (player.fuel_consumption_lv + 1) * 55, 92, 40, 8)
 		print("acceleration", 15, 48, 7)
-		print("$" .. (player.acc_x_lv + 1) * 60, 92, 48, 8)
+		if (player.acc_x_lv < 3) print("$" .. (player.acc_x_lv + 1) * 60, 92, 48, 8)
 		print("top speed", 15, 56, 7)
-		print("$" .. (player.top_speed_x_lv + 1) * 75, 92, 56, 8)
+		if (player.top_speed_x_lv < 3) print("$" .. (player.top_speed_x_lv + 1) * 75, 92, 56, 8)
 		print("max occupancy", 15, 64, 7)
-		print("$" .. (player.max_occup_lv + 1) * 95, 92, 64, 8)
+		if (player.max_occup_lv < 3) print("$" .. (player.max_occup_lv + 1) * 95, 92, 64, 8)
 		print("water capacity", 15, 72, 7)
-		print("$" .. (player.max_water_cap_lv + 1) * 55 , 92, 72, 8)
+		if (player.max_water_cap_lv < 3) print("$" .. (player.max_water_cap_lv + 1) * 55 , 92, 72, 8)
 		-- print("ladder speed", 15, 64)
 		-- print("spotlight height", 15, 72)
 
@@ -726,10 +726,10 @@ function _update()
 				notification("-$35")
 				if (player.rotor_health > player.max_rotor_health) player.rotor_health = player.max_rotor_health
 			end
-			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel and player.finance >= 45 then
+			if shop_option == 2 and player.rotor_fuel < player.max_rotor_fuel and player.finance >= 15 then
 				player.rotor_fuel = flr(player.rotor_fuel) + 1
-				player.finance -= 25
-				notification("-$25")
+				player.finance -= 15
+				notification("-$15")
 				if (player.rotor_fuel > player.max_rotor_fuel) player.rotor_fuel = player.max_rotor_fuel
 			end
 		end
@@ -752,10 +752,10 @@ function _update()
 		print("water capacity lv", 15, 72)
 
 		if btnp(4) and not block_btns then
-			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= (player.fuel_consumption_lv + 1) * 50 then
+			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= (player.fuel_consumption_lv + 1) * 55 then
 				player.fuel_consumption_lv += 1
-				player.finance -= player.fuel_consumption_lv * 50
-				notification("-$" .. player.fuel_consumption_lv * 50)
+				player.finance -= player.fuel_consumption_lv * 55
+				notification("-$" .. player.fuel_consumption_lv * 55)
 			end
 			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= (player.acc_x_lv + 1) * 60 then
 				player.acc_x_lv += 1
@@ -1384,7 +1384,7 @@ function upd_ladder()
 end
 
 function end_mission()
-	mission_earnings = mission_civ_saved * 35
+	mission_earnings = (mission_civ_saved - mission_civ_lost_on_triage) * 35
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
