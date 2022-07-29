@@ -47,7 +47,7 @@ function _init()
 		ry1 = 0,
 		rx2 = 0,
 		ry2 = 0,
-		finance = 75,
+		finance = 100,
 		ladder_climb_spd = 0.5, -- 0.20, -- 0.3 -- 0.5
 		spotlight_px1 = player_strt_x + 3,
 		spotlight_py1 = player_strt_y + 10,
@@ -378,9 +378,9 @@ function _draw()
 		print("$" .. player.finance, 39, 26, 11)
 
 		print("fuel consumption", 15, 40, 7)
-		if (player.fuel_consumption_lv < 3) print("$" .. (player.fuel_consumption_lv + 1) * 55, 92, 40, 8)
+		if (player.fuel_consumption_lv < 3) print("$" .. (player.fuel_consumption_lv + 1) * 60, 92, 40, 8)
 		print("acceleration", 15, 48, 7)
-		if (player.acc_x_lv < 3) print("$" .. (player.acc_x_lv + 1) * 60, 92, 48, 8)
+		if (player.acc_x_lv < 3) print("$" .. (player.acc_x_lv + 1) * 65, 92, 48, 8)
 		print("top speed", 15, 56, 7)
 		if (player.top_speed_x_lv < 3) print("$" .. (player.top_speed_x_lv + 1) * 75, 92, 56, 8)
 		print("max occupancy", 15, 64, 7)
@@ -757,15 +757,15 @@ function _update()
 		print("water capacity lv", 15, 72)
 
 		if btnp(4) and not block_btns then
-			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= (player.fuel_consumption_lv + 1) * 55 then
+			if upgrade_option == 1 and player.fuel_consumption_lv < 3 and player.finance >= (player.fuel_consumption_lv + 1) * 60 then
 				player.fuel_consumption_lv += 1
-				player.finance -= player.fuel_consumption_lv * 55
-				notification("-$" .. player.fuel_consumption_lv * 55)
+				player.finance -= player.fuel_consumption_lv * 60
+				notification("-$" .. player.fuel_consumption_lv * 60)
 			end
-			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= (player.acc_x_lv + 1) * 60 then
+			if upgrade_option == 2 and player.acc_x_lv < 3 and player.finance >= (player.acc_x_lv + 1) * 65 then
 				player.acc_x_lv += 1
-				player.finance -= player.acc_x_lv * 60
-				notification("-$" .. player.acc_x_lv * 60)
+				player.finance -= player.acc_x_lv * 65
+				notification("-$" .. player.acc_x_lv * 65)
 			end
 			if upgrade_option == 3 and player.top_speed_x_lv < 3 and player.finance >= (player.top_speed_x_lv + 1) * 75 then
 				player.top_speed_x_lv += 1
