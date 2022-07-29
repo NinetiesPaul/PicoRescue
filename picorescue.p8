@@ -636,6 +636,31 @@ function _draw()
 	if (curr_screen == 7 or curr_screen == 8 or curr_screen == 10 or curr_screen == 12 or curr_screen == 13) print("[x/❎] back", 82, 120, 7)
 end
 
+function top_gui()
+	rectfill(0,0, 127, 11, 8)
+	rectfill(0,0, 50, 17)
+
+	spr(015, 51, 11)
+
+	line(0, 16, 51, 16, 14)
+	line(52, 15, 57, 10, 14)
+	line(58, 10, 127, 10, 14)
+
+	print("pico rescue", 4, 7, 0)
+	print("pico rescue", 4, 6, 7)
+end
+
+function bottom_gui()
+	rectfill(0,116, 127, 127, 8)
+	rectfill(59,110, 127, 127)
+
+	palt(2, t) spr(015, 51, 109, 1,1, true, true) palt()
+
+	line(0, 117, 51, 117, 14)
+	line(52, 117, 57, 112, 14)   
+	line(58, 111, 127, 111, 14)
+end
+
 function _update()
 	counter += 1
 
@@ -1017,32 +1042,6 @@ function notification(msg)
 	else
 		notification_message = msg
 	end
-end
-
-
-function top_gui()
-	rectfill(0,0, 127, 11, 8)
-	rectfill(0,0, 50, 17)
-
-	spr(015, 51, 11)
-
-	line(0, 16, 51, 16, 14)
-	line(52, 15, 57, 10, 14)
-	line(58, 10, 127, 10, 14)
-
-	print("pico rescue", 4, 7, 0)
-	print("pico rescue", 4, 6, 7)
-end
-
-function bottom_gui()
-	rectfill(0,116, 127, 127, 8)
-	rectfill(59,110, 127, 127)
-
-	palt(2, t) spr(015, 51, 109, 1,1, true, true) palt()
-
-	line(0, 117, 51, 117, 14)
-	line(52, 117, 57, 112, 14)   
-	line(58, 111, 127, 111, 14)
 end
 -->8
 -- movement logic
