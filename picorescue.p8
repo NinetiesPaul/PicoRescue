@@ -357,7 +357,7 @@ function _draw()
 			print("earnings:", 10, 28)
 			print("after every mission you'll be\nrewarded accordingly", 10, 38)
 
-			print("for every civilian rescued\nand succesfully triaged,\nyou'll net $50. for their\nadded difficulty, night\nmissions gives you a $10\nbonus per rescuee. saving all\nof them grants you a $35\nbonus", 10, 54)
+			print("for every civilian rescued\nand succesfully triaged,\nyou'll net $45. for their\nadded difficulty, night\nmissions gives you a $10\nbonus per rescuee. saving all\nof them grants you a $35\nbonus", 10, 54)
 		end
 
 		if help_page == 4 then
@@ -408,7 +408,7 @@ function _draw()
 		print("civilians saved", 10, 40, 7)
 		print("civilians lost on triage", 10, 48, 7)
 		print("fires put out", 10, 56, 7)
-		if (mission_n_of_rescuees == mission_civ_saved) print("all saved bonus", 10, 64, 11) print("$50", 110, 64, 7)
+		if (mission_n_of_rescuees == mission_civ_saved) print("all saved bonus", 10, 64, 11) print("$75", 110, 64, 7)
 		if (mission_day_time == "night") print("night mission bonus", 10, 72, 11) print("$" .. (mission_civ_saved - mission_civ_lost_on_triage) * 10, 110, 72, 7)
 		print("mission earnings", 10, 80, 7)
 
@@ -477,21 +477,11 @@ function _draw()
 		palt()
 
 		spr(048, 32, 1)
-		water_drop_spr = (player.water_cap == 0) and 043 or
-		(player.water_cap == 1) and 044 or
-		(player.water_cap == 2) and 045 or
-		(player.water_cap == 3) and 059 or
-		(player.water_cap == 4) and 060 or
-		(player.water_cap == 5) and 061 or 029
-		--pal(7, 0) spr(water_drop_spr, 40, 0) pal()
-
-		sspr(88, 20, 4, 4, 40, 4) sspr()
+		pal(7, 0) sspr(48 + (4 * player.water_cap), 28, 4, 4, 40, 4) sspr(85, 28, 2, 4, 45, 4) pal()
 		print(player.max_water_cap[player.max_water_cap_lv], 48, 3, 0)
 
 		spr(032, 32, 10)
-		occup_spr = (player.occup == 0) and 043 or
-		(player.occup == 1) and 044 or 045
-		pal(7, 0) spr(occup_spr, 40, 9) pal()
+		pal(7, 0) sspr(48 + (4 * player.occup), 28, 4, 4, 40, 13) sspr(85, 28, 2, 4, 45, 13) pal()
 		print(player.max_occup[player.max_occup_lv], 48, 12, 0)
 
 		--[[
@@ -1390,8 +1380,8 @@ end
 
 function end_mission()
 	mission_day_time_bonus = (mission_day_time == "night") and (mission_civ_saved - mission_civ_lost_on_triage) * 10 or 0
-	mission_all_rescued_bonus = (mission_n_of_rescuees == mission_civ_saved) and 100 or 0
-	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 50) + mission_day_time_bonus + mission_all_rescued_bonus
+	mission_all_rescued_bonus = (mission_n_of_rescuees == mission_civ_saved) and 75 or 0
+	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 45) + mission_day_time_bonus + mission_all_rescued_bonus
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
@@ -1615,10 +1605,9 @@ function move_water(water)
 
 	for fire in all(fire_pcs) do
 		if
-		 	water.x >= fire.x - 2 and
-		 	water.x <= fire.x + 10 and
-		 	water.y >= fire.y and
-		 	water.y <= fire.y + 8
+		 	water.x + 2 >= fire.x - 4 and
+		 	water.x + 2 <= fire.x + 12 and
+		 	water.y >= fire.y 
 			then
 				mission_fire_put_out += 1
 				del(fire_pcs,fire)
