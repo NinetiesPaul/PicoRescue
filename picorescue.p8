@@ -439,8 +439,8 @@ function _draw()
 			sspr(tail_rotor_x, 24, 4, 4, (player.facing == "right") and player.x+12 or player.x-7, player.y)
 		end
 
-		palt(0, false) rectfill(1, 1, 54, 19, 0) palt()
-		rectfill(0, 0, 53, 18, 6)
+		--palt(0, false) rectfill(1, 1, 54, 19, 0) palt()
+		rectfill(0, 0, 127, 9, 6)
 
 		health = player.rotor_health/player.max_rotor_health
 		rotor_health_bar_length = (health > 0.9) and 19 or
@@ -469,20 +469,24 @@ function _draw()
 		(fuel_usage > 0.3 and fuel_usage < 0.4) and 7 or
 		(fuel_usage > 0.2 and fuel_usage < 0.3) and 5 or
 		(fuel_usage > 0.1 and fuel_usage < 0.2) and 3 or 1
-		spr(000, 0, 10)
-		rectfill(11, 12, 11 + rotor_fuel_bar_length, 15, 11)
+		if (fuel_usage <= 0.3 and counter % 15 == 0) pal(3, 8)
+		spr(000, 31, 1)
+		pal()
+		rectfill(42, 3, 42 + rotor_fuel_bar_length, 6, 11)
 		palt(0, false) palt(2, true)
-		spr(026, 10, 9, 2, 1)
-		spr(026, 23, 9, 1, 1, true)
+		spr(026, 41, 0, 2, 1)
+		spr(026, 54, 0, 1, 1, true)
 		palt()
 
-		spr(048, 32, 1)
-		pal(7, 0) sspr(48 + (4 * player.water_cap), 28, 4, 4, 40, 4) sspr(85, 28, 2, 4, 45, 4) pal()
-		print(player.max_water_cap[player.max_water_cap_lv], 48, 3, 0)
+		spr(048, 63, 1)
+		pal(7, 0) sspr(48 + (4 * player.water_cap), 28, 4, 4, 72, 4) sspr(85, 28, 2, 4, 77, 4) pal()
+		print(player.max_water_cap[player.max_water_cap_lv], 80, 3, 0)
 
-		spr(032, 32, 10)
-		pal(7, 0) sspr(48 + (4 * player.occup), 28, 4, 4, 40, 13) sspr(85, 28, 2, 4, 45, 13) pal()
-		print(player.max_occup[player.max_occup_lv], 48, 12, 0)
+		spr(032, 84, 1)
+		pal(7, 0) sspr(48 + (4 * player.occup), 28, 4, 4, 93, 4) sspr(85, 28, 2, 4, 98, 4) pal()
+		print(player.max_occup[player.max_occup_lv], 101, 3, 0)
+
+		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 111, 3, 0)
 
 		--[[
 		arrow_flip = (drop_off_x > player.x) and true or false
@@ -527,10 +531,6 @@ function _draw()
 			print("[z/🅾️] yes ", 44, 62, 7)
 			print("[x/❎] no", 46, 70, 7)
 		end
-
-		rectfill(104, 1, 126, 9, 0)
-		rectfill(105, 0, 127, 8, 6)
-		print(flr(mission_time/60)..":"..((mission_time % 60 < 10) and "0"..mission_time % 60 or mission_time % 60), 109, 2, 0)
 	end
 
 	if curr_screen == 11 then -- triage mode
@@ -701,7 +701,7 @@ function _update()
 				if (player.rotor_fuel <= 5) low_fuel_prompt = true block_btns = true
 
 				if not low_fuel_prompt or low_fuel_prompt_confirm then
-					mission_day_time = rnd({ "day" })
+					mission_day_time = rnd({ "day", "night" })
 					mission_civ_saved = 0
 					mission_civ_lost_on_triage = 0
 					mission_fire_put_out = 0
