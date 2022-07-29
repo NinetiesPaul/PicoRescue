@@ -18,24 +18,24 @@ function _init()
 		speed_x = 0,
 		speed_y = 0,
 		acc_x_lv = 1,
-		acc_x = { 0.015, 0.025, 0.035 },
+		acc_x = { 0.015, 0.020, 0.025 },
 		mvn_dir = false,
 		facing = "left",
 		vhc_front = 04,
 		occup = 0,
 		max_occup_lv = 1,
 		max_occup = { 2, 3, 4 },
-		water_cap = 3,
+		water_cap = 4,
 		max_water_cap_lv = 1,
-		max_water_cap = { 3, 4, 5 },
+		max_water_cap = { 4, 6, 8 },
 		rotor_health = 10,
 		max_rotor_health = 10,
 		rotor_fuel = 10,
 		max_rotor_fuel = 10,
 		fuel_consumption_lv = 1,
-		fuel_consumption = { 0.07, 0.05, 0.05 },
+		fuel_consumption = { 0.06, 0.045, 0.03 },
 		top_speed_x_lv = 1,
-		top_speed_x = { 2, 3, 4 },
+		top_speed_x = { 2.25, 3.25, 3.95 },
 		top_speed_y = 2,
 		ladder = 0,
 		ladder_empty = true,
@@ -357,7 +357,7 @@ function _draw()
 			print("earnings:", 10, 28)
 			print("after every mission you'll be\nrewarded accordingly", 10, 38)
 
-			print("for every civilian rescued\nand succesfully triaged,\nyou'll net $40. for their\nadded difficulty, night\nmissions gives you a $50\nbonus. and if you manage to\nrescue and treat everyone\nyou'll get a $35 bonus", 10, 54)
+			print("for every civilian rescued\nand succesfully triaged,\nyou'll net $50. for their\nadded difficulty, night\nmissions gives you a $100\nbonus. and if you manage to\nrescue and treat everyone\nyou'll get a $35 bonus", 10, 54)
 		end
 
 		if help_page == 4 then
@@ -1390,8 +1390,8 @@ end
 
 function end_mission()
 	mission_day_time_bonus = (mission_day_time == "night") and 35 or 0
-	mission_all_rescued_bonus = (mission_n_of_rescuees == mission_civ_saved) and 50 or 0
-	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 40) + mission_day_time_bonus + mission_all_rescued_bonus
+	mission_all_rescued_bonus = (mission_n_of_rescuees == mission_civ_saved) and 100 or 0
+	mission_earnings = ((mission_civ_saved - mission_civ_lost_on_triage) * 50) + mission_day_time_bonus + mission_all_rescued_bonus
 	stats.missions_finished += 1
 	stats.fire_put_out += mission_fire_put_out
 	stats.civs_saved += mission_civ_saved
