@@ -659,7 +659,7 @@ function _update()
 	if curr_screen != 2 then
 		if main_music == false then
 			main_music = true
-			music(1)
+			-- music(1)
 		else
 			if (stat(56) >= 430) main_music = false
 		end
