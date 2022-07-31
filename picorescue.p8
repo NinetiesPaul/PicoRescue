@@ -523,6 +523,7 @@ function _draw()
 		foreach(water_drops,draw_water)
 		foreach(ground_pcs,draw_ground)
 		if (mission_day_time == "day") foreach(tree_pcs,draw_tree)
+		line(drop_off_x - 12, 120, drop_off_x + 18, 120, 7)
 
 		if mission_leave_prompt then
 			rectfill(26,48, 100, 79, 8)
@@ -829,7 +830,7 @@ function _update()
 			end
 		end
 
-		if (counter % 15 == 0) player.rotor_fuel -= player.fuel_consumption[player.fuel_consumption_lv]
+		if (counter % 15 == 0 and not mission_leave_prompt) player.rotor_fuel -= player.fuel_consumption[player.fuel_consumption_lv]
 
 		btn_pressed = (btn(1)) or (btn(2)) or (btn(0)) or (btn(3))
 		mvn_y = btn(2) or btn(3)
@@ -870,7 +871,7 @@ function _update()
 		end
 
 		if mission_leave_prompt then
-			if (btnp(4)) for civ in all (civ_pcs) do del(civ_pcs,civ) end
+			if (btnp(4)) player.occup = 0 for civ in all (civ_pcs) do del(civ_pcs,civ) end 
 			if (btnp(5)) mission_leave_prompt = false
 		end
 
@@ -1319,8 +1320,8 @@ end
 
 function droping_off()
 	if
-		player.x >= drop_off_x and
-		player.x < drop_off_x+8 and
+		player.x >= drop_off_x - 14 and
+		player.x < drop_off_x + 18 and
 		player.y >= 88
 	then
 		player.dpl_ldd_doof = true
