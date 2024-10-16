@@ -469,7 +469,7 @@ function _draw()
 		(fuel_usage > 0.3 and fuel_usage < 0.4) and 7 or
 		(fuel_usage > 0.2 and fuel_usage < 0.3) and 5 or
 		(fuel_usage > 0.1 and fuel_usage < 0.2) and 3 or 1
-		if (fuel_usage <= 0.3 and counter % 15 == 0) pal(3, 8)
+		if (fuel_usage <= 0.3 and counter % 15 == 0) pal(3, 8) sfx(2)
 		spr(000, 31, 1)
 		pal()
 		rectfill(42, 3, 42 + rotor_fuel_bar_length, 6, 11)
