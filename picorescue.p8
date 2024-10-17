@@ -871,7 +871,23 @@ function _update()
 		end
 
 		if mission_leave_prompt then
-			if (btnp(4)) player.occup = 0 for civ in all (civ_pcs) do del(civ_pcs,civ) end 
+			if btnp(4) then
+				if player.occup > 0 then
+					for civ in all (civ_pcs) do
+						if civ.on_board then
+							if #civ.wounds > 0 then
+								add(wounded_civs_pcs, civ)
+							end
+
+							del(civ_pcs,civ)
+							player.occup -= 1
+							mission_civ_saved += 1
+						end
+					end
+				end
+				civ_pcs = {}
+			end 
+
 			if (btnp(5)) mission_leave_prompt = false
 		end
 
